@@ -16,11 +16,18 @@ export default function ServicesList({ category, userLocation: serverLocation }:
   const { userLocation: clientLocation, isLocating, error } = useLocationDetection();
   
   // Prioritize server location, then client location, then default
-  const locationToUse = serverLocation?.name || clientLocation || 'Northeast Ohio';
+  let locationToUse = serverLocation?.name || clientLocation || 'Northeast Ohio';
+  
+  // Make sure to decode any URL-encoded characters in the location name
+  try {
+    // Try to decode in case the location contains URL-encoded characters
+    locationToUse = decodeURIComponent(locationToUse);
+  } catch (e) {
+    // If decoding fails, use the original
+    console.error('Error decoding location:', e);
+  }
   // Create a location slug for URLs
-  // Always run convertToLocationSlug to ensure consistent handling of special characters
-  const locationSlug = serverLocation?.id ? 
-    convertToLocationSlug(serverLocation.id) : 
+  const locationSlug = serverLocation?.id || 
     (clientLocation ? convertToLocationSlug(clientLocation) : 'northeast-ohio');
   
   return (
@@ -51,7 +58,7 @@ export default function ServicesList({ category, userLocation: serverLocation }:
               {service.description || `Professional ${service.name.toLowerCase()} services tailored to your needs.`}
             </p>
             <a 
-              href={`/services/${category.id}/${service.id}/${convertToLocationSlug(locationSlug)}`}
+              href={`/services/${category.id}/${service.id}/${locationSlug}`}
               className="inline-flex items-center text-red-light font-medium hover:text-red transition-colors"
             >
               <span className="mr-2">View Details</span>

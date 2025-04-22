@@ -80,15 +80,29 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
   const { userLocation: detectedLocation, isLocating } = useLocationDetection();
   
   // Generate location slug for URLs and get active category services - combined in one useMemo
-  const { locationSlug, activeServices } = useMemo(() => {
+  const { locationSlug, activeServices, displayLocation } = useMemo(() => {
     // Get services for active category
     const services = serviceCategories.find(cat => cat.id === activeCategory)?.services || [];
     
     // Create location slug from either provided location or detected location
-    const locationToUse = location || detectedLocation || 'Northeast Ohio';
+    let locationToUse = location || detectedLocation || 'Northeast Ohio';
+    
+    // Make sure to decode any URL-encoded characters for display
+    let decodedLocation;
+    try {
+      decodedLocation = decodeURIComponent(locationToUse);
+    } catch (e) {
+      decodedLocation = locationToUse;
+    }
+    
+    // Create location slug for URLs
     const slug = convertToLocationSlug(locationToUse);
     
-    return { locationSlug: slug, activeServices: services };
+    return { 
+      locationSlug: slug, 
+      activeServices: services,
+      displayLocation: decodedLocation
+    };
   }, [location, detectedLocation, activeCategory]);
 
   return (
@@ -96,7 +110,7 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
       <Container>
         <SectionHeading
           title="Our Services"
-          subtitle={`Professional HVAC solutions for your home and business in ${location || detectedLocation || 'Northeast Ohio'}. Our certified technicians provide expert service for all your heating and cooling needs.`}
+          subtitle={`Professional HVAC solutions for your home and business in ${displayLocation}. Our certified technicians provide expert service for all your heating and cooling needs.`}
           centered
         />
         
@@ -210,7 +224,7 @@ function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceG
           icon={<span className="text-2xl">{service.icon}</span>}
           title={service.name}
           description={service.description}
-          href={`/services/${categoryId}/${service.id}/${convertToLocationSlug(locationSlug)}`}
+          href={`/services/${categoryId}/${service.id}/${locationSlug}`}
           interactive
         />
       ))}

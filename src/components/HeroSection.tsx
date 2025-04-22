@@ -29,6 +29,14 @@ export default function HeroSection({
   emergencyPhone = '8005554822',
   emergencyPhoneDisplay = '800-555-HVAC'
 }: HeroSectionProps) {
+  // Decode any URL-encoded characters in the location name
+  let displayLocation;
+  try {
+    displayLocation = decodeURIComponent(location);
+  } catch (e) {
+    console.error('Error decoding location in HeroSection:', e);
+    displayLocation = location; // Use original if decoding fails
+  }
   const [weather, setWeather] = useState<WeatherData>({
     temperature: null,
     icon: '☀️',
@@ -81,7 +89,7 @@ export default function HeroSection({
       <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
         <div className="max-w-3xl">
           <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-4 py-2 rounded-full text-sm font-medium mb-6 animate-fadeIn">
-            Trusted HVAC Services in {location}
+            Trusted HVAC Services in {displayLocation}
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 animate-fadeIn">
             Expert Heating & <span className="text-ivory">Cooling Solutions</span>
@@ -91,7 +99,7 @@ export default function HeroSection({
           </p>
           
           <WeatherDisplay 
-            location={location} 
+            location={displayLocation} 
             temperature={weather.temperature}
             icon={weather.icon} 
             isLoading={isLoading || weather.isLoading} 
@@ -129,12 +137,20 @@ type WeatherDisplayProps = {
 };
 
 function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDisplayProps) {
+  // Decode any URL-encoded characters in the location name
+  let displayLocation;
+  try {
+    displayLocation = decodeURIComponent(location);
+  } catch (e) {
+    console.error('Error decoding location in WeatherDisplay:', e);
+    displayLocation = location; // Use original if decoding fails
+  }
   return (
     <div className="bg-white/10 backdrop-blur-sm px-4 py-3 rounded-lg inline-flex items-center mb-8 animate-fadeIn animate-delay-150"
          aria-live="polite">
       <span className="text-2xl mr-3" aria-hidden="true">{icon}</span>
       <div>
-        <span className="text-white text-sm">Current Weather in {location}</span>
+        <span className="text-white text-sm">Current Weather in {displayLocation}</span>
         {isLoading ? (
           <div className="h-6 w-20 bg-white/30 animate-pulse rounded mt-1" 
                aria-label="Loading weather data"></div>

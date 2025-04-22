@@ -16,8 +16,16 @@ export default function CTASection({
   phoneDisplay = '800-555-HVAC',
   phoneNumber = '8005554822'
 }: CTASectionProps) {
-  // Format location for display - handle any unexpected null values
-  const displayLocation = location || 'Northeast Ohio';
+  // Format location for display and decode any URL-encoded characters
+  let displayLocation = location || 'Northeast Ohio';
+  
+  // Try to decode URL-encoded characters (like %20 for spaces)
+  try {
+    displayLocation = decodeURIComponent(displayLocation);
+  } catch (e) {
+    console.error('Error decoding location in CTASection:', e);
+    // Keep original if decoding fails
+  }
 
   return (
     <Section className="relative overflow-hidden py-16 md:py-20">
