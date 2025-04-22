@@ -19,14 +19,17 @@ interface PartnerLogosProps {
 }
 
 export default function PartnerLogos({ title = "Trusted by Industry-Leading Brands", subtitle = "" }: PartnerLogosProps) {
+  // Check if we're in the browser before using window
+  const isBrowser = typeof window !== 'undefined';
+  
   const partnerLogos: PartnerLogo[] = [
-    { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 120, height: 40 },
-    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 120, height: 40 },
-    { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 120, height: 40 },
-    { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 120, height: 40 },
+    { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 160, height: 40 },
+    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 160, height: 40 },
+    { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 160, height: 40 },
+    { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 160, height: 40 },
   ];
   
-  // Duplicate the array for seamless infinite scrolling (3 sets for longer scroll)
+  // Duplicate the array for seamless infinite scrolling
   const allLogos = [...partnerLogos, ...partnerLogos, ...partnerLogos];
 
   return (
@@ -40,27 +43,29 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
         />
       
         {/* Logos scroll container with single row */}
-        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto">
+        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto bg-navy">
           {/* Gradient overlays */}
-          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-dark-blue/30 to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-dark-blue/30 to-transparent z-10"></div>
+          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-navy to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-navy to-transparent z-10"></div>
           
           {/* Logo track */}
-          <div className="overflow-hidden">
+          <div className="overflow-hidden py-4">
             <div className="flex w-max animate-marquee">
               {allLogos.map((logo, index) => (
                 <div 
                   key={`${logo.name}-${index}`}
-                  className="mx-8 md:mx-16"
+                  className="mx-10 md:mx-20"
                 >
-                  <div className="h-10 flex items-center justify-center">
+                  <div className="h-20 w-48 flex items-center justify-center">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className="h-7 w-auto object-contain" 
+                      className="max-h-12 max-w-[160px] w-auto object-contain" 
                       style={{ filter: 'brightness(0) invert(1)' }}
+                      priority
+                      unoptimized={true}
                     />
                   </div>
                 </div>
