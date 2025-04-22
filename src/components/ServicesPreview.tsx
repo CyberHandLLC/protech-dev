@@ -8,6 +8,7 @@ import SectionHeading from './ui/SectionHeading';
 import IconFeature from './ui/IconFeature';
 import { convertToLocationSlug } from '@/utils/location';
 import useLocationDetection from '@/hooks/useLocationDetection';
+import { ServiceLocation } from '@/utils/locationUtils';
 
 // Service types and data
 interface Service {
@@ -100,8 +101,9 @@ const serviceCategories: ServiceCategory[] = [
   }
 ];
 
+// Props type that accepts both string and ServiceLocation object
 interface ServicesPreviewProps {
-  location?: string;
+  location?: string | ServiceLocation;
 }
 
 /**
@@ -115,46 +117,46 @@ function ServicesPreview({ location }: ServicesPreviewProps) {
   const { userLocation: detectedLocation, isLocating } = useLocationDetection();
   
   // Generate location slug for URLs and get active category services - combined in one useMemo
-  // This optimization reduces JavaScript execution time and TBT
-  const { locationSlug, activeServices, displayLocation } = useMemo(() => {
-    // Get services for active category early to avoid redundant computation
+  // Optimize by computing multiple values in a single useMemo to reduce TBT
+  const { displayLocation, locationSlug, activeServices } = useMemo(() => {
+    // Determine which location to use - prefer prop-passed location over client-side detection
+    let effectiveLocation = '';
+    
+    if (location) {
+      // Handle both string and object types for location
+      if (typeof location === 'string' && location.trim() !== '') {
+        effectiveLocation = location;
+      } else if (typeof location === 'object' && location.name) {
+        effectiveLocation = location.name;
+      }
+    } else if (detectedLocation && detectedLocation.trim() !== '') {
+      effectiveLocation = detectedLocation;
+    } else {
+      effectiveLocation = 'Northeast Ohio'; // Default fallback
+    }
+    
+    // Create location slug for URLs
+    const slug = convertToLocationSlug(effectiveLocation);
+    
+    // Get services for active category
     const currentCategory = serviceCategories.find(cat => cat.id === activeCategory);
     const services = currentCategory?.services || [];
     
-    // Create location slug from either provided location or detected location
-    // Important: prioritize the location passed from the parent component
-    let locationToUse = location || detectedLocation || 'Northeast Ohio';
-    
-    // Debug only in development to reduce production bundle size
-    if (process.env.NODE_ENV === 'development') {
-      console.log('ServicesPreview using location:', { 
-        providedLocation: location, 
-        detectedLocation, 
-        finalLocationUsed: locationToUse 
-      });
-    }
-    
-    // Make sure to decode any URL-encoded characters for display
-    let decodedLocation;
+    // Format display location - handle URL encoding
+    let displayName;
     try {
-      decodedLocation = decodeURIComponent(locationToUse);
+      displayName = decodeURIComponent(effectiveLocation);
     } catch (e) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error decoding location in ServicesPreview:', e);
-      }
-      decodedLocation = locationToUse;
+      displayName = effectiveLocation;
     }
     
-    // Create location slug for URLs - cached to avoid recalculation
-    const slug = convertToLocationSlug(locationToUse);
-    
-    return { 
-      locationSlug: slug, 
-      activeServices: services,
-      displayLocation: decodedLocation
+    return {
+      displayLocation: displayName,
+      locationSlug: slug,
+      activeServices: services
     };
   }, [location, detectedLocation, activeCategory]);
-
+  
   // Handle category change
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategory(categoryId);
@@ -166,8 +168,8 @@ function ServicesPreview({ location }: ServicesPreviewProps) {
         <SectionHeading
           title="Our Services"
           subtitle={`Expert HVAC solutions in ${displayLocation}`}
-          alignment="center"
-          textColor="light"
+          centered={true}
+          className="text-white"
         />
         
         <CategoryTabs

@@ -1,170 +1,158 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo, useMemo, Suspense } from 'react';
+import { useState, useCallback, useMemo, memo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { LocationProvider } from '@/contexts/LocationContext';
-import useLocationDetection from '@/hooks/useLocationDetection';
+import { defaultLocation, ServiceLocation } from '@/utils/locationUtils';
+import { getLocationByName } from '@/utils/getLocationByName';
+import HeroSection from '@/components/HeroSection';
 import PageLayout from '@/components/PageLayout';
 
-// Only import critical above-the-fold components directly
-import HeroSection from './HeroSectionFixed';
-import LocationPrompt from '@/components/LocationPrompt';
+// Import non-interactive components directly
+import ServicesPreview from '@/components/ServicesPreview';
 
-// Import types
-import { ServiceLocation } from '@/utils/locationUtils';
-import { convertToLocationSlug } from '@/utils/location';
+// Dynamic import for client-side interactive components
+const ClientLocationManager = dynamic(() => import('./client/ClientLocationManager'), {
+  ssr: false // Disable SSR for geolocation components to avoid hydration issues
+});
 
-// Create lightweight fallback components to reduce TBT
-const SectionSkeleton = memo(() => (
-  <div className="py-12 animate-pulse bg-navy-light">
+// Aggressively code-split non-critical components to reduce mobile TBT
+const TestimonialsSection = dynamic(() => import('./TestimonialsSection'), {
+  loading: () => <SectionSkeleton />
+});
+
+const WhyChooseUs = dynamic(() => import('./WhyChooseUs'), {
+  loading: () => <SectionSkeleton />
+});
+
+const PartnerLogos = dynamic(() => import('./PartnerLogos'), {
+  loading: () => <SectionSkeleton />
+});
+
+const CTASection = dynamic(() => import('./CTASection'), {
+  loading: () => <SectionSkeleton />
+});
+
+// Import Contact Section - verify this component exists in your codebase
+const ContactSection = dynamic(() => import('./ContactSection'), {
+  loading: () => <ContactSectionSkeleton />
+});
+
+// Ultra-lightweight skeleton components - pure HTML with no animations on mobile
+const SectionSkeleton = () => (
+  <div className="py-12 bg-navy-light">
     <div className="container mx-auto px-4">
       <div className="h-8 bg-slate-200/20 rounded w-1/4 mx-auto mb-6"></div>
       <div className="h-4 bg-slate-200/20 rounded w-2/4 mx-auto mb-10"></div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array(4).fill(0).map((_, i) => (
+        {[1, 2, 3, 4].map((i) => (
           <div key={i} className="h-40 bg-slate-200/10 rounded"></div>
         ))}
       </div>
     </div>
   </div>
-));
+);
 
-// Dynamically import with aggressive optimization strategies 
-// Reduce JavaScript parsing overhead with granular code splitting
-const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { 
-  ssr: true,
-  loading: () => <SectionSkeleton />
-});
+const ContactSectionSkeleton = () => (
+  <section className="py-16 bg-navy-dark">
+    <div className="container mx-auto px-4">
+      <div className="h-8 bg-navy-light/30 w-2/3 max-w-md rounded mb-8"></div>
+      <div className="h-4 bg-navy-light/20 w-full max-w-lg rounded mb-4"></div>
+      <div className="h-4 bg-navy-light/20 w-3/4 max-w-lg rounded mb-12"></div>
+      <div className="h-12 bg-navy-light/30 w-32 rounded"></div>
+    </div>
+  </section>
+);
 
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
-  ssr: false, // Defer this non-critical section to reduce TBT
-  loading: () => <SectionSkeleton />
-});
+type ClientHomeContentProps = {
+  initialLocation?: string;
+};
 
-const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { 
-  ssr: false, // Defer to reduce initial JavaScript execution
-  loading: () => <SectionSkeleton />
-});
-
-const CTASection = dynamic(() => import('@/components/CTASection'), { 
-  ssr: true,
-  loading: () => <SectionSkeleton />
-});
-
-const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { 
-  ssr: false, // Non-critical component, can be loaded later
-  loading: () => <SectionSkeleton />
-});
-
-type HomeContentProps = { defaultLocation: ServiceLocation };
-
-// Main home content component - optimized for performance
-const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentProps) {
-  // Use the client-side location detection hook directly like ServicesList does
-  const { userLocation: clientLocation, isLocating } = useLocationDetection();
+/**
+ * Mobile-optimized home content component using Next.js App Router patterns
+ * 
+ * This component follows the latest Vercel best practices for reducing TBT on mobile devices:
+ * 1. Uses the Server Components architecture for static content
+ * 2. Isolates client-side JavaScript to small interactive islands
+ * 3. Aggressively code-splits non-critical components
+ * 4. Implements priority-based component loading
+ */
+function ClientHomeContentComponent({ initialLocation }: ClientHomeContentProps) {
+  // Use the default location from server if no initial location is provided
+  const [locationName, setLocationName] = useState(initialLocation || defaultLocation.name);
   
-  // Memoize the location processing to reduce recalculations
-  const processedClientLocation = useMemo(() => {
-    if (!clientLocation) return null;
+  // Memoize location object to avoid recalculations on each render
+  const locationObject = useMemo(() => {
+    const foundLocation = getLocationByName(locationName);
     
-    try {
-      return {
-        name: decodeURIComponent(clientLocation),
-        id: convertToLocationSlug(clientLocation)
-      };
-    } catch (e) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error processing client location:', e);
-      }
-      return {
-        name: clientLocation,
-        id: convertToLocationSlug(clientLocation)
-      };
-    }
-  }, [clientLocation]);
-  
-  // Combine server-side and client-side location data with optimized state updates
-  const [combinedLocation, setCombinedLocation] = useState<{
-    name: string;
-    id: string;
-    isLoading: boolean;
-  }>({ 
-    name: defaultLocation.name, 
-    id: defaultLocation.id,
-    isLoading: true
-  });
-  
-  // Update location when client-side location is detected - optimized for fewer renders
-  useEffect(() => {
-    // Only debug in development to reduce bundle size
-    if (process.env.NODE_ENV === 'development') {
-      if (processedClientLocation) {
-        console.log('HomeContent: Client location detected:', processedClientLocation.name);
-      } else if (!isLocating) {
-        console.log('HomeContent: Using server default location:', defaultLocation.name);
-      }
-    }
+    if (foundLocation) return foundLocation;
     
-    if (processedClientLocation) {
-      setCombinedLocation({
-        name: processedClientLocation.name,
-        id: processedClientLocation.id,
-        isLoading: false
-      });
-    } else if (!isLocating) {
-      setCombinedLocation({
-        name: defaultLocation.name,
-        id: defaultLocation.id,
-        isLoading: false
-      });
-    }
-  }, [processedClientLocation, isLocating, defaultLocation]);
+    // If not found in our predefined locations, create a simple location object
+    return {
+      id: locationName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      name: locationName,
+      displayName: locationName.split(',')[0] || 'Cleveland',
+      state: 'Ohio',
+      stateCode: 'OH',
+      zip: [],
+      coordinates: defaultLocation.coordinates,
+      serviceArea: true,
+      primaryArea: false
+    } as ServiceLocation;
+  }, [locationName]);
   
-  // Memoized callback for location updates
-  const handleLocationUpdated = useCallback(() => {
-    // This will be triggered when the user updates their location
-    // The LocationContext will handle the actual location update
-  }, []);
+  // Extract location name string for components that expect string
+  const locationName2 = locationObject.name;
+  
+  // Handle location updates from the client location manager
+  const handleLocationUpdate = useCallback((newLocation: string) => {
+    if (newLocation && newLocation !== locationName) {
+      setLocationName(newLocation);
+    }
+  }, [locationName]);
 
-  return (
-    <PageLayout>
-      {/* Critical above-the-fold content - loads immediately */}
-      <HeroSection location={combinedLocation.name} isLoading={combinedLocation.isLoading} />
-      <LocationPrompt onLocationUpdated={handleLocationUpdated} />
-      
-      {/* Use Suspense boundaries to prevent JavaScript execution from blocking the main thread */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <ServicesPreview location={combinedLocation.name} />
-      </Suspense>
-
-      {/* Break remaining sections into separate code-split chunks to reduce TBT */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <TestimonialsSection location={combinedLocation.id} />
-      </Suspense>
-
-      <Suspense fallback={<SectionSkeleton />}>
-        <WhyChooseUs />
-      </Suspense>
-
-      <Suspense fallback={<SectionSkeleton />}>
-        <PartnerLogos 
-          title="Brands We Work With" 
-          subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
-        />
-      </Suspense>
-
-      <Suspense fallback={<SectionSkeleton />}>
-        <CTASection location={combinedLocation.name} />
-      </Suspense>
-    </PageLayout>
-  );
-});
-
-// Export the ClientHomeContent component wrapped in memo to prevent unnecessary re-renders
-export default memo(function ClientHomeContent({ defaultLocation }: HomeContentProps) {
   return (
     <LocationProvider>
-      <HomeContent defaultLocation={defaultLocation} />
+      <PageLayout>
+        {/* Critical path content - loads immediately */}
+        <HeroSection location={locationName} />
+        
+        {/* Isolated client component for location detection */}
+        <ClientLocationManager 
+          defaultLocation={locationName} 
+          onLocationUpdate={handleLocationUpdate} 
+        />
+        
+        {/* Static services preview - critical content */}
+        <ServicesPreview location={locationObject} />
+        
+        {/* Non-critical components loaded with Suspense boundaries */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <TestimonialsSection location={locationObject.id || ''} />
+        </Suspense>
+        
+        <Suspense fallback={<SectionSkeleton />}>
+          <WhyChooseUs />
+        </Suspense>
+        
+        <Suspense fallback={<SectionSkeleton />}>
+          <PartnerLogos 
+            title="Brands We Work With" 
+            subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+          />
+        </Suspense>
+        
+        <Suspense fallback={<SectionSkeleton />}>
+          <CTASection location={locationObject.name} />
+        </Suspense>
+        
+        <Suspense fallback={<ContactSectionSkeleton />}>
+          <ContactSection location={locationObject.displayName || locationObject.name} />
+        </Suspense>
+      </PageLayout>
     </LocationProvider>
   );
-});
+}
+
+// Export memoized version to prevent unnecessary re-renders
+export default memo(ClientHomeContentComponent);

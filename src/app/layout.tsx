@@ -1,18 +1,29 @@
-import './globals.css';
-import './mobile-tbt-optimizer.css'; // Import specialized mobile TBT optimization CSS
+import { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import Script from 'next/script';
-import PerformanceOptimizers from '@/components/PerformanceOptimizers';
+import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+// Import client components (without using dynamic imports in Server Components)
+import ClientRootLayout from '../components/client/ClientRootLayout';
 
-export const metadata = {
-  title: 'ProTech HVAC - Heating and Cooling Services',
-  description: 'Professional HVAC services for residential and commercial needs',
+// Use Inter font with a variable name to be consistent with established styling
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter' 
+});
+
+/**
+ * Metadata for the site
+ */
+export const metadata: Metadata = {
+  title: 'ProTech HVAC | Professional Heating & Cooling Services',
+  description: 'ProTech HVAC provides expert heating, cooling, and air quality services throughout Northeast Ohio. Schedule service, request a quote, or learn about our services.',
+  keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Ohio', 'Northeast Ohio'],
 };
 
-// Using PerformanceOptimizers client component instead of direct dynamic imports
-
+/**
+ * Root layout using the established page layout pattern
+ * Following Next.js App Router architecture for mobile optimization
+ */
 export default function RootLayout({
   children,
 }: {
@@ -29,43 +40,21 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Add preload hints for critical resources */}
+        {/* Preload critical assets for better mobile LCP */}
         <link rel="preload" href="/hero-placeholder.jpg" as="image" />
-        
-        {/* Preload critical CSS */}
         <link rel="preload" href="/prism.css" as="style" />
         
-        {/* Critical meta tags to improve performance */}
+        {/* Meta tags for mobile optimization and security */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
+        <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';" />
       </head>
+      
+      {/* Apply the Inter font variable to the body using the established pattern */}
       <body className={`${inter.variable} font-inter`}>
-        {/* Performance optimizers must be the first components to ensure they run early */}
-        <PerformanceOptimizers />
-        
-        {children}
-        
-        {/* Load non-critical scripts with highest possible optimization */}
-        <Script
-          src="/scripts/analytics.js"
-          strategy="lazyOnload" /* More aggressive than afterInteractive */
-          defer
-        />
-        
-        {/* Finely-tuned script loading */}
-        <Script id="performance-marks" strategy="beforeInteractive">
-          {`
-            // Set performance marks to measure TBT
-            performance.mark('app-started');
-            document.addEventListener('DOMContentLoaded', function() {
-              performance.mark('dom-loaded');
-              performance.measure('tbt-measure', 'app-started', 'dom-loaded');
-            });
-            
-            // Optimize rendering by reducing work on the main thread
-            document.documentElement.style.scrollBehavior = 'auto';
-          `}
-        </Script>
+        {/* ClientRootLayout component handles all client-side optimizations */}
+        <ClientRootLayout>
+          {children}
+        </ClientRootLayout>
       </body>
     </html>
   );

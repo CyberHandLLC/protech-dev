@@ -21,17 +21,9 @@ export const metadata: Metadata = {
  * This serves as a shell that can fetch data and pass it to client components
  */
 export default function HomePage() {
-  // Using a complete default location object that satisfies the ServiceLocation type
-  const defaultLocation: ServiceLocation = {
-    id: 'northeast-ohio',
-    name: 'Northeast Ohio',
-    state: 'Ohio',
-    stateCode: 'OH',
-    zip: ['44000'],
-    coordinates: { lat: 41.4993, lng: -81.6944 },
-    serviceArea: true,
-    primaryArea: true
-  };
+  // Simplified to only pass the location name as a string for better mobile performance
+  // This follows React Server Components pattern - server processes data, client renders UI
+  const defaultLocationName = 'Northeast Ohio';
   
-  return <ClientHomeContent defaultLocation={defaultLocation} />;
+  return <ClientHomeContent initialLocation={defaultLocationName} />;
 }

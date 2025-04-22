@@ -22,6 +22,7 @@ export type Coordinates = {
 export type ServiceLocation = {
   id: string;              // Unique identifier (e.g., 'akron-oh')
   name: string;            // City name
+  displayName?: string;    // Display-friendly name (defaults to city name)
   state: string;           // Full state name
   stateCode: string;       // Two-letter state code
   zip: string[];           // Array of zip codes covered
