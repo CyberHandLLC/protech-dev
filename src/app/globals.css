@@ -109,25 +109,34 @@
     100% { transform: translateX(0); }
   }
   
+  /* Optimize animations with GPU-acceleration to reduce TBT */
   .animate-fade-in {
     animation: fadeIn 0.5s ease forwards;
+    will-change: opacity;
+    transform: translateZ(0); /* Force GPU acceleration */
   }
   
   .animate-slide-up {
     animation: slideUp 0.5s ease forwards;
+    will-change: transform;
+    transform: translateZ(0); /* Force GPU acceleration */
   }
   
+  /* Reduce animation complexity to decrease main thread work */
   .animate-marquee {
     animation: marquee 60s linear infinite;
+    will-change: transform;
   }
   
   .animate-marquee-2 {
     animation: marquee2 60s linear infinite;
     animation-delay: -30s;
+    will-change: transform;
   }
   
   .animate-marquee-reverse {
     animation: marquee-reverse 60s linear infinite;
+    will-change: transform;
   }
   
   /* Respect user preferences for reduced motion */
