@@ -21,7 +21,7 @@ interface PartnerLogosProps {
 export default function PartnerLogos({ title = "Trusted by Industry-Leading Brands", subtitle = "" }: PartnerLogosProps) {
   const partnerLogos: PartnerLogo[] = [
     { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 160, height: 40 },
-    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 160, height: 40 },
+    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 180, height: 60 },
     { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 160, height: 40 },
     { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 160, height: 40 },
   ];
@@ -59,7 +59,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className="max-h-10 max-w-[120px] w-auto object-contain drop-shadow-lg brightness-150" 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : 'max-h-10 max-w-[120px]'}`} 
                       priority
                       unoptimized={true}
                     />
@@ -81,7 +81,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className="max-h-10 max-w-[120px] w-auto object-contain drop-shadow-lg brightness-150" 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : 'max-h-10 max-w-[120px]'}`} 
                       unoptimized={true}
                     />
                   </div>
