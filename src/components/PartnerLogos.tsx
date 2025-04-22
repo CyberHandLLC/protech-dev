@@ -22,7 +22,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
   const partnerLogos: PartnerLogo[] = [
     { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 160, height: 40 },
     { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 180, height: 60 },
-    { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 160, height: 40 },
+    { name: 'Steingass', logoPath: '/logos/steingasslogo.svg', width: 400, height: 100 },
     { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 160, height: 40 },
   ];
   
@@ -53,13 +53,13 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                   key={`first-${logo.name}-${index}`}
                   className="inline-flex"
                 >
-                  <div className="h-14 w-36 flex items-center justify-center">
+                  <div className="h-20 w-48 flex items-center justify-center">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : 'max-h-10 max-w-[120px]'}`} 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-16 max-w-[200px]' : 'max-h-10 max-w-[120px]'}`} 
                       priority
                       unoptimized={true}
                     />
@@ -75,13 +75,13 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                   key={`second-${logo.name}-${index}`}
                   className="inline-flex"
                 >
-                  <div className="h-14 w-36 flex items-center justify-center">
+                  <div className="h-20 w-48 flex items-center justify-center">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : 'max-h-10 max-w-[120px]'}`} 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-16 max-w-[200px]' : 'max-h-10 max-w-[120px]'}`} 
                       unoptimized={true}
                     />
                   </div>
