@@ -90,8 +90,16 @@ export async function generateMetadata(
   }
 
   // Format location for display
-  // Use a more robust method to handle various location formats
-  const locationDisplay = location
+  // First decode any URL-encoded characters that might be in the location
+  let decodedLocation;
+  try {
+    decodedLocation = decodeURIComponent(location);
+  } catch (e) {
+    decodedLocation = location;
+  }
+  
+  // Convert from slug format to readable format
+  const locationDisplay = decodedLocation
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -119,8 +127,16 @@ export default function ServicePage({ params }: ServicePageProps) {
   }
 
   // Format location for display
-  // Use a more robust method to handle various location formats
-  const locationDisplay = location
+  // First decode any URL-encoded characters that might be in the location
+  let decodedLocation;
+  try {
+    decodedLocation = decodeURIComponent(location);
+  } catch (e) {
+    decodedLocation = location;
+  }
+  
+  // Convert from slug format to readable format
+  const locationDisplay = decodedLocation
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');

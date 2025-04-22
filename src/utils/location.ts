@@ -43,12 +43,23 @@ export function getDefaultLocation(): string {
  * Convert a full location name to its normalized form
  * Example: "Cleveland, OH" -> "cleveland-oh"
  * Example: "Lewis Center, OH" -> "lewis-center-oh"
+ * Example: Handles "Lewis%20Center" -> "lewis-center"
  */
 export function convertToLocationSlug(locationName: string): string {
   if (!locationName) return 'northeast-ohio';
   
-  // First trim any whitespace
-  const trimmed = locationName.trim();
+  // First decode any URL-encoded characters (like %20 for spaces)
+  let decodedName;
+  try {
+    // Try to decode in case the name is URL-encoded
+    decodedName = decodeURIComponent(locationName);
+  } catch (e) {
+    // If decoding fails, use the original
+    decodedName = locationName;
+  }
+  
+  // Next, trim any whitespace
+  const trimmed = decodedName.trim();
   
   // Convert to lowercase and replace spaces and other non-alphanumeric characters with hyphens
   // Specifically handle multiple spaces and special characters properly
