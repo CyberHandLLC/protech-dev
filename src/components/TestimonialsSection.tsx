@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, TouchEvent } from 'react';
 import Image from 'next/image';
 import Section from './ui/Section';
 import SectionHeading from './ui/SectionHeading';
@@ -203,10 +203,10 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
   return (
     <Section className="bg-gradient-to-br from-navy to-dark-blue">
       <Container>
-        <SectionHeading
+        <SectionHeading 
           title="What Our Customers Say"
           subtitle={`Read reviews from real customers in ${decodedLocation} who have experienced our exceptional service firsthand.`}
-          align="center"
+          centered={true}
           className="mb-8 sm:mb-12"
         />
         
@@ -285,6 +285,65 @@ function TestimonialCarousel({
   onPrev,
   onNext
 }: TestimonialCarouselProps) {
+  // For touch/swipe detection
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState<number>(0);
+  
+  // Minimum swipe distance (in px) and timing variables
+  const minSwipeDistance = 30;
+  const swipeTimeout = useRef<NodeJS.Timeout | null>(null);
+  
+  // Handle touch events
+  const handleTouchStart = (e: TouchEvent) => {
+    // Prevent default behavior to ensure smooth swiping
+    if (testimonials.length > 1) {
+      e.preventDefault();
+    }
+    setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(null);
+    setIsSwiping(true);
+    setSwipeDirection(0);
+  };
+  
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isSwiping || touchStart === null) return;
+    
+    const currentX = e.targetTouches[0].clientX;
+    setTouchEnd(currentX);
+    
+    // Calculate and set current swipe direction for visual feedback
+    const currentDirection = touchStart - currentX;
+    setSwipeDirection(currentDirection);
+  };
+  
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      onNext();
+    } else if (isRightSwipe) {
+      onPrev();
+    }
+    
+    // Reset values
+    setTouchStart(null);
+    setTouchEnd(null);
+    setIsSwiping(false);
+    setSwipeDirection(0);
+    
+    // Clear any pending timeouts
+    if (swipeTimeout.current) {
+      clearTimeout(swipeTimeout.current);
+      swipeTimeout.current = null;
+    }
+  };
+  
   if (!testimonials || testimonials.length === 0) {
     return <EmptyTestimonialState />;
   }
@@ -295,11 +354,22 @@ function TestimonialCarousel({
       <div className="md:flex min-h-[400px]">
         {/* Large Featured Testimonial */}
         <div className="md:w-2/3 p-6 md:p-10 relative overflow-hidden">
-          <div className="relative min-h-[330px] md:min-h-auto">
+          <div 
+            className="relative min-h-[330px] md:min-h-auto"
+            style={{ touchAction: 'none' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
             {testimonials.map((testimonial, index) => (
               <div 
                 key={testimonial.id}
                 className={`transition-all duration-300 ${index === activeIndex ? 'opacity-100 translate-x-0 relative' : 'opacity-0 translate-x-16 absolute inset-0 pointer-events-none'}`}
+                style={{
+                  transform: index === activeIndex && swipeDirection !== 0 ? 
+                    `translateX(${-swipeDirection * 0.15}px)` : undefined
+                }}
                 role="tabpanel"
                 id={`testimonial-${index}`}
                 aria-labelledby={`testimonial-tab-${index}`}
