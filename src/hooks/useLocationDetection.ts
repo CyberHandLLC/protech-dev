@@ -3,22 +3,12 @@
 import { useState, useEffect } from 'react';
 import { getDefaultLocation } from '@/utils/location';
 
-// Sample location mapping - in a real app, this would connect to a geolocation API
-const locationMapping: Record<string, string> = {
-  'akron': 'Akron, OH',
-  'cleveland': 'Cleveland, OH',
-  'canton': 'Canton, OH',
-  'strongsville': 'Cleveland, OH',
-  'medina': 'Akron, OH',
-  'stow': 'Akron, OH'
-};
-
 /**
- * Hook for detecting user location
+ * Hook for detecting user location using Vercel's geolocation headers
  * 
- * This is a simplified mock implementation for demonstration purposes.
- * In a real application, this would use the browser's Geolocation API 
- * and potentially a service like Google Maps Geocoding API.
+ * This hook queries our server-side API route which uses Vercel's
+ * geolocation headers to determine the user's location without
+ * requiring permissions. Falls back to a default location if needed.
  */
 export default function useLocationDetection() {
   const [userLocation, setUserLocation] = useState<string | null>(null);
@@ -30,53 +20,20 @@ export default function useLocationDetection() {
       setIsLocating(true);
       
       try {
-        // This simulates a geolocation API request with a delay
-        // In a real app, we would use the browser's geolocation API
-        // and then geocode the coordinates to get the city/state
-        const defaultLocation = 'akron';
+        // Call our server-side API route that uses Vercel's geolocation
+        const response = await fetch('/api/geolocation');
         
-        setTimeout(() => {
-          setUserLocation(locationMapping[defaultLocation] || getDefaultLocation());
-          setIsLocating(false);
-        }, 1000);
+        if (!response.ok) {
+          throw new Error('Failed to fetch location data');
+        }
         
-        // Example of how this might work in production with real geolocation:
-        /*
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            
-            // Call a geocoding service or your own API
-            const response = await fetch(`/api/geocode?lat=${latitude}&lng=${longitude}`);
-            
-            if (!response.ok) {
-              throw new Error('Failed to geocode coordinates');
-            }
-            
-            const data = await response.json();
-            setUserLocation(data.city ? `${data.city}, ${data.state}` : getDefaultLocation());
-          } catch (error) {
-            console.error('Error geocoding location:', error);
-            setError('Unable to determine exact location');
-            setUserLocation(getDefaultLocation());
-          } finally {
-            setIsLocating(false);
-          }
-        }, (geoError) => {
-          console.error('Geolocation error:', geoError);
-          setError('Location access denied or unavailable');
-          setUserLocation(getDefaultLocation());
-          setIsLocating(false);
-        }, {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 0
-        });
-        */
+        const data = await response.json();
+        setUserLocation(data.location || getDefaultLocation());
       } catch (err) {
         console.error('Failed to get user location', err);
         setError('Unable to detect location');
         setUserLocation(getDefaultLocation());
+      } finally {
         setIsLocating(false);
       }
     };

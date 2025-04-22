@@ -5,6 +5,7 @@ import CTASection from '@/components/CTASection';
 import ServicesList from '@/components/services/ServicesList';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { serviceCategories } from '@/data/serviceData';
+import { getUserLocationFromHeaders } from '@/utils/serverLocation';
 
 export const metadata: Metadata = {
   title: 'ProTech HVAC Services | Residential & Commercial HVAC Solutions',
@@ -27,6 +28,9 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
   const filteredCategories = categoryFilter === 'all' 
     ? serviceCategories 
     : [currentCategory];
+    
+  // Get user's location from server headers for location-based service content
+  const userLocation = getUserLocationFromHeaders();
   
   return (
     <PageLayout>
@@ -71,6 +75,7 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
                 <ServicesList
                   key={category.id}
                   category={category}
+                  userLocation={userLocation}
                 />
               ))}
             </Suspense>
@@ -78,7 +83,7 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
         </div>
       </main>
       
-      <CTASection />
+      <CTASection location={userLocation.name} />
     </PageLayout>
   );
 }
