@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LocationProvider, useLocation } from '@/contexts/LocationContext';
-import { ServiceLocation } from '@/utils/locationUtils';
+import useLocationDetection from '@/hooks/useLocationDetection';
 import PageLayout from '@/components/PageLayout';
 import HeroSection from '@/components/HeroSection';
 import ServicesPreview from '@/components/ServicesPreview';
@@ -10,50 +9,71 @@ import TestimonialsSection from '@/components/TestimonialsSection';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import CTASection from '@/components/CTASection';
 import PartnerLogos from '@/components/PartnerLogos';
-import LocationPrompt from '@/components/LocationPrompt';
+import { ServiceLocation } from '@/utils/locationUtils';
+import { convertToLocationSlug } from '@/utils/location';
 
 type HomeContentProps = { defaultLocation: ServiceLocation };
 
 function HomeContent({ defaultLocation }: HomeContentProps) {
-  const { nearestServiceLocation, isLoading, permissionStatus } = useLocation();
-  const [locationState, setLocationState] = useState(nearestServiceLocation || defaultLocation);
+  // Use the client-side location detection hook directly like ServicesList does
+  const { userLocation: clientLocation, isLocating } = useLocationDetection();
   
-  // Update locationState whenever nearestServiceLocation changes
+  // Combine server-side and client-side location data
+  const [combinedLocation, setCombinedLocation] = useState<{
+    name: string;
+    id: string;
+    isLoading: boolean;
+  }>({ 
+    name: defaultLocation.name, 
+    id: defaultLocation.id,
+    isLoading: true
+  });
+  
+  // Update location when client-side location is detected
   useEffect(() => {
-    if (nearestServiceLocation) {
-      console.log('HomeContent: Location updated to', nearestServiceLocation.name);
-      setLocationState(nearestServiceLocation);
+    // If there's a client-side detected location, use it
+    if (clientLocation) {
+      console.log('HomeContent: Client location detected:', clientLocation);
+      
+      // Format location name and ID properly
+      let locationName = clientLocation;
+      try {
+        locationName = decodeURIComponent(clientLocation);
+      } catch (e) {
+        console.error('Error decoding location:', e);
+      }
+      
+      // Create location ID for testimonials
+      const locationId = convertToLocationSlug(clientLocation);
+      
+      setCombinedLocation({
+        name: locationName,
+        id: locationId,
+        isLoading: false
+      });
+    } else if (!isLocating) {
+      // If not detecting location and no client location, use the server default
+      console.log('HomeContent: Using server default location:', defaultLocation.name);
+      setCombinedLocation({
+        name: defaultLocation.name,
+        id: defaultLocation.id,
+        isLoading: false
+      });
     }
-  }, [nearestServiceLocation]);
-  
-  // Force refresh when explicit location update occurs
-  const handleLocationUpdate = () => {
-    console.log('HomeContent: Location manually updated');
-    // This will cause a re-render with the latest location
-    setLocationState(prevState => ({ ...prevState }));
-  };
+  }, [clientLocation, isLocating, defaultLocation]);
 
   return (
     <PageLayout>
-      <HeroSection location={locationState.name} isLoading={isLoading} />
-      <ServicesPreview location={locationState.name} />
-      <TestimonialsSection location={locationState.id} />
+      <HeroSection location={combinedLocation.name} isLoading={combinedLocation.isLoading} />
+      <ServicesPreview location={combinedLocation.name} />
+      <TestimonialsSection location={combinedLocation.id} />
       <WhyChooseUs />
       <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
-      <CTASection location={locationState.name} />
-      
-      {/* Only display location prompt if not already showing loading state elsewhere */}
-      {!isLoading && permissionStatus !== 'granted' && (
-        <LocationPrompt onLocationUpdated={handleLocationUpdate} />
-      )}
+      <CTASection location={combinedLocation.name} />
     </PageLayout>
   );
 }
 
 export default function ClientHomeContent({ defaultLocation }: HomeContentProps) {
-  return (
-    <LocationProvider>
-      <HomeContent defaultLocation={defaultLocation} />
-    </LocationProvider>
-  );
+  return <HomeContent defaultLocation={defaultLocation} />;
 }
