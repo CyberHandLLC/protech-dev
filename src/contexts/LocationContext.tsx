@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { 
   UserLocation, 
   ServiceLocation,
@@ -9,13 +9,17 @@ import {
   findNearestLocation
 } from '@/utils/locationUtils';
 
+const PERMISSION_CHECK_INTERVAL = 5000; // Check for permission changes every 5 seconds
+
 interface LocationContextType {
   userLocation: UserLocation | null;
   nearestServiceLocation: ServiceLocation;
   isLoading: boolean;
   error: string | null;
+  permissionStatus: PermissionState | null;
   setManualLocation: (location: UserLocation) => void;
   refreshLocation: () => Promise<void>;
+  promptForLocation: () => Promise<boolean>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -25,11 +29,52 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [nearestServiceLocation, setNearestServiceLocation] = useState<ServiceLocation>(defaultLocation);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionState | null>(null);
 
-  // Initialize location on component mount
+  // Check for geolocation permission changes
+  const checkPermissionStatus = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.permissions) return;
+    
+    try {
+      const permission = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+      
+      if (permission.state !== permissionStatus) {
+        setPermissionStatus(permission.state);
+        console.log('Geolocation permission status changed to:', permission.state);
+        
+        // If permission was just granted, refresh the location
+        if (permission.state === 'granted' && permissionStatus === 'prompt') {
+          refreshLocation();
+        }
+      }
+      
+      // Set up a listener for permission changes
+      permission.onchange = function() {
+        setPermissionStatus(permission.state);
+        console.log('Permission changed to:', permission.state);
+        
+        // If permission was just granted, refresh the location
+        if (permission.state === 'granted') {
+          refreshLocation();
+        }
+      };
+    } catch (err) {
+      console.error('Error checking permission status:', err);
+    }
+  }, [permissionStatus]);
+  
+  // Initialize location on component mount and set up permission checking
   useEffect(() => {
     initializeLocation();
-  }, []);
+    
+    // Initial permission check
+    checkPermissionStatus();
+    
+    // Set up interval to periodically check permission status
+    const intervalId = setInterval(checkPermissionStatus, PERMISSION_CHECK_INTERVAL);
+    
+    return () => clearInterval(intervalId);
+  }, [checkPermissionStatus]);
 
   async function initializeLocation() {
     setIsLoading(true);
@@ -100,6 +145,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       const currentLocation = await getUserLocation();
       
       if (currentLocation) {
+        console.log('Location refresh successful:', currentLocation);
         setUserLocation(currentLocation);
         saveUserLocation(currentLocation);
         
@@ -109,6 +155,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             currentLocation.coordinates.lng
           );
           setNearestServiceLocation(nearest);
+          console.log('Updated nearest service location to:', nearest.name);
         }
       } else {
         throw new Error('Unable to determine your location.');
@@ -120,14 +167,63 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }
+  
+  // Explicitly prompt the user for location permission
+  async function promptForLocation(): Promise<boolean> {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      return false;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // This will trigger the browser permission prompt if it hasn't been decided yet
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+      
+      // If we get here, permission was granted, update the location
+      const { latitude, longitude } = position.coords;
+      
+      // Find the nearest service location
+      const nearestLocation = findNearestLocation(latitude, longitude);
+      
+      // Create and save user location
+      const newLocation: UserLocation = {
+        city: nearestLocation.name,
+        state: nearestLocation.state,
+        stateCode: nearestLocation.stateCode,
+        coordinates: { lat: latitude, lng: longitude }
+      };
+      
+      setUserLocation(newLocation);
+      saveUserLocation(newLocation);
+      setNearestServiceLocation(nearestLocation);
+      setPermissionStatus('granted');
+      
+      console.log('Location permission granted, updated to:', nearestLocation.name);
+      return true;
+    } catch (err) {
+      console.error('Error prompting for location:', err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const value = {
     userLocation,
     nearestServiceLocation,
     isLoading,
     error,
+    permissionStatus,
     setManualLocation,
-    refreshLocation
+    refreshLocation,
+    promptForLocation
   };
 
   return (
