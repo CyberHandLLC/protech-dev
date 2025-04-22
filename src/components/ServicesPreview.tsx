@@ -6,8 +6,8 @@ import Section from './ui/Section';
 import Container from './ui/Container';
 import SectionHeading from './ui/SectionHeading';
 import IconFeature from './ui/IconFeature';
-import { convertToLocationSlug } from '../utils/location';
-import useLocationDetection from '../hooks/useLocationDetection';
+import { convertToLocationSlug } from '@/utils/location';
+import useLocationDetection from '@/hooks/useLocationDetection';
 
 /**
  * Service data interface
@@ -210,7 +210,7 @@ function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceG
           icon={<span className="text-2xl">{service.icon}</span>}
           title={service.name}
           description={service.description}
-          href={`/services/${categoryId}/${service.id}/${locationSlug.replace(/%20/g, '-')}`}
+          href={`/services/${categoryId}/${service.id}/${locationSlug}`}
           interactive
         />
       ))}

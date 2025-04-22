@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { ServiceLocation, getLocationById, defaultLocation } from './locationUtils';
+import { convertToLocationSlug } from './location';
 
 /**
  * Convert a detected city and region to a ServiceLocation object
@@ -11,18 +12,11 @@ function createServiceLocation(city: string, region: string): ServiceLocation {
     return knownLocation;
   }
   
-  // Create a URL-friendly location ID
-  const citySlug = city.toLowerCase()
-    .replace(/\s+/g, '-')      // Replace spaces with hyphens
-    .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
-    .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
-    
-  const regionSlug = region.toLowerCase()
-    .replace(/\s+/g, '-')       
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
-    
   // Create a custom ServiceLocation for unknown locations
+  // Use the convertToLocationSlug function to ensure consistent URL formatting
+  const citySlug = convertToLocationSlug(city);
+  const regionSlug = region.toLowerCase();
+  
   return {
     id: `${citySlug}-${regionSlug}`,
     name: city,
@@ -49,13 +43,10 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
       cityLower.includes('westerville') || 
       cityLower.includes('delaware') || 
       cityLower.includes('powell')) {
-    // Create URL-friendly location ID
-    const citySlug = city.toLowerCase()
-      .replace(/\s+/g, '-')      // Replace spaces with hyphens
-      .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
-      .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
-    
     // Return a Columbus area ServiceLocation
+    // Use the convertToLocationSlug function to ensure consistent URL formatting
+    const citySlug = convertToLocationSlug(city);
+    
     return {
       id: `${citySlug}-${regionLower}`,
       name: city,
@@ -68,8 +59,8 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
     };
   }
   
-  // Try to find in known locations by ID
-  const locationId = `${cityLower.replace(/\s+/g, '-')}-${regionLower}`;
+  // Try to find in known locations by ID using the consistent slug converter
+  const locationId = `${convertToLocationSlug(city)}-${regionLower}`;
   return getLocationById(locationId) || null;
 }
 

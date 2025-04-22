@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Service } from '@/data/serviceData';
+import { convertToLocationSlug } from '@/utils/location';
 
 export default function ServiceCard({ 
   service, 
@@ -27,6 +28,7 @@ export default function ServiceCard({
           <p className="text-sm text-ivory/80 mb-2">Available in:</p>
           <ul className="space-y-1.5">
             {locations.map((location) => {
+              // Convert slug format to display format (preserve original location for href)
               const formattedLocation = location
                 .split('-')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))

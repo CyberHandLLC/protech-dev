@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { quickLinks, legalLinks, socialPlatforms, serviceAreas, serviceCategories } from '@/data/footerData';
+import { convertToLocationSlug } from '@/utils/location';
 
 type ContactItem = {
   icon: string;
@@ -96,7 +97,7 @@ export default function Footer() {
                   {category.services.map((service) => (
                     <li key={service}>
                       <Link 
-                        href={`/services/${category.name.toLowerCase()}/${service.toLowerCase().replace(/\s+/g, '-')}/akron-oh`} 
+                        href={`/services/${convertToLocationSlug(category.name)}/${convertToLocationSlug(service)}/akron-oh`} 
                         className="text-teal-200 text-sm hover:text-white transition-colors"
                       >
                         {service}
@@ -134,7 +135,7 @@ export default function Footer() {
                   {area.cities.map((city) => (
                     <li key={city}>
                       <Link 
-                        href={`/locations/${city.toLowerCase()}-oh`}
+                        href={`/locations/${convertToLocationSlug(`${city}, OH`)}`}
                         className="text-teal-200 text-sm hover:text-white transition-colors"
                       >
                         {city}, OH

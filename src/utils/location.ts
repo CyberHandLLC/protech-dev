@@ -40,28 +40,30 @@ export function getDefaultLocation(): string {
 }
 
 /**
- * Convert a string like "Akron, OH" into a URL-friendly slug like "akron-oh"
+ * Convert a full location name to its normalized form
+ * Example: "Cleveland, OH" -> "cleveland-oh"
+ * Example: "Lewis Center, OH" -> "lewis-center-oh"
  */
-export function convertToLocationSlug(locationString: string): string {
-  if (!locationString) return 'northeast-ohio';
+export function convertToLocationSlug(locationName: string): string {
+  if (!locationName) return 'northeast-ohio';
   
-  // Split by comma and get city and state portions
-  const parts = locationString.split(',');
-  const city = parts[0]?.trim() || 'Northeast';
-  const state = parts[1]?.trim() || 'Ohio';
+  // First trim any whitespace
+  const trimmed = locationName.trim();
   
-  // Create URL-friendly slug by replacing spaces and special characters
-  const citySlug = city.toLowerCase()
-    .replace(/\s+/g, '-')      // Replace spaces with hyphens
-    .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
-    .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
-    
-  const stateSlug = state.toLowerCase()
-    .replace(/\s+/g, '-')       
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-');
+  // Convert to lowercase and replace spaces and other non-alphanumeric characters with hyphens
+  // Specifically handle multiple spaces and special characters properly
+  const slug = trimmed
+    .toLowerCase()
+    // Replace spaces with hyphens first to ensure proper handling of multi-word cities
+    .replace(/\s+/g, '-')
+    // Replace any other non-alphanumeric characters
+    .replace(/[^a-z0-9\-]+/g, '-')
+    // Remove any duplicate hyphens
+    .replace(/-+/g, '-')
+    // Remove leading or trailing hyphens
+    .replace(/^-|-$/g, '');
   
-  return `${citySlug}-${stateSlug}`;
+  return slug;
 }
 
 /**

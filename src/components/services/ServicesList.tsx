@@ -49,7 +49,7 @@ export default function ServicesList({ category, userLocation: serverLocation }:
               {service.description || `Professional ${service.name.toLowerCase()} services tailored to your needs.`}
             </p>
             <a 
-              href={`/services/${category.id}/${service.id}/${locationSlug.replace(/%20/g, '-')}`}
+              href={`/services/${category.id}/${service.id}/${locationSlug}`}
               className="inline-flex items-center text-red-light font-medium hover:text-red transition-colors"
             >
               <span className="mr-2">View Details</span>
