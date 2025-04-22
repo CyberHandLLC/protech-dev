@@ -110,7 +110,7 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
       <Container>
         <SectionHeading
           title="Our Services"
-          subtitle={`Professional HVAC solutions for your home and business in ${displayLocation}. Our certified technicians provide expert service for all your heating and cooling needs.`}
+          subtitle={`Professional HVAC solutions for your home and business in ${displayLocation}.`}
           centered
         />
         
@@ -153,25 +153,18 @@ interface CategoryTabsProps {
 
 function CategoryTabs({ categories, activeCategory, onCategoryChange }: CategoryTabsProps) {
   return (
-    <div className="mb-8">
-      <div 
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide" 
-        role="tablist"
-        aria-label="Service Categories"
-      >
+    <div className="mb-8 md:mb-12">
+      <div className="flex justify-center border-b-2 border-dark-blue-light/50 mb-6 md:mb-8 overflow-x-auto pb-1 hide-scrollbar" role="tablist">
         {categories.map((category) => (
           <button
             key={category.id}
-            onClick={() => onCategoryChange(category.id)}
-            className={`px-6 py-3 rounded-full transition-all text-sm md:text-base font-medium whitespace-nowrap ${
-              activeCategory === category.id 
-                ? 'bg-red text-white shadow-md' 
-                : 'text-ivory hover:text-white'
-            }`}
-            role="tab"
-            aria-selected={activeCategory === category.id}
-            aria-controls={`${category.id}-panel`}
             id={`${category.id}-tab`}
+            role="tab"
+            aria-controls={`${category.id}-panel`}
+            aria-selected={activeCategory === category.id}
+            onClick={() => onCategoryChange(category.id)}
+            className={`px-4 sm:px-6 py-2 md:py-3 text-base md:text-lg font-medium transition-colors focus:outline-none whitespace-nowrap
+              ${activeCategory === category.id ? 'text-white border-b-2 border-red -mb-0.5' : 'text-white/60 hover:text-white/80'}`}
             type="button"
           >
             {category.name}
@@ -213,7 +206,7 @@ function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceG
   // Use our reusable IconFeature component for consistent design
   return (
     <div 
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-12"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-12"
       role="tabpanel" 
       id={`${categoryId}-panel`}
       aria-labelledby={`${categoryId}-tab`}
