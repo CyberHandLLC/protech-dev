@@ -82,8 +82,9 @@ export const serviceLocations: ServiceLocation[] = [
 
 /**
  * Default location to use if geolocation fails
+ * Using Cleveland as our default location instead of Akron
  */
-export const defaultLocation: ServiceLocation = serviceLocations[0];
+export const defaultLocation: ServiceLocation = serviceLocations.find(l => l.id === 'cleveland-oh') || serviceLocations[0];
 
 // Location Detection
 // ---------------------------------------------------------------------------
