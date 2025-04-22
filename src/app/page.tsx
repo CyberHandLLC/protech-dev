@@ -1,11 +1,22 @@
 // Page is a Server Component by default in Next.js App Router
-import ClientHomeContent from '@/components/ClientHomeContent';
 import type { Metadata } from 'next';
-import { ServiceLocation } from '@/utils/locationUtils';
+import PageLayout from '@/components/PageLayout';
+import HeroSection from '@/components/HeroSection';
+import ServicesPreview from '@/components/ServicesPreview';
+import { defaultLocation } from '@/utils/locationUtils';
 
-// Mark this route as dynamic to handle header usage
+// Import client components (only used for interactive parts)
+import ClientLocationWrapper from '@/components/client/ClientLocationWrapper';
+import ClientTestimonials from '@/components/client/ClientTestimonials';
+import ClientCTASection from '@/components/client/ClientCTASection';
+
+// Import static sections that don't need client interactivity
+import WhyChooseUsSection from '@/components/WhyChooseUsSection';
+import PartnerLogosSection from '@/components/PartnerLogosSection';
+import ContactSection from '@/components/ContactSection';
+
+// Mark as dynamic to handle location changes
 export const dynamic = 'force-dynamic';
-
 
 /**
  * Metadata for the home page
@@ -13,17 +24,48 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'ProTech HVAC | Professional Heating & Cooling Services',
   description: 'ProTech HVAC provides expert heating, cooling, and air quality services throughout Northeast Ohio. Schedule service, request a quote, or learn about our services.',
-  keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Ohio', 'Northeast Ohio'], // Dynamic keywords based on location
+  keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Ohio', 'Northeast Ohio'],
 };
 
 /**
  * Home page - Server Component
- * This serves as a shell that can fetch data and pass it to client components
+ * Follows the React Server Components pattern for optimal TBT performance on mobile
+ * 
+ * This component renders most content on the server to reduce client-side JavaScript
+ * Only wraps interactive elements in client components
  */
 export default function HomePage() {
-  // Simplified to only pass the location name as a string for better mobile performance
-  // This follows React Server Components pattern - server processes data, client renders UI
+  // Server-side processing with minimal client JS
   const defaultLocationName = 'Northeast Ohio';
   
-  return <ClientHomeContent initialLocation={defaultLocationName} />;
+  return (
+    <PageLayout>
+      {/* Server Component - rendered on the server with no client JS */}
+      <HeroSection location={defaultLocationName} />
+      
+      {/* Client Component Wrapper - only for location detection */}
+      <ClientLocationWrapper defaultLocation={defaultLocationName} />
+      
+      {/* Server Component - static content, no client JS */}
+      <ServicesPreview location={defaultLocationName} />
+      
+      {/* Server Component - static content */}
+      <WhyChooseUsSection />
+      
+      {/* Client Component - for testimonial interactivity */}
+      <ClientTestimonials location={defaultLocationName} />
+      
+      {/* Server Component - static content */}
+      <PartnerLogosSection 
+        title="Brands We Work With" 
+        subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+      />
+      
+      {/* Client Component - for call-to-action interactivity */}
+      <ClientCTASection location={defaultLocationName} />
+      
+      {/* Server Component - static content */}
+      <ContactSection location={defaultLocationName} />
+    </PageLayout>
+  );
 }
