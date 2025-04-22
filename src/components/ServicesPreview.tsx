@@ -7,7 +7,7 @@ import Container from './ui/Container';
 import SectionHeading from './ui/SectionHeading';
 import IconFeature from './ui/IconFeature';
 import { convertToLocationSlug } from '../utils/location';
-import { useLocationDetection } from '../hooks/useLocationDetection';
+import useLocationDetection from '../hooks/useLocationDetection';
 
 /**
  * Service data interface
