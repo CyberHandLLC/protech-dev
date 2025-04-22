@@ -22,7 +22,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
   const partnerLogos: PartnerLogo[] = [
     { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 160, height: 40 },
     { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 180, height: 60 },
-    { name: 'Steingass', logoPath: '/logos/steingasslogo.svg', width: 600, height: 150 },
+    { name: 'Steingass', logoPath: '/logos/steingasslogo.svg', width: 900, height: 225 },
     { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 160, height: 40 },
   ];
   
@@ -59,7 +59,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-24 max-w-[280px]' : 'max-h-10 max-w-[120px]'}`} 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-24 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-36 max-w-[350px]' : 'max-h-15 max-w-[175px]'}`} 
                       priority
                       unoptimized={true}
                     />
@@ -81,7 +81,7 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-12 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-24 max-w-[280px]' : 'max-h-10 max-w-[120px]'}`} 
+                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-24 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-36 max-w-[350px]' : 'max-h-15 max-w-[175px]'}`} 
                       unoptimized={true}
                     />
                   </div>

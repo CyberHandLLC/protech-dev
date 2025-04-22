@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type WeatherData = {
   temperature: number | null;
@@ -23,7 +24,7 @@ const getWeatherIcon = (temp: number): string => {
   return '❄️';
 };
 
-export default function HeroSection({ 
+function HeroSection({ 
   location, 
   isLoading = false,
   emergencyPhone = '8005554822',
@@ -50,11 +51,13 @@ export default function HeroSection({
     icon: '☀️',
     isLoading: true
   });
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
+  // Optimized to avoid unnecessary dependencies and reduce execution time
   const fetchWeatherData = useCallback(async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // Reduced arbitrary timeout to improve perceived performance
+      await new Promise(resolve => setTimeout(resolve, 500));
       const temp = Math.floor(Math.random() * (95 - 65) + 65);
       
       setWeather({
@@ -70,27 +73,59 @@ export default function HeroSection({
         isLoading: false
       });
     }
-  }, [location]);
+  }, []); // Removed location dependency as it's not directly used
 
+  // Fetch weather data when component mounts or location changes
   useEffect(() => {
-    setWeather(prev => ({ ...prev, isLoading: true }));
-    fetchWeatherData();
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      if (isMounted) setWeather(prev => ({ ...prev, isLoading: true }));
+      await fetchWeatherData();
+    };
+    
+    fetchData();
+    
+    return () => { isMounted = false; };
   }, [location, fetchWeatherData]);
 
+  // Optimize image loading for better LCP
   useEffect(() => {
-    const timer = setTimeout(() => setIsVideoLoaded(true), 500);
-    return () => clearTimeout(timer);
+    // Immediately set the image as loaded to improve initial render speed
+    setIsImageLoaded(true);
+    
+    // Preload the hero image for better LCP
+    if (typeof window !== 'undefined') {
+      const imagePreloader = new window.Image();
+      imagePreloader.src = '/hero-placeholder.jpg';
+    }
   }, []);
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-20 sm:py-0" aria-label="Hero Section">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
-          className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
           role="img"
           aria-label="HVAC service background image"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy/90 to-navy/85"></div>
+          {/* Using Next.js Image for optimized loading - contributes to better LCP */}
+          <div className="relative w-full h-full">
+            <Image 
+              src="/hero-placeholder.jpg" 
+              alt="HVAC services background" 
+              fill 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+              priority={true} /* Mark as LCP candidate */
+              quality={80} /* Reduced quality for faster load */
+              className="object-cover"
+              loading="eager" /* Force eager loading for LCP */
+              fetchPriority="high" /* Use modern fetch priority */
+              placeholder="blur" /* Show a blur placeholder while loading */
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAEAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAHxAAAQQCAgMAAAAAAAAAAAAAAQIDBBEABQYSByFR/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANJ5fyxkuS7hsXtfBzWuMvLfgMKbbbXYKgCfY963QsUKqzeMxgf/2Q==" /* Simple blue blur placeholder */
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy/90 to-navy/85"></div>
+          </div>
         </div>
       </div>
       
@@ -166,7 +201,8 @@ type WeatherDisplayProps = {
   isLoading: boolean;
 };
 
-function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDisplayProps) {
+// Memoize WeatherDisplay to prevent unnecessary re-renders
+const WeatherDisplay = memo(function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDisplayProps) {
   // Decode any URL-encoded characters in the location name
   let displayLocation;
   try {
@@ -190,9 +226,10 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
       </div>
     </div>
   );
-}
+});
 
-function EmergencyBadge() {
+// Memoized component to prevent unnecessary re-renders
+const EmergencyBadge = memo(function EmergencyBadge() {
   return (
     <div className="absolute bottom-4 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block">
       <Link 
@@ -208,9 +245,10 @@ function EmergencyBadge() {
       </Link>
     </div>
   );
-}
+});
 
-function ScrollIndicator() {
+// Memoized ScrollIndicator component to prevent unnecessary re-renders
+const ScrollIndicator = memo(function ScrollIndicator() {
   return (
     <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block" aria-hidden="true">
       <div className="w-6 sm:w-8 h-10 sm:h-12 rounded-full border-2 border-white/50 flex items-start justify-center">
@@ -218,4 +256,7 @@ function ScrollIndicator() {
       </div>
     </div>
   );
-}
+});
+
+// Export memoized HeroSection component
+export default memo(HeroSection);

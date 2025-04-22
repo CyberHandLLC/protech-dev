@@ -1,24 +1,50 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import useLocationDetection from '@/hooks/useLocationDetection';
 import PageLayout from '@/components/PageLayout';
 import HeroSection from '@/components/HeroSection';
-import ServicesPreview from '@/components/ServicesPreview';
-import TestimonialsSection from '@/components/TestimonialsSection';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import CTASection from '@/components/CTASection';
-import PartnerLogos from '@/components/PartnerLogos';
+import LocationPrompt from '@/components/LocationPrompt';
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
 
+// Dynamically import less critical components to improve TBT and LCP
+// These components will load after the initial page render
+const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { ssr: true });
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { ssr: true });
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: true });
+const CTASection = dynamic(() => import('@/components/CTASection'), { ssr: true });
+const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { ssr: true });
+
 type HomeContentProps = { defaultLocation: ServiceLocation };
 
-function HomeContent({ defaultLocation }: HomeContentProps) {
+// Main home content component - optimized for performance
+const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentProps) {
   // Use the client-side location detection hook directly like ServicesList does
-  const { userLocation: clientLocation, isLocating } = useLocationDetection();
+  const { userLocation: clientLocation, isLocating, refreshLocation } = useLocationDetection();
   
-  // Combine server-side and client-side location data
+  // Memoize the location processing to reduce recalculations
+  const processedClientLocation = useMemo(() => {
+    if (!clientLocation) return null;
+    
+    try {
+      return {
+        name: decodeURIComponent(clientLocation),
+        id: convertToLocationSlug(clientLocation)
+      };
+    } catch (e) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error processing client location:', e);
+      }
+      return {
+        name: clientLocation,
+        id: convertToLocationSlug(clientLocation)
+      };
+    }
+  }, [clientLocation]);
+  
+  // Combine server-side and client-side location data with optimized state updates
   const [combinedLocation, setCombinedLocation] = useState<{
     name: string;
     id: string;
@@ -29,51 +55,57 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
     isLoading: true
   });
   
-  // Update location when client-side location is detected
+  // Update location when client-side location is detected - optimized for fewer renders
   useEffect(() => {
-    // If there's a client-side detected location, use it
-    if (clientLocation) {
-      console.log('HomeContent: Client location detected:', clientLocation);
-      
-      // Format location name and ID properly
-      let locationName = clientLocation;
-      try {
-        locationName = decodeURIComponent(clientLocation);
-      } catch (e) {
-        console.error('Error decoding location:', e);
+    // Only debug in development to reduce bundle size
+    if (process.env.NODE_ENV === 'development') {
+      if (processedClientLocation) {
+        console.log('HomeContent: Client location detected:', processedClientLocation.name);
+      } else if (!isLocating) {
+        console.log('HomeContent: Using server default location:', defaultLocation.name);
       }
-      
-      // Create location ID for testimonials
-      const locationId = convertToLocationSlug(clientLocation);
-      
+    }
+    
+    if (processedClientLocation) {
       setCombinedLocation({
-        name: locationName,
-        id: locationId,
+        name: processedClientLocation.name,
+        id: processedClientLocation.id,
         isLoading: false
       });
     } else if (!isLocating) {
-      // If not detecting location and no client location, use the server default
-      console.log('HomeContent: Using server default location:', defaultLocation.name);
       setCombinedLocation({
         name: defaultLocation.name,
         id: defaultLocation.id,
         isLoading: false
       });
     }
-  }, [clientLocation, isLocating, defaultLocation]);
+  }, [processedClientLocation, isLocating, defaultLocation]);
+  
+  // Memoized callback for location permission changes
+  const handleLocationPermission = useCallback(() => {
+    refreshLocation();
+  }, [refreshLocation]);
 
   return (
     <PageLayout>
+      {/* High-priority components load first for better LCP */}
       <HeroSection location={combinedLocation.name} isLoading={combinedLocation.isLoading} />
+      <LocationPrompt onPermissionChange={handleLocationPermission} />
+      
+      {/* Lower-priority components load after for better TBT */}
       <ServicesPreview location={combinedLocation.name} />
       <TestimonialsSection location={combinedLocation.id} />
       <WhyChooseUs />
-      <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
+      <PartnerLogos 
+        title="Brands We Work With" 
+        subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+      />
       <CTASection location={combinedLocation.name} />
     </PageLayout>
   );
-}
+});
 
-export default function ClientHomeContent({ defaultLocation }: HomeContentProps) {
+// Export the ClientHomeContent component wrapped in memo to prevent unnecessary re-renders
+export default memo(function ClientHomeContent({ defaultLocation }: HomeContentProps) {
   return <HomeContent defaultLocation={defaultLocation} />;
-}
+});

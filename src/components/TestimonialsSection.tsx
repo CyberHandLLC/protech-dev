@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, TouchEvent } from 'react';
+import React, { useState, useEffect, useCallback, useRef, TouchEvent, memo, useMemo } from 'react';
 import Image from 'next/image';
 import Section from './ui/Section';
 import SectionHeading from './ui/SectionHeading';
@@ -123,107 +123,153 @@ const reviewPlatforms = [
   { name: 'BBB', url: 'https://bbb.org', icon: 'B' }
 ];
 
+// Helper function to convert location to a key for the testimonials object
+// This is extracted outside the component to avoid recreating it on each render
+function convertToLocationKey(location: string): string {
+  if (!location) return '';
+  
+  try {
+    // First, decode any URL-encoded location
+    const decodedLocation = decodeURIComponent(location).toLowerCase();
+    // Then, replace spaces with hyphens and remove non-alphanumeric characters except hyphens
+    return decodedLocation
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^\w\-]+/g, '') // Remove non-alphanumeric characters (except hyphens)
+      .replace(/\-+/g, '-'); // Replace multiple consecutive hyphens with a single one
+  } catch (e) {
+    // If there's an error decoding (e.g., location is not URI encoded), use original
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error decoding location in TestimonialsSection:', e);
+    }
+    return location
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w\-]+/g, '')
+      .replace(/\-+/g, '-');
+  }
+}
+
 /**
  * Component that showcases customer testimonials with a carousel interface
  * Displays location-specific reviews when available
  */
-export default function TestimonialsSection({ location }: TestimonialsSectionProps) {
+function TestimonialsSection({ location }: TestimonialsSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Format location for testimonial lookup - handle URL encoding
-  let decodedLocation;
-  try {
-    decodedLocation = decodeURIComponent(location);
-  } catch (e) {
-    decodedLocation = location;
-  }
+  // Convert location to location key once to avoid redundant calculations
+  // This optimization reduces unnecessary processing on every render
+  const locationKey = useMemo(() => convertToLocationKey(location), [location]);
   
-  const locationKey = decodedLocation.toLowerCase().replace(/\s+/g, '-') + '-oh';
-  
-  // Simulate fetching testimonials from the database
-  useEffect(() => {
-    const loadTestimonials = () => {
-      setIsLoading(true);
-      
-      // Reset index when location changes
-      setActiveIndex(0);
-      
-      // Simulate API delay
-      setTimeout(() => {
-        // Get location-specific testimonials or use a default set
-        const locationTestimonials = allTestimonials[locationKey] || 
-          allTestimonials['akron-oh'] || 
-          Object.values(allTestimonials)[0] || 
-          [];
-          
-        setTestimonials(locationTestimonials);
-        setIsLoading(false);
-      }, 500);
-    };
+  // Simulating a data fetch operation - optimized to reduce TBT
+  const loadTestimonials = useCallback(async () => {
+    // Reduced timeout to improve perceived performance
+    await new Promise(resolve => setTimeout(resolve, 400));
     
-    loadTestimonials();
+    // Get testimonials for this location or use empty array if none available
+    const locationTestimonials = allTestimonials[locationKey] || [];
+    
+    setTestimonials(locationTestimonials);
+    setIsLoading(false);
   }, [locationKey]);
   
+  // Effect to load testimonials on mount or when location changes
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Reset state when location changes
+    setIsLoading(true);
+    setActiveIndex(0);
+    
+    // Load testimonials
+    loadTestimonials().then(() => {
+      if (!isMounted) return;
+    });
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [location, loadTestimonials]);
+  
+  // Memoize navigation handlers to prevent recreations on each render
   const handlePrev = useCallback(() => {
     if (testimonials.length <= 1) return;
     setActiveIndex((current) => (current === 0 ? testimonials.length - 1 : current - 1));
   }, [testimonials.length]);
   
   const handleNext = useCallback(() => {
-    setActiveIndex(current => 
-      current === testimonials.length - 1 ? 0 : current + 1
-    );
+    if (testimonials.length <= 1) return;
+    setActiveIndex((current) => (current === testimonials.length - 1 ? 0 : current + 1));
   }, [testimonials.length]);
   
-  // Set up key and touch navigation
+  // Handle keyboard navigation for accessibility
+  // Optimized to use dependencies properly and avoid unnecessary re-registrations
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      handlePrev();
+    } else if (e.key === 'ArrowRight') {
+      handleNext();
+    }
+  }, [handlePrev, handleNext]);
+  
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
-        handlePrev();
-      } else if (e.key === 'ArrowRight') {
-        handleNext();
-      }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
     };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev]);
+  }, [handleKeyDown]);
   
   // Set up auto-advance (disabled on mobile for better performance)
   useEffect(() => {
-    // Only auto-advance if we have multiple testimonials and aren't on mobile
-    if (testimonials.length > 1 && window.innerWidth >= 768) {
-      const interval = setInterval(handleNext, 8000);
-      return () => clearInterval(interval);
-    }
+    // Only auto-advance if there are multiple testimonials
+    if (testimonials.length <= 1) return;
+    
+    // Don't auto-advance on small screens for better performance and UX
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
+    
+    const intervalId = setInterval(() => {
+      handleNext();
+    }, 8000);
+    
+    return () => clearInterval(intervalId);
   }, [handleNext, testimonials.length]);
   
   return (
-    <Section className="bg-gradient-to-br from-navy to-dark-blue">
+    <Section className="py-16 md:py-24 bg-gradient-to-b from-navy to-navy-dark text-white relative overflow-hidden">
+      {/* Background accent */}
+      <div 
+        className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-red/10 blur-3xl opacity-30" 
+        aria-hidden="true"
+      ></div>
+      <div 
+        className="absolute -bottom-24 -left-24 w-48 h-48 rounded-full bg-red/10 blur-3xl opacity-30" 
+        aria-hidden="true"
+      ></div>
+      
       <Container>
-        <SectionHeading 
-          title="What Our Customers Say"
-          subtitle={`Read reviews from real customers in ${decodedLocation} who have experienced our exceptional service firsthand.`}
-          centered={true}
-          className="mb-8 sm:mb-12"
+        <SectionHeading
+          title="Customer Reviews"
+          subtitle={testimonials.length > 0 ? `What our clients in ${location} are saying` : "What our clients are saying"}
+          alignment="center"
+          textColor="light"
         />
         
         {isLoading ? (
           <TestimonialSkeleton />
+        ) : testimonials.length === 0 ? (
+          <EmptyTestimonialState />
         ) : (
-          <div className="max-w-5xl mx-auto">
-            <TestimonialCarousel
-              testimonials={testimonials}
-              activeIndex={activeIndex}
-              setActiveIndex={setActiveIndex}
-              onPrev={handlePrev}
-              onNext={handleNext}
-            />
-          </div>
+          <TestimonialCarousel 
+            testimonials={testimonials}
+            activeIndex={activeIndex}
+            setActiveIndex={setActiveIndex}
+            onPrev={handlePrev}
+            onNext={handleNext}
+          />
         )}
         
+        {/* Review platforms - always shown */}
         <ReviewPlatforms platforms={reviewPlatforms} />
       </Container>
     </Section>
@@ -233,39 +279,40 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
 /**
  * Loading skeleton for testimonials
  */
-function TestimonialSkeleton() {
+// Memoized loading skeleton to prevent unnecessary re-renders
+const TestimonialSkeleton = memo(function TestimonialSkeleton() {
   return (
     <div 
       className="bg-white/10 backdrop-blur-sm rounded-xl p-8 max-w-4xl mx-auto animate-pulse"
+      aria-busy="true"
       aria-label="Loading testimonials"
-      role="status"
     >
-      <div className="h-6 bg-white/20 rounded w-1/4 mb-4"></div>
-      <div className="h-4 bg-white/20 rounded w-1/3 mb-8"></div>
-      <div className="h-4 bg-white/20 rounded w-full mb-3"></div>
-      <div className="h-4 bg-white/20 rounded w-full mb-3"></div>
-      <div className="h-4 bg-white/20 rounded w-4/5 mb-8"></div>
-      <div className="h-10 bg-white/20 rounded w-1/3 mx-auto"></div>
-      <span className="sr-only">Loading testimonials...</span>
+      <div className="h-5 bg-white/20 rounded w-1/4 mb-4"></div>
+      <div className="h-8 bg-white/20 rounded w-3/4 mb-6"></div>
+      <div className="h-4 bg-white/20 rounded w-full mb-2"></div>
+      <div className="h-4 bg-white/20 rounded w-full mb-2"></div>
+      <div className="h-4 bg-white/20 rounded w-full mb-2"></div>
+      <div className="h-4 bg-white/20 rounded w-3/4"></div>
     </div>
   );
-}
+});
 
 /**
  * Empty state when no testimonials are available
  */
-function EmptyTestimonialState() {
+// Memoized empty state component
+const EmptyTestimonialState = memo(function EmptyTestimonialState() {
   return (
     <div 
       className="bg-white/10 backdrop-blur-sm rounded-xl p-8 text-center max-w-4xl mx-auto"
-      role="status"
     >
-      <p className="text-white text-lg">
-        We're collecting testimonials for this location. Check back soon!
+      <h3 className="text-xl font-semibold text-white mb-2">No reviews yet!</h3>
+      <p className="text-white/70">
+        We're working hard to provide exceptional service. Be the first to leave a review!
       </p>
     </div>
   );
-}
+});
 
 /**
  * Testimonial carousel component
@@ -278,52 +325,34 @@ interface TestimonialCarouselProps {
   onNext: () => void;
 }
 
-function TestimonialCarousel({ 
+// Memoized carousel component to prevent unnecessary re-renders
+const TestimonialCarousel = memo(function TestimonialCarousel({ 
   testimonials,
   activeIndex,
   setActiveIndex,
   onPrev,
   onNext
 }: TestimonialCarouselProps) {
-  // For touch/swipe detection
+  const carouselRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<number>(0);
   
-  // Minimum swipe distance (in px) and timing variables
-  const minSwipeDistance = 30;
-  const swipeTimeout = useRef<NodeJS.Timeout | null>(null);
-  
-  // Handle touch events
-  const handleTouchStart = (e: TouchEvent) => {
-    // Prevent default behavior to ensure smooth swiping
-    if (testimonials.length > 1) {
-      e.preventDefault();
-    }
-    setTouchStart(e.targetTouches[0].clientX);
+  // Touch event handling - for mobile swipe support
+  const handleTouchStart = useCallback((e: TouchEvent) => {
     setTouchEnd(null);
-    setIsSwiping(true);
-    setSwipeDirection(0);
-  };
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
   
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isSwiping || touchStart === null) return;
-    
-    const currentX = e.targetTouches[0].clientX;
-    setTouchEnd(currentX);
-    
-    // Calculate and set current swipe direction for visual feedback
-    const currentDirection = touchStart - currentX;
-    setSwipeDirection(currentDirection);
-  };
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
   
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
     
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
     
     if (isLeftSwipe) {
       onNext();
@@ -334,98 +363,71 @@ function TestimonialCarousel({
     // Reset values
     setTouchStart(null);
     setTouchEnd(null);
-    setIsSwiping(false);
-    setSwipeDirection(0);
-    
-    // Clear any pending timeouts
-    if (swipeTimeout.current) {
-      clearTimeout(swipeTimeout.current);
-      swipeTimeout.current = null;
-    }
-  };
+  }, [touchStart, touchEnd, onNext, onPrev]);
   
-  if (!testimonials || testimonials.length === 0) {
-    return <EmptyTestimonialState />;
-  }
-
+  // Using ref to access up-to-date state values in event handlers
+  useEffect(() => {
+    const currentCarousel = carouselRef.current;
+    if (!currentCarousel) return;
+    
+    // Add passive: true for better performance on mobile
+    currentCarousel.addEventListener('touchstart', handleTouchStart as any, { passive: true });
+    currentCarousel.addEventListener('touchmove', handleTouchMove as any, { passive: true });
+    currentCarousel.addEventListener('touchend', handleTouchEnd as any, { passive: true });
+    
+    return () => {
+      if (!currentCarousel) return;
+      currentCarousel.removeEventListener('touchstart', handleTouchStart as any);
+      currentCarousel.removeEventListener('touchmove', handleTouchMove as any);
+      currentCarousel.removeEventListener('touchend', handleTouchEnd as any);
+    };
+  }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+  
+  // Get current active testimonial
+  const activeTestimonial = testimonials[activeIndex];
+  
+  // Early return if no testimonials (though this should be handled by parent)
+  if (!activeTestimonial) return null;
+  
   return (
-    <div className="relative bg-gradient-to-b from-dark-blue to-navy rounded-xl overflow-hidden max-w-full">
-      {/* Main featured testimonial */}
-      <div className="md:flex min-h-[400px]">
-        {/* Large Featured Testimonial */}
-        <div className="md:w-2/3 p-6 md:p-10 relative overflow-hidden">
-          <div 
-            className="relative min-h-[330px] md:min-h-auto"
-            style={{ touchAction: 'none' }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-          >
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={testimonial.id}
-                className={`transition-all duration-300 ${index === activeIndex ? 'opacity-100 translate-x-0 relative' : 'opacity-0 translate-x-16 absolute inset-0 pointer-events-none'}`}
-                style={{
-                  transform: index === activeIndex && swipeDirection !== 0 ? 
-                    `translateX(${-swipeDirection * 0.15}px)` : undefined
-                }}
-                role="tabpanel"
-                id={`testimonial-${index}`}
-                aria-labelledby={`testimonial-tab-${index}`}
-              >
-              {/* Red accent line */}
-              <div className="h-1 w-24 bg-gradient-to-r from-red to-red-dark mb-8"></div>
-              
-              {/* Service badge */}
-              <div className="inline-block bg-dark-blue-light/50 rounded-full px-3 py-1 text-xs text-ivory/90 mb-6">
-                {testimonial.service}
-              </div>
-              
-              {/* Testimonial text */}
-              <div className="relative">
-                {/* Large quote mark as background */}
-                <div className="absolute -left-2 -top-6 text-8xl text-red/10 pointer-events-none select-none" aria-hidden="true">“</div>
-                
-                <p className="text-ivory text-lg md:text-xl leading-relaxed mb-8 relative z-10">
-                  {testimonial.text}
-                </p>
-              </div>
-              
-              {/* Divider */}
-              <div className="h-px w-12 bg-dark-blue-light mb-6"></div>
-              
-              {/* Customer info */}
-              <div className="flex items-center">
-                {/* Avatar in attractive circle with glow */}
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-navy-light to-dark-blue flex items-center justify-center text-white mr-5 border-2 border-red/10 shadow-lg shadow-red/5">
-                  {testimonial.avatar ? (
-                    <Image 
-                      src={testimonial.avatar} 
-                      alt={`${testimonial.name}'s avatar`} 
-                      width={56} 
-                      height={56} 
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <span className="text-xl font-semibold">{testimonial.name.charAt(0)}</span>
-                  )}
-                </div>
-                
-                <div>
-                  <h4 className="font-bold text-white text-lg">{testimonial.name}</h4>
-                  <p className="text-ivory/70">{testimonial.location}</p>
-                  <div className="mt-1">
-                    <StarRating rating={testimonial.rating} />
-                  </div>
-                </div>
-              </div>
-              </div>
-            ))}
+    <div
+      ref={carouselRef}
+      className="relative bg-white/10 backdrop-blur-sm rounded-xl overflow-hidden mb-12 max-w-6xl mx-auto"
+      aria-roledescription="carousel"
+      aria-label="Customer testimonials"
+    >
+      <div className="flex flex-col md:flex-row">
+        {/* Testimonial content area */}
+        <div className="md:w-2/3 p-6 md:p-8 lg:p-10">
+          <div className="flex items-center mb-5">
+            <div className="w-12 h-12 rounded-full bg-dark-blue-light flex items-center justify-center text-white mr-4">
+              <span aria-hidden="true">{activeTestimonial.name.charAt(0)}</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-lg">{activeTestimonial.name}</h3>
+              <p className="text-ivory/70 text-sm">{activeTestimonial.location}</p>
+            </div>
           </div>
           
-          {/* Navigation for mobile */}
-          <div className="md:hidden mt-6 flex items-center justify-center gap-4">
+          <div className="mb-2">
+            <StarRating rating={activeTestimonial.rating} />
+          </div>
+          
+          <p className="text-white/80 text-sm md:text-base mb-4 italic">
+            "{activeTestimonial.text}"
+          </p>
+          
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="px-3 py-1 bg-navy-light rounded-full text-white/60">
+              {activeTestimonial.service}
+            </span>
+            <span className="px-3 py-1 bg-navy-light rounded-full text-white/60">
+              {activeTestimonial.date}
+            </span>
+          </div>
+          
+          {/* Navigation controls for all viewports */}
+          <div className="flex justify-center items-center mt-8 space-x-4">
             <button 
               onClick={onPrev}
               className="w-10 h-10 rounded-full bg-dark-blue-light hover:bg-red/20 flex items-center justify-center text-white transition-all focus:outline-none focus:ring-2 focus:ring-red/30 active:bg-red/30"
@@ -483,9 +485,7 @@ function TestimonialCarousel({
       </div>
     </div>
   );
-}
-
-// Using the shared StarRating component from ui/StarRating.tsx
+});
 
 /**
  * Review platforms component
@@ -498,7 +498,8 @@ interface ReviewPlatformsProps {
   }>;
 }
 
-function ReviewPlatforms({ platforms }: ReviewPlatformsProps) {
+// Memoized platforms component to prevent unnecessary re-renders
+const ReviewPlatforms = memo(function ReviewPlatforms({ platforms }: ReviewPlatformsProps) {
   return (
     <div className="mt-16 text-center">
       <p className="text-ivory/80 mb-6">
@@ -526,4 +527,7 @@ function ReviewPlatforms({ platforms }: ReviewPlatformsProps) {
       </div>
     </div>
   );
-}
+});
+
+// Export the memoized component to prevent unnecessary re-renders
+export default memo(TestimonialsSection);
