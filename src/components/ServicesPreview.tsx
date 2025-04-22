@@ -210,7 +210,7 @@ function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceG
           icon={<span className="text-2xl">{service.icon}</span>}
           title={service.name}
           description={service.description}
-          href={`/services/${categoryId}/${service.id}/${locationSlug}`}
+          href={`/services/${categoryId}/${service.id}/${convertToLocationSlug(locationSlug)}`}
           interactive
         />
       ))}

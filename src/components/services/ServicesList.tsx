@@ -17,17 +17,11 @@ export default function ServicesList({ category, userLocation: serverLocation }:
   
   // Prioritize server location, then client location, then default
   const locationToUse = serverLocation?.name || clientLocation || 'Northeast Ohio';
-  
-  // Create a location slug for URLs (and ensure proper formatting even for server locations)
-  let locationSlug;
-  if (serverLocation?.id) {
-    // Make sure server-provided ID is properly formatted without encoding issues
-    locationSlug = convertToLocationSlug(serverLocation.id);
-  } else if (clientLocation) {
-    locationSlug = convertToLocationSlug(clientLocation);
-  } else {
-    locationSlug = 'northeast-ohio';
-  }
+  // Create a location slug for URLs
+  // Always run convertToLocationSlug to ensure consistent handling of special characters
+  const locationSlug = serverLocation?.id ? 
+    convertToLocationSlug(serverLocation.id) : 
+    (clientLocation ? convertToLocationSlug(clientLocation) : 'northeast-ohio');
   
   return (
     <section className="mb-16">
@@ -57,7 +51,7 @@ export default function ServicesList({ category, userLocation: serverLocation }:
               {service.description || `Professional ${service.name.toLowerCase()} services tailored to your needs.`}
             </p>
             <a 
-              href={`/services/${category.id}/${service.id}/${locationSlug}`}
+              href={`/services/${category.id}/${service.id}/${convertToLocationSlug(locationSlug)}`}
               className="inline-flex items-center text-red-light font-medium hover:text-red transition-colors"
             >
               <span className="mr-2">View Details</span>

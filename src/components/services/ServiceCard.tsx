@@ -28,19 +28,16 @@ export default function ServiceCard({
           <p className="text-sm text-ivory/80 mb-2">Available in:</p>
           <ul className="space-y-1.5">
             {locations.map((location) => {
-              // Make sure to use consistent slug formatting
-              const processedSlug = convertToLocationSlug(location);
-              
-              // Generate display format from the processed slug
-              const formattedLocation = processedSlug
+              // Convert slug format to display format (preserve original location for href)
+              const formattedLocation = location
                 .split('-')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
                 
               return (
-                <li key={processedSlug}>
+                <li key={location}>
                   <Link 
-                    href={`/services/${categoryId}/${service.id}/${processedSlug}`} 
+                    href={`/services/${categoryId}/${service.id}/${convertToLocationSlug(location)}`} 
                     className="block text-sm text-red-light hover:text-red hover:pl-1 transition-all"
                   >
                     <span className="inline-block mr-1.5">→</span>{formattedLocation}
