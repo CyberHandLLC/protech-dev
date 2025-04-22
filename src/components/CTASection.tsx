@@ -49,33 +49,56 @@ export default function CTASection({
         
         {/* Phone CTA Box */}
         <div className="bg-red bg-opacity-95 p-4 sm:p-6 rounded-xl max-w-md mx-auto mb-6 sm:mb-10 shadow-lg">
-          <p className="text-white mb-1 sm:mb-2 text-sm sm:text-base">Call us now at</p>
-          <a 
-            href={`tel:${phoneNumber}`}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-white hover:text-ivory transition-colors"
-            aria-label={`Call us at ${phoneDisplay}`}
-          >
-            {phoneDisplay}
-          </a>
-          <p className="text-white/80 text-xs sm:text-sm mt-1 sm:mt-2">Available 24/7 for emergency service</p>
+          <div className="flex flex-col items-center">
+            <p className="text-white mb-1 sm:mb-2 text-sm sm:text-base">Call us now at</p>
+            <a 
+              href={`tel:${phoneNumber}`}
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-white hover:text-ivory transition-colors"
+              aria-label={`Call us at ${phoneDisplay}`}
+            >
+              {phoneDisplay}
+            </a>
+            <p className="text-white/80 text-xs sm:text-sm mt-1 sm:mt-2">Available 24/7 for emergency service</p>
+          </div>
         </div>
         
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 max-w-lg mx-auto px-4 sm:px-0">
-          <Link 
-            href="/schedule" 
-            className="flex-1 bg-white text-navy hover:bg-ivory px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
-          >
-            Schedule Online
-          </Link>
+        <div className="max-w-lg mx-auto px-4 sm:px-0">
+          {/* Mobile layout - grid buttons */}
+          <div className="grid grid-cols-2 gap-3 sm:hidden mb-3">
+            <Link 
+              href="/schedule" 
+              className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm"
+            >
+              Schedule Online
+            </Link>
+            
+            <Button 
+              href="/free-estimate" 
+              variant="outline" 
+              className="text-sm py-3"
+            >
+              Free Estimate
+            </Button>
+          </div>
           
-          <Button 
-            href="/free-estimate" 
-            variant="outline" 
-            className="flex-1 text-sm sm:text-base py-2.5 sm:py-3"
-          >
-            Free Estimate
-          </Button>
+          {/* Desktop layout - horizontal row */}
+          <div className="hidden sm:flex sm:flex-row justify-center gap-4">
+            <Link 
+              href="/schedule" 
+              className="flex-1 bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center"
+            >
+              Schedule Online
+            </Link>
+            
+            <Button 
+              href="/free-estimate" 
+              variant="outline" 
+              className="flex-1"
+            >
+              Free Estimate
+            </Button>
+          </div>
         </div>
         
         <div className="mt-10 sm:mt-16">

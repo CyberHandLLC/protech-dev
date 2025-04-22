@@ -75,7 +75,7 @@ export default function HeroSection({
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-16 sm:py-0" aria-label="Hero Section">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-20 sm:py-0" aria-label="Hero Section">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
           className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -98,27 +98,49 @@ export default function HeroSection({
             Professional HVAC services tailored to your comfort needs. From emergency repairs to routine maintenance, our certified technicians deliver reliable solutions.
           </p>
           
-          <WeatherDisplay 
-            location={displayLocation} 
-            temperature={weather.temperature}
-            icon={weather.icon} 
-            isLoading={isLoading || weather.isLoading} 
-          />
+          <div className="mb-8">
+            <WeatherDisplay 
+              location={displayLocation} 
+              temperature={weather.temperature}
+              icon={weather.icon} 
+              isLoading={isLoading || weather.isLoading} 
+            />
+          </div>
           
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
-            <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
-              Explore Services
-            </Link>
-            <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-center text-sm sm:text-base">
-              Contact Us
-            </Link>
+          <div className="flex flex-col gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
+                Explore Services
+              </Link>
+              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
+                Contact Us
+              </Link>
+            </div>
+            
             <a 
               href={`tel:${emergencyPhone}`}
-              className="text-white hover:text-yellow-300 flex justify-center sm:justify-start items-center transition-colors text-sm sm:text-base py-2.5 sm:py-3"
+              className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
               aria-label={`Call us at ${emergencyPhoneDisplay}`}
             >
               <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
             </a>
+            
+            {/* Switch to horizontal layout on larger screens */}
+            <div className="hidden sm:flex sm:flex-row sm:gap-4 sm:w-auto">
+              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
+                Explore Services
+              </Link>
+              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
+                Contact Us
+              </Link>
+              <a 
+                href={`tel:${emergencyPhone}`}
+                className="text-white hover:text-yellow-300 flex justify-start items-center transition-colors py-3"
+                aria-label={`Call us at ${emergencyPhoneDisplay}`}
+              >
+                <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -146,7 +168,7 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
     displayLocation = location; // Use original if decoding fails
   }
   return (
-    <div className="bg-white/10 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-3 rounded-lg inline-flex items-center mb-6 sm:mb-8 animate-fadeIn animate-delay-150 text-center sm:text-left w-full sm:w-auto"
+    <div className="bg-white/10 backdrop-blur-sm px-3 py-3 sm:px-4 sm:py-3 rounded-lg inline-flex items-center justify-center animate-fadeIn animate-delay-150 text-center sm:text-left w-full sm:w-auto"
          aria-live="polite">
       <span className="text-xl sm:text-2xl mr-2 sm:mr-3" aria-hidden="true">{icon}</span>
       <div>
@@ -155,7 +177,7 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
           <div className="h-5 sm:h-6 w-16 sm:w-20 bg-white/30 animate-pulse rounded mt-1" 
                aria-label="Loading weather data"></div>
         ) : (
-          <p className="text-white font-bold text-base sm:text-lg">{temperature !== null ? `${temperature}°F` : 'Unavailable'}</p>
+          <p className="text-white font-bold text-xl">{temperature !== null ? `${temperature}°F` : 'Unavailable'}</p>
         )}
       </div>
     </div>
@@ -167,7 +189,7 @@ function EmergencyBadge() {
     <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 z-20">
       <Link 
         href="/emergency-service"
-        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors scale-90 sm:scale-100"
+        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors scale-100"
         aria-label="24/7 Emergency Service"
       >
         <span className="text-xl sm:text-2xl mr-2 animate-pulse" aria-hidden="true">🚨</span>
