@@ -20,10 +20,10 @@ interface PartnerLogosProps {
 
 export default function PartnerLogos({ title = "Trusted by Industry-Leading Brands", subtitle = "" }: PartnerLogosProps) {
   const partnerLogos: PartnerLogo[] = [
-    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 160, height: 40 },
-    { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 140, height: 40 },
-    { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 150, height: 40 },
-    { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 150, height: 40 },
+    { name: 'Velocity', logoPath: '/logos/velocitylogo.svg', width: 120, height: 40 },
+    { name: 'Planet Fitness', logoPath: '/logos/planetf.svg', width: 120, height: 40 },
+    { name: 'Steingass', logoPath: '/logos/steingasslogo.png', width: 120, height: 40 },
+    { name: 'Corporate Property', logoPath: '/logos/logo-corporate.50d670.svg', width: 120, height: 40 },
   ];
   
   // Duplicate the array for seamless infinite scrolling (3 sets for longer scroll)
@@ -39,40 +39,34 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
           className="mb-12"
         />
       
-        {/* Logos scroll container */}
-        <div className="relative overflow-hidden py-8">
-          {/* Gradient overlay on left side */}
-          <div className="absolute left-0 top-0 h-full w-24 bg-gradient-to-r from-dark-blue/30 to-transparent z-10"></div>
+        {/* Logos scroll container with single row */}
+        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto">
+          {/* Gradient overlays */}
+          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-dark-blue/30 to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-dark-blue/30 to-transparent z-10"></div>
           
-          {/* Scrolling marquee */}
-          <div className="overflow-hidden py-4">
-            <div className="animate-marquee inline-block">
+          {/* Logo track */}
+          <div className="overflow-hidden">
+            <div className="flex w-max animate-marquee">
               {allLogos.map((logo, index) => (
-                <React.Fragment key={`${logo.name}-${index}`}>
-                  {/* Logo item */}
-                  <div className="inline-block mx-8 align-middle">
-                    <div className="flex items-center justify-center h-16 bg-white bg-opacity-10 px-6 py-4 rounded-lg hover:bg-opacity-20 transition-all">
-                      <Image 
-                        src={logo.logoPath} 
-                        alt={`${logo.name} logo`}
-                        width={logo.width}
-                        height={logo.height}
-                        className="max-h-12 w-auto object-contain filter brightness-0 invert opacity-80 hover:opacity-100 transition-opacity"
-                      />
-                    </div>
+                <div 
+                  key={`${logo.name}-${index}`}
+                  className="mx-8 md:mx-16"
+                >
+                  <div className="h-10 flex items-center justify-center">
+                    <Image 
+                      src={logo.logoPath} 
+                      alt={`${logo.name} logo`}
+                      width={logo.width}
+                      height={logo.height}
+                      className="h-7 w-auto object-contain" 
+                      style={{ filter: 'brightness(0) invert(1)' }}
+                    />
                   </div>
-                  
-                  {/* Separator between logos, except after the last one */}
-                  {index < allLogos.length - 1 && (
-                    <div className="inline-block h-6 mx-2"></div>
-                  )}
-                </React.Fragment>
+                </div>
               ))}
             </div>
           </div>
-          
-          {/* Gradient overlay on right side */}
-          <div className="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-dark-blue/30 to-transparent z-10"></div>
         </div>
       </Container>
     </Section>
