@@ -40,11 +40,28 @@ export function getDefaultLocation(): string {
 }
 
 /**
- * Convert a full location name to its normalized form
- * Example: "Cleveland, OH" -> "cleveland-oh"
+ * Convert a string like "Akron, OH" into a URL-friendly slug like "akron-oh"
  */
-export function convertToLocationSlug(locationName: string): string {
-  return locationName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+export function convertToLocationSlug(locationString: string): string {
+  if (!locationString) return 'northeast-ohio';
+  
+  // Split by comma and get city and state portions
+  const parts = locationString.split(',');
+  const city = parts[0]?.trim() || 'Northeast';
+  const state = parts[1]?.trim() || 'Ohio';
+  
+  // Create URL-friendly slug by replacing spaces and special characters
+  const citySlug = city.toLowerCase()
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
+    .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
+    
+  const stateSlug = state.toLowerCase()
+    .replace(/\s+/g, '-')       
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
+  
+  return `${citySlug}-${stateSlug}`;
 }
 
 /**

@@ -11,9 +11,20 @@ function createServiceLocation(city: string, region: string): ServiceLocation {
     return knownLocation;
   }
   
+  // Create a URL-friendly location ID
+  const citySlug = city.toLowerCase()
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
+    .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
+    
+  const regionSlug = region.toLowerCase()
+    .replace(/\s+/g, '-')       
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
+    
   // Create a custom ServiceLocation for unknown locations
   return {
-    id: `${city.toLowerCase().replace(/\s+/g, '-')}-${region.toLowerCase()}`,
+    id: `${citySlug}-${regionSlug}`,
     name: city,
     state: 'Ohio',  // Assuming all are in Ohio for now
     stateCode: region,
@@ -38,9 +49,15 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
       cityLower.includes('westerville') || 
       cityLower.includes('delaware') || 
       cityLower.includes('powell')) {
+    // Create URL-friendly location ID
+    const citySlug = city.toLowerCase()
+      .replace(/\s+/g, '-')      // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]/g, '') // Remove non-alphanumeric characters except hyphens
+      .replace(/-+/g, '-');       // Replace multiple hyphens with a single one
+    
     // Return a Columbus area ServiceLocation
     return {
-      id: `${city.toLowerCase().replace(/\s+/g, '-')}-${regionLower}`,
+      id: `${citySlug}-${regionLower}`,
       name: city,
       state: 'Ohio',
       stateCode: region,
