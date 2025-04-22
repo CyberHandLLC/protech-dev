@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useState, useEffect, useCallback, memo, useRef } from 'react';
+import { isMobileDevice } from '@/utils/mobileOptimizer';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 
 type WeatherData = {
   temperature: number | null;
@@ -52,6 +54,32 @@ function HeroSection({
     isLoading: true
   });
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [opacity, setOpacity] = useState(0);
+  const backgroundImage = "/hero-placeholder.jpg";
+
+  // Track if we're on a mobile device
+  const isMobile = useRef(false);
+
+  // Mobile-specific optimization: Use simpler animation logic on mobile
+  useEffect(() => {
+    isMobile.current = isMobileDevice();
+    
+    // On mobile, we'll just set opacity directly instead of animating
+    if (isMobile.current) {
+      // Small delay to ensure other critical content loads first
+      setTimeout(() => setOpacity(1), 100);
+    }
+  }, []);
+
+  // Memoized handler for animation frame updates - only used on desktop
+  const handleAnimationFrame = useCallback(() => {
+    if (isMobile.current) return; // Skip animation logic on mobile
+    
+    setOpacity((prevOpacity) => Math.min(prevOpacity + 0.03, 1));
+    if (opacity < 1) {
+      requestAnimationFrame(handleAnimationFrame);
+    }
+  }, [opacity]);
 
   // Optimized to avoid unnecessary dependencies and reduce execution time
   const fetchWeatherData = useCallback(async () => {
@@ -136,36 +164,31 @@ function HeroSection({
     scheduleImageLoad();
   }, []);
 
-  return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-20 sm:py-0" aria-label="Hero Section">
-      <div className="absolute inset-0 z-0" aria-hidden="true">
-        <div 
-          className={`w-full h-full transition-opacity duration-500 ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-          role="img"
-          aria-label="HVAC service background image"
-        >
-          {/* Using Next.js Image for optimized loading - contributes to better LCP */}
-          <div className="relative w-full h-full">
-            {/* Use next/image with optimized attributes and reduced JavaScript overhead */}
-            <Image 
-              src="/hero-placeholder.jpg" 
-              alt="HVAC services background" 
-              fill 
-              sizes="100vw" /* Simplified sizes attribute to reduce parsing */
-              priority={true} /* Mark as LCP candidate */
-              quality={70} /* Further reduced quality for faster load */
-              className="object-cover"
-              loading="eager" /* Force eager loading for LCP */
-              fetchPriority="high" /* Use modern fetch priority */
-              placeholder="blur" /* Show a blur placeholder while loading */
-              blurDataURL="data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAEAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAABAwMEAwAAAAAAAAAAAAABAAIDBAUGIQcSE0Fhkf/EABUBAQEAAAAAAAAAAAAAAAAAAAME/8QAGREAAgMBAAAAAAAAAAAAAAAAAAECAxOR/9oADAMBAAIRAxEAPwCpo9pKOip2tqqKHnlYCI45HZwMnPJPQCIiDSxrHaR//9k=" /* Optimized smaller blur placeholder */
-            />
-            {/* Use more efficient gradient that requires less computation */}
-            <div className="absolute inset-0 bg-navy/90"></div>
-          </div>
-        </div>
-      </div>
+  // Skip animation on mobile to reduce TBT
+  useEffect(() => {
+    if (!isMobile.current) {
+      // Start fade-in animation when component mounts (desktop only)
+      requestAnimationFrame(handleAnimationFrame);
+    }
+    
+    // Apply hardware acceleration for smoother animations
+    // Skip querySelector on mobile - it can be expensive
+    if (!isMobile.current) {
+      const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-slide-up');
+      animatedElements.forEach(el => {
+        (el as HTMLElement).style.transform = 'translate3d(0,0,0)';
+        (el as HTMLElement).style.willChange = 'opacity, transform';
+      });
       
+      return () => {
+        // Cleanup when unmounting
+        animatedElements.forEach(el => {
+          (el as HTMLElement).style.willChange = 'auto';
+        });
+      };
+    }
+  }, [handleAnimationFrame]);
+  
       <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-0">
         <div className="max-w-3xl mx-auto md:mx-0">
           <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6 animate-fadeIn">
@@ -200,6 +223,77 @@ function HeroSection({
             <a 
               href={`tel:${emergencyPhone}`}
               className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
+              aria-label={`Call us at ${emergencyPhoneDisplay}`}
+            >
+              <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+            </a>
+            
+            {/* Switch to horizontal layout on larger screens */}
+            <div className="hidden sm:flex sm:flex-row sm:gap-4 sm:w-auto">
+              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
+                Explore Services
+              </Link>
+              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
+                Contact Us
+              </Link>
+              <a 
+                href={`tel:${emergencyPhone}`}
+                className="text-white hover:text-yellow-300 flex justify-start items-center transition-colors py-3"
+                aria-label={`Call us at ${emergencyPhoneDisplay}`}
+              >
+                <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <EmergencyBadge />
+      <ScrollIndicator />
+
+      
+      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-0">
+        <div className="max-w-3xl mx-auto md:mx-0">
+          <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6 animate-fadeIn">
+            Serving {displayLocation}
+          </span>
+          
+          <h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6" 
+            style={{ 
+              // Use passive transform for better mobile performance
+              transform: isMobile.current ? 'translateZ(0)' : 'none'
+            }}
+          >
+            Comfort Solutions for Every Season
+          </h1>
+          
+          <p className="text-lg md:text-xl text-ivory/90 mb-6 md:mb-8 max-w-xl">
+            ProTech HVAC provides expert heating, cooling, and air quality services for {displayLocation} homes and businesses.            
+          </p>
+          
+          <div className="mb-8">
+            <WeatherDisplay 
+              location={displayLocation} 
+              temperature={weather.temperature}
+              icon={weather.icon} 
+              isLoading={isLoading || weather.isLoading} 
+            />
+          </div>
+          
+          <div className="flex flex-col gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
+                Explore Services
+              </Link>
+              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
+                Contact Us
+              </Link>
+            </div>
+            
+            <a 
+              href={`tel:${emergencyPhone}`}
+              className="text-white hover:text-yellow-300 flex justify-center sm:justify-start items-center transition-colors py-3"
               aria-label={`Call us at ${emergencyPhoneDisplay}`}
             >
               <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}

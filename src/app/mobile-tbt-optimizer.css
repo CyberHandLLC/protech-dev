@@ -1,0 +1,76 @@
+/* 
+  Mobile TBT Optimizer CSS
+  
+  This CSS specifically targets mobile performance issues causing high TBT (740ms)
+  Based on latest Next.js best practices for mobile optimization
+*/
+
+@media (max-width: 767px) {
+  /* Force hardware acceleration for smoother rendering */
+  .hero-section,
+  .service-preview,
+  .main-navigation {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  
+  /* Optimize animations that contribute significantly to TBT */
+  .animate-pulse {
+    animation-duration: 2s !important; /* Slower animations reduce CPU usage */
+  }
+  
+  .animate-bounce {
+    animation: none !important; /* Disable expensive animations on mobile */
+  }
+  
+  /* Optimize transitions */
+  .transition-all,
+  .transition-colors,
+  .transition-opacity {
+    transition-duration: 0.1s !important; /* Faster transitions reduce TBT */
+  }
+  
+  /* Simplify expensive UI effects */
+  .backdrop-blur-sm {
+    backdrop-filter: none !important;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+  }
+  
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+  
+  /* Simplify gradients which are expensive to render */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br,
+  .bg-gradient-to-tr {
+    background: #0d2240 !important;
+  }
+  
+  /* Optimize text rendering */
+  h1, h2, h3 {
+    text-rendering: optimizeSpeed;
+  }
+  
+  /* Reduce paint complexity */
+  * {
+    contain: content;
+  }
+  
+  /* Optimize scrolling performance */
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Reduce reflow when images load */
+  img {
+    contain: size;
+  }
+}
+
+/* Preload critical fonts to avoid text layout shifts */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+}
