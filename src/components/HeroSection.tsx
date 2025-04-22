@@ -186,10 +186,10 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
 
 function EmergencyBadge() {
   return (
-    <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 z-20">
+    <div className="absolute bottom-4 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block">
       <Link 
         href="/emergency-service"
-        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors scale-100"
+        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors"
         aria-label="24/7 Emergency Service"
       >
         <span className="text-xl sm:text-2xl mr-2 animate-pulse" aria-hidden="true">🚨</span>
