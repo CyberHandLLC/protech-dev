@@ -2,20 +2,58 @@ import { headers } from 'next/headers';
 import { ServiceLocation, getLocationById, defaultLocation } from './locationUtils';
 
 /**
- * Convert a location name like "Akron, OH" to a location ID like "akron-oh"
+ * Convert a detected city and region to a ServiceLocation object
  */
-function convertLocationToId(locationString: string): string {
-  const locationParts = locationString.split(',');
-  const city = locationParts[0]?.trim() || 'Akron';
-  const state = locationParts[1]?.trim() || 'OH';
-  return `${city.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+function createServiceLocation(city: string, region: string): ServiceLocation {
+  // Check if the city matches one of our known service areas
+  const knownLocation = getKnownLocation(city, region);
+  if (knownLocation) {
+    return knownLocation;
+  }
+  
+  // Create a custom ServiceLocation for unknown locations
+  return {
+    id: `${city.toLowerCase().replace(/\s+/g, '-')}-${region.toLowerCase()}`,
+    name: city,
+    state: 'Ohio',  // Assuming all are in Ohio for now
+    stateCode: region,
+    zip: [],
+    coordinates: { lat: 0, lng: 0 },
+    serviceArea: false,
+    primaryArea: false
+  };
 }
 
 /**
- * Get a ServiceLocation object for a specific location ID
+ * Check if a city matches one of our known service locations
  */
-function getServiceLocationById(locationId: string): ServiceLocation {
-  return getLocationById(locationId) || defaultLocation;
+function getKnownLocation(city: string, region: string): ServiceLocation | null {
+  const cityLower = city.toLowerCase();
+  const regionLower = region.toLowerCase();
+  
+  // Map Lewis Center and other Columbus area cities
+  if (cityLower.includes('lewis center') || 
+      cityLower.includes('columbus') || 
+      cityLower.includes('dublin') || 
+      cityLower.includes('westerville') || 
+      cityLower.includes('delaware') || 
+      cityLower.includes('powell')) {
+    // Return a Columbus area ServiceLocation
+    return {
+      id: `${city.toLowerCase().replace(/\s+/g, '-')}-${regionLower}`,
+      name: city,
+      state: 'Ohio',
+      stateCode: region,
+      zip: [],
+      coordinates: { lat: 40.1887, lng: -83.0028 }, // Lewis Center coordinates
+      serviceArea: true,
+      primaryArea: false
+    };
+  }
+  
+  // Try to find in known locations by ID
+  const locationId = `${cityLower.replace(/\s+/g, '-')}-${regionLower}`;
+  return getLocationById(locationId) || null;
 }
 
 /**
@@ -24,25 +62,57 @@ function getServiceLocationById(locationId: string): ServiceLocation {
  */
 export function getUserLocationFromHeaders(): ServiceLocation {
   try {
-    // Try to get the location header
-    const headerList = headers();
-    let locationString = 'Akron, OH'; // Default
-
-    // Use type assertion to work around TypeScript issues with headers()
-    const headersObject = headerList as unknown as { get(name: string): string | null };
+    // Using request.headers in middleware.ts guarantees these are available
+    const headersList = headers();
+    let userLocationHeader = '';
+    let city = '';
+    let region = '';
     
-    if (typeof headersObject.get === 'function') {
-      const headerValue = headersObject.get('x-user-location');
-      if (headerValue) {
-        locationString = headerValue;
+    try {
+      // First try the custom header set by our middleware
+      const headerObj = headersList as any;
+      if (typeof headerObj.get === 'function') {
+        userLocationHeader = headerObj.get('x-user-location') || '';
+        city = headerObj.get('x-vercel-ip-city') || '';
+        region = headerObj.get('x-vercel-ip-country-region') || '';
+      }
+    } catch (e) {
+      console.log('Error accessing headers:', e);
+    }
+    
+    // Use data from our middleware header
+    if (userLocationHeader) {
+      const parts = userLocationHeader.split(',');
+      const headerCity = parts[0]?.trim() || '';
+      const headerRegion = parts[1]?.trim() || '';
+      
+      if (headerCity && headerRegion) {
+        return createServiceLocation(headerCity, headerRegion);
       }
     }
     
-    // Convert location string to ID and get the corresponding service location
-    const locationId = convertLocationToId(locationString);
-    return getServiceLocationById(locationId);
+    // Use data from Vercel headers directly
+    if (city && region) {
+      return createServiceLocation(city, region);
+    }
+    
+    // If we're here, try one more approach with request headers
+    try {
+      const reqHeaders = new Headers();
+      const fromVercelCity = reqHeaders.get('x-vercel-ip-city');
+      const fromVercelRegion = reqHeaders.get('x-vercel-ip-country-region');
+      
+      if (fromVercelCity && fromVercelRegion) {
+        return createServiceLocation(fromVercelCity, fromVercelRegion);
+      }
+    } catch (e) {
+      console.log('Error accessing request headers:', e);
+    }
+    
+    // Fall back to default location
+    return defaultLocation;
   } catch (error) {
-    console.error('Error accessing location headers:', error);
+    console.error('Error in getUserLocationFromHeaders:', error);
     return defaultLocation;
   }
 }
