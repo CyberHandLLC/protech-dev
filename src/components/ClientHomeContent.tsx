@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { LocationProvider } from '@/contexts/LocationContext';
 import useLocationDetection from '@/hooks/useLocationDetection';
 import PageLayout from '@/components/PageLayout';
 import HeroSection from '@/components/HeroSection';
@@ -22,7 +23,7 @@ type HomeContentProps = { defaultLocation: ServiceLocation };
 // Main home content component - optimized for performance
 const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentProps) {
   // Use the client-side location detection hook directly like ServicesList does
-  const { userLocation: clientLocation, isLocating, refreshLocation } = useLocationDetection();
+  const { userLocation: clientLocation, isLocating } = useLocationDetection();
   
   // Memoize the location processing to reduce recalculations
   const processedClientLocation = useMemo(() => {
@@ -81,16 +82,17 @@ const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentPr
     }
   }, [processedClientLocation, isLocating, defaultLocation]);
   
-  // Memoized callback for location permission changes
-  const handleLocationPermission = useCallback(() => {
-    refreshLocation();
-  }, [refreshLocation]);
+  // Memoized callback for location updates
+  const handleLocationUpdated = useCallback(() => {
+    // This will be triggered when the user updates their location
+    // The LocationContext will handle the actual location update
+  }, []);
 
   return (
     <PageLayout>
       {/* High-priority components load first for better LCP */}
       <HeroSection location={combinedLocation.name} isLoading={combinedLocation.isLoading} />
-      <LocationPrompt onPermissionChange={handleLocationPermission} />
+      <LocationPrompt onLocationUpdated={handleLocationUpdated} />
       
       {/* Lower-priority components load after for better TBT */}
       <ServicesPreview location={combinedLocation.name} />
@@ -107,5 +109,9 @@ const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentPr
 
 // Export the ClientHomeContent component wrapped in memo to prevent unnecessary re-renders
 export default memo(function ClientHomeContent({ defaultLocation }: HomeContentProps) {
-  return <HomeContent defaultLocation={defaultLocation} />;
+  return (
+    <LocationProvider>
+      <HomeContent defaultLocation={defaultLocation} />
+    </LocationProvider>
+  );
 });

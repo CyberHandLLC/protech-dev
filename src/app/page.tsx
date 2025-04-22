@@ -1,7 +1,11 @@
 // Page is a Server Component by default in Next.js App Router
 import ClientHomeContent from '@/components/ClientHomeContent';
 import type { Metadata } from 'next';
-import { getUserLocationFromHeaders } from '@/utils/serverLocation';
+import { ServiceLocation } from '@/utils/locationUtils';
+
+// Mark this route as dynamic to handle header usage
+export const dynamic = 'force-dynamic';
+
 
 /**
  * Metadata for the home page
@@ -17,13 +21,17 @@ export const metadata: Metadata = {
  * This serves as a shell that can fetch data and pass it to client components
  */
 export default function HomePage() {
-  // Get location from server headers (populated by middleware)
-  const userLocation = getUserLocationFromHeaders();
+  // Using a complete default location object that satisfies the ServiceLocation type
+  const defaultLocation: ServiceLocation = {
+    id: 'northeast-ohio',
+    name: 'Northeast Ohio',
+    state: 'Ohio',
+    stateCode: 'OH',
+    zip: ['44000'],
+    coordinates: { lat: 41.4993, lng: -81.6944 },
+    serviceArea: true,
+    primaryArea: true
+  };
   
-  // Ensure we have a valid location to pass to client components
-  if (!userLocation || !userLocation.name || !userLocation.id) {
-    console.error('Invalid or missing user location in HomePage');
-  }
-  
-  return <ClientHomeContent defaultLocation={userLocation} />;
+  return <ClientHomeContent defaultLocation={defaultLocation} />;
 }
