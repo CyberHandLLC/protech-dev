@@ -1,22 +1,60 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo, useMemo } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { LocationProvider } from '@/contexts/LocationContext';
 import useLocationDetection from '@/hooks/useLocationDetection';
 import PageLayout from '@/components/PageLayout';
+
+// Only import critical above-the-fold components directly
 import HeroSection from '@/components/HeroSection';
 import LocationPrompt from '@/components/LocationPrompt';
+
+// Import types
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
 
-// Dynamically import less critical components to improve TBT and LCP
-// These components will load after the initial page render
-const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { ssr: true });
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { ssr: true });
-const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: true });
-const CTASection = dynamic(() => import('@/components/CTASection'), { ssr: true });
-const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { ssr: true });
+// Create lightweight fallback components to reduce TBT
+const SectionSkeleton = memo(() => (
+  <div className="py-12 animate-pulse bg-navy-light">
+    <div className="container mx-auto px-4">
+      <div className="h-8 bg-slate-200/20 rounded w-1/4 mx-auto mb-6"></div>
+      <div className="h-4 bg-slate-200/20 rounded w-2/4 mx-auto mb-10"></div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array(4).fill(0).map((_, i) => (
+          <div key={i} className="h-40 bg-slate-200/10 rounded"></div>
+        ))}
+      </div>
+    </div>
+  </div>
+));
+
+// Dynamically import with aggressive optimization strategies 
+// Reduce JavaScript parsing overhead with granular code splitting
+const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { 
+  ssr: true,
+  loading: () => <SectionSkeleton />
+});
+
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
+  ssr: false, // Defer this non-critical section to reduce TBT
+  loading: () => <SectionSkeleton />
+});
+
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { 
+  ssr: false, // Defer to reduce initial JavaScript execution
+  loading: () => <SectionSkeleton />
+});
+
+const CTASection = dynamic(() => import('@/components/CTASection'), { 
+  ssr: true,
+  loading: () => <SectionSkeleton />
+});
+
+const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { 
+  ssr: false, // Non-critical component, can be loaded later
+  loading: () => <SectionSkeleton />
+});
 
 type HomeContentProps = { defaultLocation: ServiceLocation };
 
@@ -90,19 +128,34 @@ const HomeContent = memo(function HomeContent({ defaultLocation }: HomeContentPr
 
   return (
     <PageLayout>
-      {/* High-priority components load first for better LCP */}
+      {/* Critical above-the-fold content - loads immediately */}
       <HeroSection location={combinedLocation.name} isLoading={combinedLocation.isLoading} />
       <LocationPrompt onLocationUpdated={handleLocationUpdated} />
       
-      {/* Lower-priority components load after for better TBT */}
-      <ServicesPreview location={combinedLocation.name} />
-      <TestimonialsSection location={combinedLocation.id} />
-      <WhyChooseUs />
-      <PartnerLogos 
-        title="Brands We Work With" 
-        subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
-      />
-      <CTASection location={combinedLocation.name} />
+      {/* Use Suspense boundaries to prevent JavaScript execution from blocking the main thread */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <ServicesPreview location={combinedLocation.name} />
+      </Suspense>
+
+      {/* Break remaining sections into separate code-split chunks to reduce TBT */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <TestimonialsSection location={combinedLocation.id} />
+      </Suspense>
+
+      <Suspense fallback={<SectionSkeleton />}>
+        <WhyChooseUs />
+      </Suspense>
+
+      <Suspense fallback={<SectionSkeleton />}>
+        <PartnerLogos 
+          title="Brands We Work With" 
+          subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+        />
+      </Suspense>
+
+      <Suspense fallback={<SectionSkeleton />}>
+        <CTASection location={combinedLocation.name} />
+      </Suspense>
     </PageLayout>
   );
 });

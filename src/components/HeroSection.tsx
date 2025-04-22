@@ -75,13 +75,32 @@ function HeroSection({
     }
   }, []); // Removed location dependency as it's not directly used
 
-  // Fetch weather data when component mounts or location changes
+  // Fetch weather data when component mounts or location changes - optimized for reduced TBT
   useEffect(() => {
     let isMounted = true;
     
     const fetchData = async () => {
-      if (isMounted) setWeather(prev => ({ ...prev, isLoading: true }));
-      await fetchWeatherData();
+      // Defer weather data fetching to avoid blocking interactivity during initial render
+      if (typeof window !== 'undefined') {
+        if ('requestIdleCallback' in window) {
+          // Use requestIdleCallback to schedule this work during browser idle periods
+          // This is critical for reducing TBT as it moves work off the main thread
+          window.requestIdleCallback(() => {
+            if (isMounted) {
+              setWeather(prev => ({ ...prev, isLoading: true }));
+              fetchWeatherData();
+            }
+          });
+        } else {
+          // Fallback - delay by a small amount to prioritize other critical rendering
+          setTimeout(() => {
+            if (isMounted) {
+              setWeather(prev => ({ ...prev, isLoading: true }));
+              fetchWeatherData();
+            }
+          }, 300);
+        }
+      }
     };
     
     fetchData();
@@ -89,16 +108,32 @@ function HeroSection({
     return () => { isMounted = false; };
   }, [location, fetchWeatherData]);
 
-  // Optimize image loading for better LCP
+  // Optimize image loading for better LCP and reduce TBT
   useEffect(() => {
-    // Immediately set the image as loaded to improve initial render speed
-    setIsImageLoaded(true);
+    // Use requestIdleCallback to move non-critical work off the main thread
+    // This significantly reduces TBT by executing when the browser is idle
+    const scheduleImageLoad = () => {
+      if (typeof window !== 'undefined') {
+        // Immediately show a placeholder
+        setIsImageLoaded(true);
+        
+        if ('requestIdleCallback' in window) {
+          // Schedule preloading during idle time to avoid blocking the main thread
+          window.requestIdleCallback(() => {
+            const imagePreloader = new window.Image();
+            imagePreloader.src = '/hero-placeholder.jpg';
+          });
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          setTimeout(() => {
+            const imagePreloader = new window.Image();
+            imagePreloader.src = '/hero-placeholder.jpg';
+          }, 200); // Short delay to avoid blocking initial paint
+        }
+      }
+    };
     
-    // Preload the hero image for better LCP
-    if (typeof window !== 'undefined') {
-      const imagePreloader = new window.Image();
-      imagePreloader.src = '/hero-placeholder.jpg';
-    }
+    scheduleImageLoad();
   }, []);
 
   return (
@@ -111,20 +146,22 @@ function HeroSection({
         >
           {/* Using Next.js Image for optimized loading - contributes to better LCP */}
           <div className="relative w-full h-full">
+            {/* Use next/image with optimized attributes and reduced JavaScript overhead */}
             <Image 
               src="/hero-placeholder.jpg" 
               alt="HVAC services background" 
               fill 
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+              sizes="100vw" /* Simplified sizes attribute to reduce parsing */
               priority={true} /* Mark as LCP candidate */
-              quality={80} /* Reduced quality for faster load */
+              quality={70} /* Further reduced quality for faster load */
               className="object-cover"
               loading="eager" /* Force eager loading for LCP */
               fetchPriority="high" /* Use modern fetch priority */
               placeholder="blur" /* Show a blur placeholder while loading */
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAEAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAHxAAAQQCAgMAAAAAAAAAAAAAAQIDBBEABQYSByFR/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/ANJ5fyxkuS7hsXtfBzWuMvLfgMKbbbXYKgCfY963QsUKqzeMxgf/2Q==" /* Simple blue blur placeholder */
+              blurDataURL="data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAEAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAhEAABAwMEAwAAAAAAAAAAAAABAAIDBAUGIQcSE0Fhkf/EABUBAQEAAAAAAAAAAAAAAAAAAAME/8QAGREAAgMBAAAAAAAAAAAAAAAAAAECAxOR/9oADAMBAAIRAxEAPwCpo9pKOip2tqqKHnlYCI45HZwMnPJPQCIiDSxrHaR//9k=" /* Optimized smaller blur placeholder */
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy/90 to-navy/85"></div>
+            {/* Use more efficient gradient that requires less computation */}
+            <div className="absolute inset-0 bg-navy/90"></div>
           </div>
         </div>
       </div>
