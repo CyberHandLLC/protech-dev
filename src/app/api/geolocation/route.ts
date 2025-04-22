@@ -117,6 +117,10 @@ function mapToServiceArea(location: string): string {
       lowerLocation.includes('westerville') || 
       lowerLocation.includes('delaware') || 
       lowerLocation.includes('powell')) {
+    // For Lewis Center, we explicitly format it to avoid any URL encoding issues
+    if (lowerLocation.includes('lewis center')) {
+      return 'Lewis Center, OH';
+    }
     return location; // Preserve the actual detected location
   }
   

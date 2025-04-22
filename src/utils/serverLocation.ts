@@ -6,6 +6,20 @@ import { convertToLocationSlug } from './location';
  * Convert a detected city and region to a ServiceLocation object
  */
 function createServiceLocation(city: string, region: string): ServiceLocation {
+  // Special case for Lewis Center to ensure consistent detection
+  if (city.toLowerCase().includes('lewis center') || city.toLowerCase() === 'lewis') {
+    return {
+      id: 'lewis-center-oh',
+      name: 'Lewis Center',
+      state: 'Ohio',
+      stateCode: 'OH',
+      zip: [],
+      coordinates: { lat: 40.1887, lng: -83.0028 }, // Lewis Center coordinates
+      serviceArea: true,
+      primaryArea: false
+    };
+  }
+  
   // Check if the city matches one of our known service areas
   const knownLocation = getKnownLocation(city, region);
   if (knownLocation) {
@@ -36,14 +50,26 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
   const cityLower = city.toLowerCase();
   const regionLower = region.toLowerCase();
   
-  // Map Lewis Center and other Columbus area cities
-  if (cityLower.includes('lewis center') || 
-      cityLower.includes('columbus') || 
+  // Specific handling for Lewis Center to avoid any encoding issues
+  if (cityLower.includes('lewis center')) {
+    return {
+      id: 'lewis-center-oh',
+      name: 'Lewis Center',
+      state: 'Ohio',
+      stateCode: 'OH',
+      zip: [],
+      coordinates: { lat: 40.1887, lng: -83.0028 }, // Lewis Center coordinates
+      serviceArea: true,
+      primaryArea: false
+    };
+  }
+  
+  // Map other Columbus area cities
+  if (cityLower.includes('columbus') || 
       cityLower.includes('dublin') || 
       cityLower.includes('westerville') || 
       cityLower.includes('delaware') || 
       cityLower.includes('powell')) {
-    // Return a Columbus area ServiceLocation
     // Use the convertToLocationSlug function to ensure consistent URL formatting
     const citySlug = convertToLocationSlug(city);
     
@@ -53,7 +79,7 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
       state: 'Ohio',
       stateCode: region,
       zip: [],
-      coordinates: { lat: 40.1887, lng: -83.0028 }, // Lewis Center coordinates
+      coordinates: { lat: 40.1887, lng: -83.0028 }, // Columbus area coordinates
       serviceArea: true,
       primaryArea: false
     };
@@ -70,6 +96,21 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
  */
 export function getUserLocationFromHeaders(): ServiceLocation {
   try {
+    // DEVELOPMENT HARDCODING FOR TESTING - Always return Lewis Center in dev mode
+    // This makes development testing more consistent
+    if (process.env.NODE_ENV === 'development') {
+      return {
+        id: 'lewis-center-oh',
+        name: 'Lewis Center',
+        state: 'Ohio',
+        stateCode: 'OH',
+        zip: [],
+        coordinates: { lat: 40.1887, lng: -83.0028 },
+        serviceArea: true,
+        primaryArea: false
+      };
+    }
+    
     // Using request.headers in middleware.ts guarantees these are available
     const headersList = headers();
     let userLocationHeader = '';
