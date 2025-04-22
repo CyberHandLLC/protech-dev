@@ -75,7 +75,7 @@ export default function HeroSection({
   }, []);
 
   return (
-    <section className="relative min-h-[100svh] flex items-center overflow-hidden bg-navy py-16 md:py-0" aria-label="Hero Section">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-16 sm:py-0" aria-label="Hero Section">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
           className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
@@ -86,15 +86,15 @@ export default function HeroSection({
         </div>
       </div>
       
-      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8 pt-8 md:pt-0">
         <div className="max-w-3xl mx-auto md:mx-0">
-          <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-medium mb-4 md:mb-6 animate-fadeIn">
+          <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6 animate-fadeIn">
             Trusted HVAC Services in {displayLocation}
           </span>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 animate-fadeIn">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fadeIn">
             Expert Heating & <span className="text-ivory">Cooling Solutions</span>
           </h1>
-          <p className="text-white/90 text-base md:text-lg mb-6 md:mb-8 max-w-2xl animate-fadeIn animate-delay-75">
+          <p className="text-white/90 text-base sm:text-lg mb-6 sm:mb-8 max-w-2xl animate-fadeIn animate-delay-75">
             Professional HVAC services tailored to your comfort needs. From emergency repairs to routine maintenance, our certified technicians deliver reliable solutions.
           </p>
           
@@ -105,16 +105,16 @@ export default function HeroSection({
             isLoading={isLoading || weather.isLoading} 
           />
           
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 animate-fadeIn animate-delay-200">
-            <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 md:px-6 rounded-lg font-medium transition-colors text-center text-sm md:text-base">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
+            <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium transition-colors text-center text-sm sm:text-base">
               Explore Services
             </Link>
-            <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 md:px-6 rounded-lg font-medium transition-all text-center text-sm md:text-base">
+            <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg font-medium transition-all text-center text-sm sm:text-base">
               Contact Us
             </Link>
             <a 
               href={`tel:${emergencyPhone}`}
-              className="text-white hover:text-yellow-300 flex justify-center sm:justify-start items-center transition-colors text-sm md:text-base py-2"
+              className="text-white hover:text-yellow-300 flex justify-center sm:justify-start items-center transition-colors text-sm sm:text-base py-2.5 sm:py-3"
               aria-label={`Call us at ${emergencyPhoneDisplay}`}
             >
               <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
@@ -146,16 +146,16 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
     displayLocation = location; // Use original if decoding fails
   }
   return (
-    <div className="bg-white/10 backdrop-blur-sm px-3 py-2 md:px-4 md:py-3 rounded-lg inline-flex items-center mb-5 md:mb-8 animate-fadeIn animate-delay-150"
+    <div className="bg-white/10 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-3 rounded-lg inline-flex items-center mb-6 sm:mb-8 animate-fadeIn animate-delay-150 text-center sm:text-left w-full sm:w-auto"
          aria-live="polite">
-      <span className="text-xl md:text-2xl mr-2 md:mr-3" aria-hidden="true">{icon}</span>
+      <span className="text-xl sm:text-2xl mr-2 sm:mr-3" aria-hidden="true">{icon}</span>
       <div>
-        <span className="text-white text-xs md:text-sm">Current Weather in {displayLocation}</span>
+        <span className="text-white text-xs sm:text-sm">Current Weather in {displayLocation}</span>
         {isLoading ? (
-          <div className="h-5 md:h-6 w-16 md:w-20 bg-white/30 animate-pulse rounded mt-1" 
+          <div className="h-5 sm:h-6 w-16 sm:w-20 bg-white/30 animate-pulse rounded mt-1" 
                aria-label="Loading weather data"></div>
         ) : (
-          <p className="text-white font-bold text-base md:text-lg">{temperature !== null ? `${temperature}°F` : 'Unavailable'}</p>
+          <p className="text-white font-bold text-base sm:text-lg">{temperature !== null ? `${temperature}°F` : 'Unavailable'}</p>
         )}
       </div>
     </div>
@@ -164,16 +164,16 @@ function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDispl
 
 function EmergencyBadge() {
   return (
-    <div className="absolute bottom-4 md:bottom-8 right-4 md:right-8 z-20">
+    <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 z-20">
       <Link 
         href="/emergency-service"
-        className="group flex items-center bg-red rounded-full px-4 py-2 md:px-5 md:py-3 shadow-lg hover:bg-red-dark transition-colors"
+        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors scale-90 sm:scale-100"
         aria-label="24/7 Emergency Service"
       >
-        <span className="text-xl md:text-2xl mr-2 animate-pulse" aria-hidden="true">🚨</span>
+        <span className="text-xl sm:text-2xl mr-2 animate-pulse" aria-hidden="true">🚨</span>
         <div>
-          <p className="text-white font-bold leading-tight text-sm md:text-base">24/7 Emergency</p>
-          <p className="text-xs md:text-sm text-white/80 group-hover:text-white transition-colors">Fast Response</p>
+          <p className="text-white font-bold leading-tight text-sm sm:text-base">24/7 Emergency</p>
+          <p className="text-xs sm:text-sm text-white/80 group-hover:text-white transition-colors">Fast Response</p>
         </div>
       </Link>
     </div>
@@ -182,8 +182,8 @@ function EmergencyBadge() {
 
 function ScrollIndicator() {
   return (
-    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce" aria-hidden="true">
-      <div className="w-8 h-12 rounded-full border-2 border-white/50 flex items-start justify-center">
+    <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block" aria-hidden="true">
+      <div className="w-6 sm:w-8 h-10 sm:h-12 rounded-full border-2 border-white/50 flex items-start justify-center">
         <div className="w-1 h-3 bg-white/80 rounded-full mt-2 animate-pulse"></div>
       </div>
     </div>

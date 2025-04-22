@@ -35,22 +35,22 @@ export default function IconFeature({
           <div className="absolute -left-[5px] top-1/2 transform -translate-y-1/2 h-2 w-2 rounded-full bg-dark-blue-light group-hover:bg-red transition-colors"></div>
         )}
         
-        <div className={`flex items-start gap-3 md:gap-4 ${interactive ? 'border-l-2 border-dark-blue-light pl-4 md:pl-6 py-2 group-hover:border-red transition-colors' : ''}`}>
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-navy-light to-dark-blue-light flex items-center justify-center flex-shrink-0 mt-1">
+        <div className={`flex items-start gap-4 ${interactive ? 'border-l-2 border-dark-blue-light pl-6 py-2 group-hover:border-red transition-colors' : ''}`}>
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-navy-light to-dark-blue-light flex items-center justify-center flex-shrink-0 mt-1">
             {icon}
           </div>
           
           <div>
-            <h3 className={`text-lg md:text-xl font-semibold text-white ${interactive ? 'group-hover:text-red transition-colors' : ''}`}>
+            <h3 className={`text-xl font-semibold text-white ${interactive ? 'group-hover:text-red transition-colors' : ''}`}>
               {title}
             </h3>
             
-            <p className="text-ivory/80 mt-1 md:mt-2 text-sm md:text-base">{description}</p>
+            <p className="text-ivory/80 mt-2">{description}</p>
             
             {href && (
               <a 
                 href={href}
-                className="mt-2 md:mt-3 text-red-light hover:text-red font-medium flex items-center gap-1 text-sm md:text-base group-hover:underline"
+                className="mt-3 text-red-light hover:text-red font-medium flex items-center gap-1 group-hover:underline"
               >
                 <span>Learn More</span>
                 <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
