@@ -1,0 +1,74 @@
+Title: ProTech Heating & Cooling — Service Areas
+
+We primarily serve a 45-mile radius around (41.15744, -81.66589) in Northeast Ohio. 
+This includes (but is not limited to) parts of the following counties and ZIP codes:
+
+-------------------------
+SUMMIT COUNTY
+-------------------------
+- Akron: 44301, 44302, 44303, 44304, 44305, 44306, 44307, 44308, 44310, 44311, 44312, 44313, 44314, 44319, 44320
+- Barberton: 44203
+- Cuyahoga Falls: 44221, 44223
+- Stow: 44224
+- Tallmadge: 44278
+- Hudson: 44236
+- Norton: 44203 (shared with Barberton)
+
+-------------------------
+MEDINA COUNTY
+-------------------------
+- Medina: 44256
+- Wadsworth: 44281
+- Seville: 44273
+- Brunswick: 44212
+- Lodi: 44254
+- Rittman (partly in Wayne County): 44270
+
+-------------------------
+WAYNE COUNTY
+-------------------------
+- Wooster: 44691
+- Orrville: 44667
+- Smithville: 44677
+- Fredericksburg: 44627
+- Doylestown: 44230
+
+-------------------------
+CUYAHOGA COUNTY
+-------------------------
+- Cleveland: 44101, 44102, 44103, 44104, 44105, 44106, 44107, 44108, 44109, 44110, 44111, 44112, 44113, 44114...
+  (Many other 441xx ZIPs in Cleveland area)
+- Mayfield Heights: 44124
+- Lakewood: 44107
+- Parma: 44129, 44130, 44134
+- Garfield Heights: 44125
+
+-------------------------
+STARK COUNTY
+-------------------------
+- Canton: 44702, 44703, 44704, 44705, 44706, 44707, 44708, 44709, 44710, 44714, 44718...
+- Massillon: 44646, 44647
+
+-------------------------
+ASHLAND COUNTY
+-------------------------
+- Ashland: 44805
+
+-------------------------
+RICHLAND COUNTY
+-------------------------
+- Mansfield: 44901, 44902, 44903, 44904, 44905, 44906, 44907
+
+-------------------------
+OTHER NEARBY AREAS
+-------------------------
+- Portage County (e.g., Kent: 44240; Ravenna: 44266)
+- Lorain County (e.g., Elyria: 44035; North Ridgeville: 44039)
+- Geauga County (e.g., Chardon: 44024)
+- Portions of Lake, Erie, Holmes, and surrounding counties within ~45 miles.
+
+-------------------------
+NOTE
+-------------------------
+- If you do not see your city or ZIP code listed, please contact us to confirm availability.
+- We generally serve all of Northeast Ohio within about 45 miles of Wadsworth (41.15744, -81.66589).
