@@ -10,12 +10,24 @@ export async function GET(request: Request) {
   try {
     // For development environment, provide mock data
     if (process.env.NODE_ENV === 'development') {
+      // Check if a location is specified in query parameters for testing
+      const url = new URL(request.url);
+      const queryLocation = url.searchParams.get('location');
+      
+      // Default to Cleveland if not specified
+      const location = queryLocation || 'Cleveland, OH';
+      
+      // Parse city and region from location (format is typically "City, State")
+      const parts = location.split(',');
+      const city = parts[0]?.trim() || 'Cleveland';
+      const countryRegion = parts[1]?.trim() || 'OH';
+      
       return NextResponse.json({ 
-        location: 'Akron, OH',
+        location: location,
         rawLocation: {
-          city: 'Akron',
+          city: city,
           country: 'US',
-          countryRegion: 'OH'
+          countryRegion: countryRegion
         },
         debug: {
           geoData: null,
@@ -77,9 +89,9 @@ export async function GET(request: Request) {
     
     // Return a default location if there's an error
     return NextResponse.json({
-      location: 'Akron, OH',
+      location: 'Cleveland, OH',
       rawLocation: {
-        city: 'Akron',
+        city: 'Cleveland',
         country: 'US',
         countryRegion: 'OH'
       },
