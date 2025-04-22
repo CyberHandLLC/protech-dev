@@ -43,10 +43,10 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
         />
       
         {/* Logos scroll container with single row */}
-        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto bg-white rounded-lg">
+        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto">
           {/* Gradient overlays */}
-          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
+          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-navy to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-navy to-transparent z-10"></div>
           
           {/* Logo track */}
           <div className="overflow-hidden py-4">
@@ -56,13 +56,13 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                   key={`${logo.name}-${index}`}
                   className="mx-10 md:mx-20"
                 >
-                  <div className="h-20 w-48 flex items-center justify-center">
+                  <div className="h-16 w-48 flex items-center justify-center">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className="max-h-12 max-w-[160px] w-auto object-contain" 
+                      className="max-h-10 max-w-[140px] w-auto object-contain drop-shadow-lg brightness-150" 
                       priority
                       unoptimized={true}
                     />
