@@ -5,13 +5,16 @@ import type { Metadata } from 'next';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
 
-// Define types for our parameters
-type ServicePageParams = {
-  params: {
-    category: string;
-    service: string;
-    location: string;
-  };
+// Define types for param objects
+type ServiceParams = {
+  category: string;
+  service: string;
+  location: string;
+};
+
+// Define props expected by the component
+type ServicePageProps = {
+  params: ServiceParams;
   searchParams?: { [key: string]: string | string[] | undefined };
 };
 
@@ -73,7 +76,7 @@ const serviceData = {
  * Generate metadata for the page based on URL parameters
  */
 export async function generateMetadata(
-  { params }: { params: { category: string; service: string; location: string } }
+  { params }: { params: ServiceParams }
 ): Promise<Metadata> {
   const { category, service, location } = params;
   const serviceInfo = (serviceData as any)?.[category]?.[service];
@@ -102,7 +105,7 @@ export async function generateMetadata(
  * Service details page component
  * This is a server component as it primarily displays static content
  */
-export default function ServicePage({ params }: ServicePageParams) {
+export default function ServicePage({ params }: ServicePageProps) {
   const { category, service, location } = params;
   
   // Get service data
