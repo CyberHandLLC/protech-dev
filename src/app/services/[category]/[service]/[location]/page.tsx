@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
+import { convertToLocationSlug } from '@/utils/location';
 
 // Define types for param objects
 type ServiceParams = {
@@ -89,6 +90,7 @@ export async function generateMetadata(
   }
 
   // Format location for display
+  // Use a more robust method to handle various location formats
   const locationDisplay = location
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -117,6 +119,7 @@ export default function ServicePage({ params }: ServicePageProps) {
   }
 
   // Format location for display
+  // Use a more robust method to handle various location formats
   const locationDisplay = location
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))

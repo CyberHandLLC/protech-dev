@@ -37,7 +37,7 @@ export default function ServiceCard({
               return (
                 <li key={location}>
                   <Link 
-                    href={`/services/${categoryId}/${service.id}/${location}`} 
+                    href={`/services/${categoryId}/${service.id}/${convertToLocationSlug(location)}`} 
                     className="block text-sm text-red-light hover:text-red hover:pl-1 transition-all"
                   >
                     <span className="inline-block mr-1.5">→</span>{formattedLocation}
