@@ -16,6 +16,11 @@ export default function CTASection({
   phoneDisplay = '800-555-HVAC',
   phoneNumber = '8005554822'
 }: CTASectionProps) {
+  // Validate the provided location
+  if (!location || location === '') {
+    console.error('No location provided to CTASection, using Northeast Ohio as fallback');
+  }
+  
   // Format location for display and decode any URL-encoded characters
   let displayLocation = location || 'Northeast Ohio';
   
@@ -26,6 +31,9 @@ export default function CTASection({
     console.error('Error decoding location in CTASection:', e);
     // Keep original if decoding fails
   }
+  
+  // Log the location being used for debugging
+  console.log('CTASection using location:', { originalLocation: location, displayLocation });
 
   return (
     <Section className="relative overflow-hidden py-16 md:py-20">

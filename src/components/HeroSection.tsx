@@ -29,14 +29,22 @@ export default function HeroSection({
   emergencyPhone = '8005554822',
   emergencyPhoneDisplay = '800-555-HVAC'
 }: HeroSectionProps) {
+  // Ensure we have a valid location and decode any URL-encoded characters
+  if (!location || location === '') {
+    console.error('No location provided to HeroSection, using Northeast Ohio as fallback');
+  }
+  
   // Decode any URL-encoded characters in the location name
   let displayLocation;
   try {
-    displayLocation = decodeURIComponent(location);
+    displayLocation = decodeURIComponent(location || 'Northeast Ohio');
   } catch (e) {
     console.error('Error decoding location in HeroSection:', e);
-    displayLocation = location; // Use original if decoding fails
+    displayLocation = location || 'Northeast Ohio'; // Use original or fallback if decoding fails
   }
+  
+  // Log the location being used for debugging
+  console.log('HeroSection using location:', { originalLocation: location, displayLocation });
   const [weather, setWeather] = useState<WeatherData>({
     temperature: null,
     icon: '☀️',

@@ -85,13 +85,22 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
     const services = serviceCategories.find(cat => cat.id === activeCategory)?.services || [];
     
     // Create location slug from either provided location or detected location
+    // Important: prioritize the location passed from the parent component
     let locationToUse = location || detectedLocation || 'Northeast Ohio';
+    
+    // Log location usage to help with debugging
+    console.log('ServicesPreview using location:', { 
+      providedLocation: location, 
+      detectedLocation, 
+      finalLocationUsed: locationToUse 
+    });
     
     // Make sure to decode any URL-encoded characters for display
     let decodedLocation;
     try {
       decodedLocation = decodeURIComponent(locationToUse);
     } catch (e) {
+      console.error('Error decoding location in ServicesPreview:', e);
       decodedLocation = locationToUse;
     }
     

@@ -9,7 +9,7 @@ import { getUserLocationFromHeaders } from '@/utils/serverLocation';
 export const metadata: Metadata = {
   title: 'ProTech HVAC | Professional Heating & Cooling Services',
   description: 'ProTech HVAC provides expert heating, cooling, and air quality services throughout Northeast Ohio. Schedule service, request a quote, or learn about our services.',
-  keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Ohio', 'Akron', 'Cleveland', 'Canton'],
+  keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Ohio', 'Northeast Ohio'], // Dynamic keywords based on location
 };
 
 /**
@@ -19,6 +19,11 @@ export const metadata: Metadata = {
 export default function HomePage() {
   // Get location from server headers (populated by middleware)
   const userLocation = getUserLocationFromHeaders();
+  
+  // Ensure we have a valid location to pass to client components
+  if (!userLocation || !userLocation.name || !userLocation.id) {
+    console.error('Invalid or missing user location in HomePage');
+  }
   
   return <ClientHomeContent defaultLocation={userLocation} />;
 }
