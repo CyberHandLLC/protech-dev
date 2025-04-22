@@ -132,65 +132,99 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Load testimonials based on location
-  useEffect(() => {
-    const locationKey = location.toLowerCase().replace(/\s+/g, '-');
-    
-    // Simulate network delay for loading state demonstration
-    const timer = setTimeout(() => {
-      const locationTestimonials = allTestimonials[locationKey] || [];
-      
-      // If no location-specific testimonials, combine all available ones
-      const fallbackTestimonials = locationTestimonials.length > 0 
-        ? locationTestimonials 
-        : Object.values(allTestimonials).flat();
-        
-      setTestimonials(fallbackTestimonials);
-      setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [location]);
+  // Format location for testimonial lookup - handle URL encoding
+  let decodedLocation;
+  try {
+    decodedLocation = decodeURIComponent(location);
+  } catch (e) {
+    decodedLocation = location;
+  }
   
-  const goToPrev = useCallback(() => {
-    setActiveIndex(current => 
-      current === 0 ? testimonials.length - 1 : current - 1
-    );
+  const locationKey = decodedLocation.toLowerCase().replace(/\s+/g, '-') + '-oh';
+  
+  // Simulate fetching testimonials from the database
+  useEffect(() => {
+    const loadTestimonials = () => {
+      setIsLoading(true);
+      
+      // Reset index when location changes
+      setActiveIndex(0);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        // Get location-specific testimonials or use a default set
+        const locationTestimonials = allTestimonials[locationKey] || 
+          allTestimonials['akron-oh'] || 
+          Object.values(allTestimonials)[0] || 
+          [];
+          
+        setTestimonials(locationTestimonials);
+        setIsLoading(false);
+      }, 500);
+    };
+    
+    loadTestimonials();
+  }, [locationKey]);
+  
+  const handlePrev = useCallback(() => {
+    if (testimonials.length <= 1) return;
+    setActiveIndex((current) => (current === 0 ? testimonials.length - 1 : current - 1));
   }, [testimonials.length]);
   
-  const goToNext = useCallback(() => {
+  const handleNext = useCallback(() => {
     setActiveIndex(current => 
       current === testimonials.length - 1 ? 0 : current + 1
     );
   }, [testimonials.length]);
   
+  // Set up key and touch navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrev();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev]);
+  
+  // Set up auto-advance (disabled on mobile for better performance)
+  useEffect(() => {
+    // Only auto-advance if we have multiple testimonials and aren't on mobile
+    if (testimonials.length > 1 && window.innerWidth >= 768) {
+      const interval = setInterval(handleNext, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [handleNext, testimonials.length]);
+  
   return (
     <Section className="bg-gradient-to-br from-navy to-dark-blue">
       <Container>
         <SectionHeading
-          accentText="Customer Satisfaction"
-          title="What Our Clients Are Saying"
-          subtitle={`Read reviews from real customers in ${location} who have experienced our exceptional service firsthand.`}
-          centered
+          title="What Our Customers Say"
+          subtitle={`Read reviews from real customers in ${decodedLocation} who have experienced our exceptional service firsthand.`}
+          align="center"
+          className="mb-8 sm:mb-12"
         />
         
         {isLoading ? (
           <TestimonialSkeleton />
-        ) : testimonials.length === 0 ? (
-          <EmptyTestimonialState />
         ) : (
-          <TestimonialCarousel 
-            testimonials={testimonials}
-            activeIndex={activeIndex}
-            setActiveIndex={setActiveIndex}
-            onPrev={goToPrev}
-            onNext={goToNext}
-          />
+          <div className="max-w-5xl mx-auto">
+            <TestimonialCarousel
+              testimonials={testimonials}
+              activeIndex={activeIndex}
+              setActiveIndex={setActiveIndex}
+              onPrev={handlePrev}
+              onNext={handleNext}
+            />
+          </div>
         )}
         
-        {!isLoading && testimonials.length > 0 && (
-          <ReviewPlatforms platforms={reviewPlatforms} />
-        )}
+        <ReviewPlatforms platforms={reviewPlatforms} />
       </Container>
     </Section>
   );
@@ -256,19 +290,20 @@ function TestimonialCarousel({
   }
 
   return (
-    <div className="relative bg-gradient-to-b from-dark-blue to-navy rounded-xl overflow-hidden">
+    <div className="relative bg-gradient-to-b from-dark-blue to-navy rounded-xl overflow-hidden max-w-full">
       {/* Main featured testimonial */}
       <div className="md:flex min-h-[400px]">
         {/* Large Featured Testimonial */}
-        <div className="md:w-2/3 p-8 md:p-10 relative">
-          {testimonials.map((testimonial, index) => (
-            <div 
-              key={testimonial.id}
-              className={`transition-all duration-500 h-full ${index === activeIndex ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16 absolute inset-0'}`}
-              role="tabpanel"
-              id={`testimonial-${index}`}
-              aria-labelledby={`testimonial-tab-${index}`}
-            >
+        <div className="md:w-2/3 p-6 md:p-10 relative overflow-hidden">
+          <div className="relative min-h-[330px] md:min-h-auto">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={testimonial.id}
+                className={`transition-all duration-300 ${index === activeIndex ? 'opacity-100 translate-x-0 relative' : 'opacity-0 translate-x-16 absolute inset-0 pointer-events-none'}`}
+                role="tabpanel"
+                id={`testimonial-${index}`}
+                aria-labelledby={`testimonial-tab-${index}`}
+              >
               {/* Red accent line */}
               <div className="h-1 w-24 bg-gradient-to-r from-red to-red-dark mb-8"></div>
               
@@ -315,14 +350,15 @@ function TestimonialCarousel({
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
           
           {/* Navigation for mobile */}
-          <div className="md:hidden mt-8 flex items-center justify-between">
+          <div className="md:hidden mt-6 flex items-center justify-center gap-4">
             <button 
               onClick={onPrev}
-              className="w-10 h-10 rounded-full bg-dark-blue-light hover:bg-red/20 flex items-center justify-center text-white transition-all"
+              className="w-10 h-10 rounded-full bg-dark-blue-light hover:bg-red/20 flex items-center justify-center text-white transition-all focus:outline-none focus:ring-2 focus:ring-red/30 active:bg-red/30"
               aria-label="Previous testimonial"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -330,11 +366,11 @@ function TestimonialCarousel({
               </svg>
             </button>
             
-            <span className="text-ivory/70">{activeIndex + 1} / {testimonials.length}</span>
+            <span className="text-ivory/70 min-w-[60px] text-center">{activeIndex + 1} / {testimonials.length}</span>
             
             <button 
               onClick={onNext}
-              className="w-10 h-10 rounded-full bg-dark-blue-light hover:bg-red/20 flex items-center justify-center text-white transition-all"
+              className="w-10 h-10 rounded-full bg-dark-blue-light hover:bg-red/20 flex items-center justify-center text-white transition-all focus:outline-none focus:ring-2 focus:ring-red/30 active:bg-red/30"
               aria-label="Next testimonial"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
