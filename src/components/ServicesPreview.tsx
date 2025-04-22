@@ -2,7 +2,12 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { formatLocationId } from '../utils/locationUtils';
+import Section from './ui/Section';
+import Container from './ui/Container';
+import SectionHeading from './ui/SectionHeading';
+import IconFeature from './ui/IconFeature';
+import { convertToLocationSlug } from '../utils/location';
+import { useLocationDetection } from '../hooks/useLocationDetection';
 
 /**
  * Service data interface
@@ -71,32 +76,29 @@ const serviceCategories: ServiceCategory[] = [
 export default function ServicesPreview({ location }: ServicesPreviewProps) {
   const [activeCategory, setActiveCategory] = useState('residential');
   
+  // Use our client-side location detection as a backup/supplement to the server-provided location
+  const { userLocation: detectedLocation, isLocating } = useLocationDetection();
+  
   // Generate location slug for URLs and get active category services - combined in one useMemo
   const { locationSlug, activeServices } = useMemo(() => {
     // Get services for active category
     const services = serviceCategories.find(cat => cat.id === activeCategory)?.services || [];
     
-    // Create location slug
-    let slug;
-    try {
-      slug = formatLocationId(location.split(',')[0].trim(), 'oh');
-    } catch (e) {
-      slug = location.toLowerCase().replace(/\s+/g, '-').replace(',', '-');
-    }
+    // Create location slug from either provided location or detected location
+    const locationToUse = location || detectedLocation || 'Northeast Ohio';
+    const slug = convertToLocationSlug(locationToUse);
     
     return { locationSlug: slug, activeServices: services };
-  }, [location, activeCategory]);
+  }, [location, detectedLocation, activeCategory]);
 
   return (
-    <section className="py-20 px-4 md:px-8 bg-navy text-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Services</h2>
-          <p className="text-ivory/80 max-w-3xl mx-auto">
-            Professional HVAC solutions for your home and business in {location}. 
-            Our certified technicians provide expert service for all your heating and cooling needs.
-          </p>
-        </div>
+    <Section className="bg-navy text-white">
+      <Container>
+        <SectionHeading
+          title="Our Services"
+          subtitle={`Professional HVAC solutions for your home and business in ${location || detectedLocation || 'Northeast Ohio'}. Our certified technicians provide expert service for all your heating and cooling needs.`}
+          centered
+        />
         
         {/* Service Category Tabs */}
         <CategoryTabs 
@@ -110,29 +112,19 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
           services={activeServices} 
           categoryId={activeCategory} 
           locationSlug={locationSlug} 
+          isLoading={isLocating}
         />
         
         {/* All Services Button */}
         <div className="text-center">
           <Link 
             href="/services" 
-            className="inline-flex items-center px-6 py-3 bg-red text-white rounded-lg font-medium hover:bg-red-dark transition-colors"
-            aria-label="View all our HVAC services"
-          >
+            className="inline-block px-8 py-3 mt-8 bg-red text-white rounded-lg hover:bg-red-dark transition-colors shadow-lg">
             View All Services
-            <svg 
-              className="w-4 h-4 ml-2" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
           </Link>
         </div>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }
 
@@ -183,9 +175,28 @@ interface ServiceGridProps {
   services: Service[];
   categoryId: string;
   locationSlug: string;
+  isLoading?: boolean;
 }
 
-function ServiceGrid({ services, categoryId, locationSlug }: ServiceGridProps) {
+function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceGridProps) {
+  // Loading state when location is being detected
+  if (isLoading) {
+    return (
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-12"
+        role="tabpanel" 
+        id={`${categoryId}-panel`}
+        aria-labelledby={`${categoryId}-tab`}
+      >
+        {/* Show loading skeleton when detecting location */}
+        {Array(4).fill(0).map((_, index) => (
+          <div key={index} className="bg-dark-blue h-64 rounded-xl animate-pulse border border-dark-blue-light/30"></div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Use our reusable IconFeature component for consistent design
   return (
     <div 
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-12"
@@ -194,10 +205,13 @@ function ServiceGrid({ services, categoryId, locationSlug }: ServiceGridProps) {
       aria-labelledby={`${categoryId}-tab`}
     >
       {services.map((service) => (
-        <ServiceCard 
+        <IconFeature
           key={service.id}
-          service={service}
+          icon={<span className="text-2xl">{service.icon}</span>}
+          title={service.name}
+          description={service.description}
           href={`/services/${categoryId}/${service.id}/${locationSlug}`}
+          interactive
         />
       ))}
     </div>
