@@ -110,6 +110,21 @@ function mapToServiceArea(location: string): string {
     return 'Canton, OH';
   }
   
-  // Default service area
+  // Columbus area - Lewis Center is north of Columbus
+  if (lowerLocation.includes('lewis center') || 
+      lowerLocation.includes('columbus') || 
+      lowerLocation.includes('dublin') || 
+      lowerLocation.includes('westerville') || 
+      lowerLocation.includes('delaware') || 
+      lowerLocation.includes('powell')) {
+    return location; // Preserve the actual detected location
+  }
+  
+  // If we have a specific city detected, preserve it rather than using a generic area
+  if (location.includes(',') && location !== 'Akron, OH' && location !== 'Cleveland, OH' && location !== 'Canton, OH') {
+    return location; // Keep the original detected location when it's specific
+  }
+  
+  // Default service area as fallback
   return 'Northeast Ohio';
 }
