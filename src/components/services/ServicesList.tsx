@@ -17,9 +17,17 @@ export default function ServicesList({ category, userLocation: serverLocation }:
   
   // Prioritize server location, then client location, then default
   const locationToUse = serverLocation?.name || clientLocation || 'Northeast Ohio';
-  // Create a location slug for URLs
-  const locationSlug = serverLocation?.id || 
-    (clientLocation ? convertToLocationSlug(clientLocation) : 'northeast-ohio');
+  
+  // Create a location slug for URLs (and ensure proper formatting even for server locations)
+  let locationSlug;
+  if (serverLocation?.id) {
+    // Make sure server-provided ID is properly formatted without encoding issues
+    locationSlug = convertToLocationSlug(serverLocation.id);
+  } else if (clientLocation) {
+    locationSlug = convertToLocationSlug(clientLocation);
+  } else {
+    locationSlug = 'northeast-ohio';
+  }
   
   return (
     <section className="mb-16">
