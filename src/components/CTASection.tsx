@@ -37,34 +37,34 @@ export default function CTASection({
       {/* Diagonal accent at top */}
       <div className="absolute top-0 left-0 w-full h-8 bg-navy-light clip-diagonal"></div>
       
-      <Container className="text-center relative z-10 px-5 md:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 md:mb-6 leading-tight">
+      <Container className="text-center relative z-10">
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">
           Ready for Professional HVAC Service in {displayLocation}?
         </h2>
         
-        <p className="text-ivory/90 text-base md:text-lg mb-6 md:mb-10 max-w-3xl mx-auto">
+        <p className="text-ivory/90 text-lg mb-10 max-w-3xl mx-auto">
           Whether you need emergency repairs, routine maintenance, or a completely new system,
           our team of certified technicians is ready to deliver comfort to your home or business.
         </p>
         
         {/* Phone CTA Box */}
-        <div className="bg-red bg-opacity-95 p-4 md:p-6 rounded-xl max-w-md mx-auto mb-6 md:mb-10 shadow-lg">
-          <p className="text-white mb-1 md:mb-2 text-sm md:text-base">Call us now at</p>
+        <div className="bg-red bg-opacity-95 p-6 rounded-xl max-w-md mx-auto mb-10 shadow-lg">
+          <p className="text-white mb-2">Call us now at</p>
           <a 
             href={`tel:${phoneNumber}`}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold text-white hover:text-ivory transition-colors"
+            className="text-3xl md:text-4xl font-bold text-white hover:text-ivory transition-colors"
             aria-label={`Call us at ${phoneDisplay}`}
           >
             {phoneDisplay}
           </a>
-          <p className="text-white/80 text-xs md:text-sm mt-1 md:mt-2">Available 24/7 for emergency service</p>
+          <p className="text-white/80 text-sm mt-2">Available 24/7 for emergency service</p>
         </div>
         
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 max-w-lg mx-auto">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-lg mx-auto">
           <Link 
             href="/schedule" 
-            className="flex-1 bg-white text-navy hover:bg-ivory px-4 sm:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors text-center text-sm sm:text-base"
+            className="flex-1 bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center"
           >
             Schedule Online
           </Link>
@@ -72,14 +72,14 @@ export default function CTASection({
           <Button 
             href="/free-estimate" 
             variant="outline" 
-            className="flex-1 text-sm sm:text-base py-2.5 md:py-3"
+            className="flex-1"
           >
             Free Estimate
           </Button>
         </div>
         
-        <div className="mt-10 md:mt-16">
-          <p className="text-ivory/90 text-xs md:text-sm">Trusted by homeowners and businesses across {displayLocation}</p>
+        <div className="mt-16">
+          <p className="text-ivory/90 text-sm">Trusted by homeowners and businesses across {displayLocation}</p>
         </div>
       </Container>
     </Section>
