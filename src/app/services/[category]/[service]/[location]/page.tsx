@@ -12,6 +12,7 @@ type ServicePageParams = {
     service: string;
     location: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 // Service data - in a real app, this would come from a database or API
@@ -71,7 +72,9 @@ const serviceData = {
 /**
  * Generate metadata for the page based on URL parameters
  */
-export async function generateMetadata({ params }: ServicePageParams): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: { category: string; service: string; location: string } }
+): Promise<Metadata> {
   const { category, service, location } = params;
   const serviceInfo = (serviceData as any)?.[category]?.[service];
   
