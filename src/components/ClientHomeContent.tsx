@@ -7,7 +7,7 @@ import useLocationDetection from '@/hooks/useLocationDetection';
 import PageLayout from '@/components/PageLayout';
 
 // Only import critical above-the-fold components directly
-import HeroSection from '@/components/HeroSection';
+import HeroSection from './HeroSectionFixed';
 import LocationPrompt from '@/components/LocationPrompt';
 
 // Import types

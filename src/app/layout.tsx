@@ -2,7 +2,7 @@ import './globals.css';
 import './mobile-tbt-optimizer.css'; // Import specialized mobile TBT optimization CSS
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
-import dynamic from 'next/dynamic';
+import PerformanceOptimizers from '@/components/PerformanceOptimizers';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -11,21 +11,7 @@ export const metadata = {
   description: 'Professional HVAC services for residential and commercial needs',
 };
 
-// Import optimizers with no SSR to avoid server-side execution
-const TBTOptimizer = dynamic(
-  () => import('@/components/TBTOptimizer'),
-  { ssr: false }
-);
-
-const MobileOptimizer = dynamic(
-  () => import('@/components/MobileOptimizer'),
-  { ssr: false }
-);
-
-const MobilePerformanceManager = dynamic(
-  () => import('@/components/MobilePerformanceManager'),
-  { ssr: false }
-);
+// Using PerformanceOptimizers client component instead of direct dynamic imports
 
 export default function RootLayout({
   children,
@@ -55,9 +41,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-inter`}>
         {/* Performance optimizers must be the first components to ensure they run early */}
-        <TBTOptimizer />
-        <MobileOptimizer />
-        <MobilePerformanceManager />
+        <PerformanceOptimizers />
         
         {children}
         

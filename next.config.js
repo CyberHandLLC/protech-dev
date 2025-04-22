@@ -20,28 +20,10 @@ const nextConfig = {
     minimumCacheTTL: 60, // 1 minute cache
     // Use modern image formats that are more efficient
     formats: ['image/avif', 'image/webp'],
-    // Use quality setting to prioritize faster loads on mobile
-    quality: 70,
   },
   
   // Optimize for performance and reduce TBT
   experimental: {
-    // Use SWC for faster compilation - major impact on mobile TBT
-    swcMinify: true,
-    // Create smaller, more efficient chunks
-    granularChunks: true,
-    // Optimize server components delivery
-    serverComponents: true,
-    // Enable tree shaking for the app directory
-    appDir: true,
-    // Mobile-specific optimizations - critical for reducing bundle size
-    optimizePackageImports: ['react-dom', 'react', 'next/link', 'next/image'],
-    // Reduce JavaScript bundle size for mobile devices
-    modularizeImports: {
-      'lodash-es': {
-        transform: 'lodash-es/{{member}}',
-      },
-    },
     // Prefetch critical assets - helps on mobile connections
     optimisticClientCache: true,
   },
@@ -60,19 +42,46 @@ const nextConfig = {
   
   // Enable React Fast Refresh - improves build times and iterations
   webpack: (config, { dev, isServer }) => {
-    // Mobile-specific optimizations: optimize builds and reduce chunks
+    // Mobile-specific optimizations: optimize builds for mobile performance
     if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          maxInitialRequests: 25,
-          minSize: 20000,
-        },
-        runtimeChunk: {
-          name: 'runtime',
+      // Optimize chunk splitting for better mobile performance
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Create a specific bundle for framework code
+          framework: {
+            name: 'framework',
+            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)[\\/]/,
+            priority: 40,
+            enforce: true,
+          },
+          // Group larger common dependencies together
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            priority: 30,
+            minChunks: 2,
+            reuseExistingChunk: true,
+          },
+          // Common components used across multiple pages
+          commons: {
+            name: 'commons',
+            minChunks: 3,
+            priority: 20,
+          },
+          // Remaining shared code
+          shared: {
+            name: false,
+            priority: 10,
+            minChunks: 2,
+            reuseExistingChunk: true,
+          },
         },
       };
+      
+      // Add runtime chunk for better caching
+      config.optimization.runtimeChunk = 'single';
     }
     return config;
   },
