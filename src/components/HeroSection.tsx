@@ -48,11 +48,11 @@ export default memo(function HeroSection({
     <section className="relative min-h-screen flex items-center overflow-hidden bg-navy py-20 sm:py-0" aria-label="Hero Section">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
-          className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-500 ${isImageVisible ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full bg-[url('/images/gallary/470570328_122181166526171081_1320970727297119947_n.jpg')] bg-cover bg-center transition-opacity duration-500 ${isImageVisible ? 'opacity-100' : 'opacity-0'}`}
           role="img"
           aria-label="HVAC service background image"
         >
-          <div className="absolute inset-0 bg-navy opacity-95"></div>
+          <div className="absolute inset-0 bg-navy opacity-80"></div>
         </div>
       </div>
       

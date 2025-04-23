@@ -7,6 +7,7 @@ import PageLayout from '@/components/PageLayout';
 import OptimizedClientWrapper from '@/components/OptimizedClientWrapper';
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
+import ImageGallery from '@/components/ImageGallery';
 
 // Next.js 15 optimized dynamic imports with enhanced TBT reduction
 // Use SSR with proper error boundaries and suspense boundaries
@@ -145,7 +146,12 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
         </Suspense>
       </OptimizedClientWrapper>
       
-      {/* Partner logos - lower priority */}
+      {/* Image Gallery - medium priority */}
+      <OptimizedClientWrapper priority="medium" id="image-gallery">
+        <ImageGallery />
+      </OptimizedClientWrapper>
+
+      {/* Partner logos - low priority, load last */}
       <OptimizedClientWrapper priority="low" id="partner-logos">
         <Suspense fallback={<div className="h-40 bg-navy/50 animate-pulse rounded-md" />}>
           <PartnerLogos 
