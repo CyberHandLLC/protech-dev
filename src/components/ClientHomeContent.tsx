@@ -1,42 +1,41 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, memo, use } from 'react';
 import useLocationDetection from '@/hooks/useLocationDetection';
 import dynamic from 'next/dynamic';
 import PageLayout from '@/components/PageLayout';
-import LazyHydrate from '@/components/LazyHydrate';
+import OptimizedClientWrapper from '@/components/OptimizedClientWrapper';
 
-// Optimize dynamic imports for better TBT performance
-// Instead of ssr: false, we use a combination of ssr and suspense
-// This allows components to be rendered on the server but hydrated progressively
+// Next.js 15 optimized dynamic imports with enhanced TBT reduction
+// Use SSR with proper error boundaries and suspense boundaries
 const HeroSection = dynamic(() => import('@/components/HeroSection'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-[600px] bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-[600px] bg-navy/50 animate-pulse rounded-md" /> 
 });
 
 const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-80 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
 const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-60 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
 const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-80 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
 const CTASection = dynamic(() => import('@/components/CTASection'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-60 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
 const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { 
-  ssr: true, // Server render this component
-  loading: () => <div className="h-40 bg-gray-200 animate-pulse" /> 
+  ssr: true,
+  loading: () => <div className="h-40 bg-navy/50 animate-pulse rounded-md" /> 
 });
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
@@ -51,11 +50,12 @@ type HomeContentProps = {
   weatherData?: WeatherData;
 };
 
-function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
-  // Use the client-side location detection hook directly like ServicesList does
+// Memoize HomeContent to prevent unnecessary re-renders
+const HomeContent = memo(function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
+  // Use the client-side location detection hook
   const { userLocation: clientLocation, isLocating } = useLocationDetection();
   
-  // Combine server-side and client-side location data
+  // Combine server-side and client-side location data with initial server state
   const [combinedLocation, setCombinedLocation] = useState<{
     name: string;
     id: string;
@@ -63,43 +63,60 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
   }>({ 
     name: defaultLocation.name, 
     id: defaultLocation.id,
-    isLoading: true
+    isLoading: false // Start with server data ready
   });
   
-  // Update location when client-side location is detected
+  // Update location when client-side location is detected - off the main thread
   useEffect(() => {
-    // If there's a client-side detected location, use it
-    if (clientLocation) {
-      console.log('HomeContent: Client location detected:', clientLocation);
-      
-      // Format location name and ID properly
-      let locationName = clientLocation;
-      try {
-        locationName = decodeURIComponent(clientLocation);
-      } catch (e) {
-        console.error('Error decoding location:', e);
+    // Don't block main thread with location processing
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(() => {
+        processLocation();
+      }, { timeout: 2000 });
+    } else {
+      // Fallback for browsers without requestIdleCallback
+      setTimeout(processLocation, 200);
+    }
+    
+    function processLocation() {
+      // If there's a client-side detected location, use it
+      if (clientLocation) {
+        // Avoid console logs in production
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('Location detected:', clientLocation);
+        }
+        
+        // Format location name and ID properly
+        let locationName = clientLocation;
+        try {
+          locationName = decodeURIComponent(clientLocation);
+        } catch (e) {
+          // Only log errors in development
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Error decoding location:', e);
+          }
+        }
+        
+        // Create location ID for testimonials
+        const locationId = convertToLocationSlug(clientLocation);
+        
+        setCombinedLocation({
+          name: locationName,
+          id: locationId,
+          isLoading: false
+        });
+      } else if (!isLocating) {
+        // Use the server default if not detecting or no client location
+        setCombinedLocation({
+          name: defaultLocation.name,
+          id: defaultLocation.id,
+          isLoading: false
+        });
       }
-      
-      // Create location ID for testimonials
-      const locationId = convertToLocationSlug(clientLocation);
-      
-      setCombinedLocation({
-        name: locationName,
-        id: locationId,
-        isLoading: false
-      });
-    } else if (!isLocating) {
-      // If not detecting location and no client location, use the server default
-      console.log('HomeContent: Using server default location:', defaultLocation.name);
-      setCombinedLocation({
-        name: defaultLocation.name,
-        id: defaultLocation.id,
-        isLoading: false
-      });
     }
   }, [clientLocation, isLocating, defaultLocation]);
 
-  // Use the server-provided weather data if available
+  // Prepare weather data from the server
   const serverWeather = weatherData ? {
     temperature: weatherData.temperature,
     icon: weatherData.icon,
@@ -108,54 +125,59 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
 
   return (
     <PageLayout>
-      {/* Hero section is critical for LCP, so render it immediately but with suspense boundary */}
-      <Suspense fallback={<div className="h-[600px] bg-gray-200 animate-pulse" />}>
-        <HeroSection 
-          location={combinedLocation.name} 
-          isLoading={combinedLocation.isLoading} 
-          serverWeather={serverWeather}
-        />
-      </Suspense>
+      {/* Hero section - critical for LCP, highest priority with minimal deferring */}
+      <OptimizedClientWrapper priority="critical" defer={false} id="hero-section">
+        <Suspense fallback={<div className="h-[600px] bg-navy/50 animate-pulse rounded-md" />}>
+          <HeroSection 
+            location={combinedLocation.name} 
+            isLoading={combinedLocation.isLoading} 
+            serverWeather={serverWeather}
+          />
+        </Suspense>
+      </OptimizedClientWrapper>
       
-      {/* Progressive hydration for below-the-fold content */}
-      {/* Use whenToHydrate="visible" to only hydrate when the component is about to enter viewport */}
-      <LazyHydrate whenToHydrate="visible" id="services-preview" fallback={<div className="h-80 bg-gray-200" />}>
-        <Suspense fallback={<div className="h-80 bg-gray-200 animate-pulse" />}>
+      {/* Services preview - high priority, deferred until almost in viewport */}
+      <OptimizedClientWrapper priority="high" id="services-preview">
+        <Suspense fallback={<div className="h-80 bg-navy/50 animate-pulse rounded-md" />}>
           <ServicesPreview location={combinedLocation.name} />
         </Suspense>
-      </LazyHydrate>
+      </OptimizedClientWrapper>
       
-      {/* Testimonials with visible-trigger lazy hydration */}
-      <LazyHydrate whenToHydrate="visible" id="testimonials-section" fallback={<div className="h-60 bg-gray-200" />}>
-        <Suspense fallback={<div className="h-60 bg-gray-200 animate-pulse" />}>
+      {/* Testimonials section - medium priority, deferred until in viewport */}
+      <OptimizedClientWrapper priority="medium" id="testimonials-section">
+        <Suspense fallback={<div className="h-60 bg-navy/50 animate-pulse rounded-md" />}>
           <TestimonialsSection location={combinedLocation.id} />
         </Suspense>
-      </LazyHydrate>
+      </OptimizedClientWrapper>
       
-      {/* Why Choose Us section with visible-trigger lazy hydration */}
-      <LazyHydrate whenToHydrate="visible" id="why-choose-us" fallback={<div className="h-80 bg-gray-200" />}>
-        <Suspense fallback={<div className="h-80 bg-gray-200 animate-pulse" />}>
+      {/* Why Choose Us section - medium priority */}
+      <OptimizedClientWrapper priority="medium" id="why-choose-us">
+        <Suspense fallback={<div className="h-80 bg-navy/50 animate-pulse rounded-md" />}>
           <WhyChooseUs />
         </Suspense>
-      </LazyHydrate>
+      </OptimizedClientWrapper>
       
-      {/* Partner logos with visible-trigger lazy hydration */}
-      <LazyHydrate whenToHydrate="visible" id="partner-logos" fallback={<div className="h-40 bg-gray-200" />}>
-        <Suspense fallback={<div className="h-40 bg-gray-200 animate-pulse" />}>
-          <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
+      {/* Partner logos - lower priority */}
+      <OptimizedClientWrapper priority="low" id="partner-logos">
+        <Suspense fallback={<div className="h-40 bg-navy/50 animate-pulse rounded-md" />}>
+          <PartnerLogos 
+            title="Brands We Work With" 
+            subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+          />
         </Suspense>
-      </LazyHydrate>
+      </OptimizedClientWrapper>
       
-      {/* CTA section with visible-trigger lazy hydration */}
-      <LazyHydrate whenToHydrate="visible" id="cta-section" fallback={<div className="h-60 bg-gray-200" />}>
-        <Suspense fallback={<div className="h-60 bg-gray-200 animate-pulse" />}>
+      {/* CTA section - medium priority */}
+      <OptimizedClientWrapper priority="medium" id="cta-section">
+        <Suspense fallback={<div className="h-60 bg-navy/50 animate-pulse rounded-md" />}>
           <CTASection location={combinedLocation.name} />
         </Suspense>
-      </LazyHydrate>
+      </OptimizedClientWrapper>
     </PageLayout>
   );
 }
 
-export default function ClientHomeContent({ defaultLocation, weatherData }: HomeContentProps) {
+// Simple wrapper that just passes props to the memoized component
+export default memo(function ClientHomeContent({ defaultLocation, weatherData }: HomeContentProps) {
   return <HomeContent defaultLocation={defaultLocation} weatherData={weatherData} />;
-}
+});
