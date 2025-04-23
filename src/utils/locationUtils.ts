@@ -220,6 +220,32 @@ export function getLocationById(locationId: string): ServiceLocation | undefined
 }
 
 /**
+ * Get a service location by its name
+ * 
+ * @param locationName The name of the location to find (e.g., 'Akron' or 'Cleveland')
+ * @returns The matching ServiceLocation or undefined if not found
+ */
+export function getLocationByName(locationName: string): ServiceLocation | undefined {
+  if (!locationName) {
+    return undefined;
+  }
+  // Try to find an exact match first
+  let location = serviceLocations.find(
+    location => location.name.toLowerCase() === locationName.toLowerCase()
+  );
+  
+  // If no exact match, try to find a partial match
+  if (!location) {
+    location = serviceLocations.find(
+      location => locationName.toLowerCase().includes(location.name.toLowerCase())
+    );
+  }
+  
+  // If still no match, return the default location
+  return location || defaultLocation;
+}
+
+/**
  * Format a location name and state code into a URL-friendly ID
  * 
  * @example

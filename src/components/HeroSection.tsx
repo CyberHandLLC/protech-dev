@@ -5,197 +5,90 @@
 // This wrapper uses Server Components to reduce client bundle size
 import Image from 'next/image';
 import Link from 'next/link';
-import { convertToLocationSlug } from '@/utils/location';
+import { getLocationByName } from '@/utils/locationUtils';
+// Import client component for interactive elements
+import HeroSectionClient from './client/HeroSectionClient';
 
-// Import client components for interactive elements only
-import ClientHeroInteractive from './client/ClientHeroInteractive';
-
-// Props type for the hero section
-interface HeroSectionProps {
-  location?: string;
+// Define props type for the Server Component
+type HeroSectionProps = {
+  location: string;
+  isLoading?: boolean;
+  emergencyPhone?: string;
+  emergencyPhoneDisplay?: string;
 };
 
+// Server Component version
 /**
- * Hero section component for the homepage - TRUE SERVER COMPONENT
- * 
- * This follows the Next.js App Router pattern correctly by:
- * 1. Not adding 'use client' directive to this file (making it a server component)
- * 2. Only importing client components for interactive elements
- * 3. Rendering most content on the server to reduce client-side JavaScript
- * 4. Minimizing the client/server boundary to reduce TBT
+ * HeroSection component - Server Component
+ * Provides static content and passes necessary data to client components
  */
-export default function HeroSection({ location = 'Northeast Ohio' }: HeroSectionProps) {
-  // Convert location to URL-friendly slug - this runs on the server
-  const locationSlug = convertToLocationSlug(location);
-  
+export default function HeroSection({ 
+  location, 
+  isLoading = false,
+  emergencyPhone = '8005554822',
+  emergencyPhoneDisplay = '800-555-HVAC'
+}: HeroSectionProps) {
+  // Default location information - prepared on server
+  const defaultLocation = location || 'Northeast Ohio';
+  const locationDetails = getLocationByName(defaultLocation);
+
   return (
-    <section className="relative bg-navy-dark pt-8 pb-16 md:pt-12 md:pb-24 overflow-hidden">
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/80 to-navy-dark z-10"></div>
+    <div className="relative bg-navy-dark min-h-[600px] md:min-h-[700px] overflow-hidden flex items-center">
+      {/* Background image with overlay - rendered on server */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/hero-background.jpg"
+          alt="HVAC technician working"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-navy-dark/70"></div>
+      </div>
       
-      {/* Hero background image - preloaded in layout */}
-      <Image
-        src="/hero-placeholder.jpg"
-        alt="HVAC services background"
-        fill
-        priority
-        className="object-cover object-center z-0 opacity-40"
-        sizes="100vw"
-      />
-      
-      <div className="container mx-auto px-4 relative z-20">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Hero content - static, rendered on server with no client JS */}
+      <div className="container mx-auto px-4 md:px-8 relative z-10 py-12 md:py-20">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          {/* Text content area - server-rendered */}
           <div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              Expert HVAC Solutions in {location}
+              Professional HVAC Solutions
+              {locationDetails && (
+                <span className="block text-red mt-2">
+                  in {locationDetails.name}
+                </span>
+              )}
             </h1>
-            <p className="text-xl text-ivory/80 mb-8 max-w-xl">
-              Professional heating, cooling, and air quality services for residential and commercial needs.
+            
+            <p className="text-xl text-ivory/90 mb-8 max-w-lg">
+              Heating, cooling, and air quality services from a team you can trust
             </p>
             
-            {/* Highlights - static content rendered on server */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="flex items-start">
-                <div className="mt-1 mr-3 bg-red p-1 rounded">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">24/7 Emergency Service</h3>
-                  <p className="text-sm text-ivory/70">Always available when you need us.</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="mt-1 mr-3 bg-red p-1 rounded">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Licensed Technicians</h3>
-                  <p className="text-sm text-ivory/70">Experienced professionals you can trust.</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="mt-1 mr-3 bg-red p-1 rounded">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Upfront Pricing</h3>
-                  <p className="text-sm text-ivory/70">No hidden fees or surprises.</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="mt-1 mr-3 bg-red p-1 rounded">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Satisfaction Guaranteed</h3>
-                  <p className="text-sm text-ivory/70">Your comfort is our priority.</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Static buttons - no client JS needed */}
             <div className="flex flex-wrap gap-4">
               <Link
-                href={`/contact?location=${locationSlug}`}
-                className="inline-flex items-center justify-center bg-red hover:bg-red-dark text-white px-5 py-3 rounded transition-colors font-medium shadow-md"
+                href="/contact"
+                className="bg-red hover:bg-red-dark text-white font-medium rounded-lg text-lg px-8 py-3 transition-colors inline-flex items-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
+                <span>Schedule Service</span>
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                Contact Us
               </Link>
+              
               <Link
-                href={`/services?location=${locationSlug}`}
-                className="inline-flex items-center justify-center border-2 border-white hover:bg-white/10 text-white px-5 py-3 rounded transition-colors font-medium"
+                href="/services"
+                className="bg-transparent hover:bg-white/10 text-white border-2 border-white/30 font-medium rounded-lg text-lg px-8 py-3 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
                 Our Services
               </Link>
             </div>
+            
+            {/* Client components for all interactive features - rendered only on client */}
+            <HeroSectionClient defaultLocation={locationDetails} isLoading={isLoading} emergencyPhone={emergencyPhone} emergencyPhoneDisplay={emergencyPhoneDisplay} />
           </div>
-          
-          {/* Client component for ONLY interactive elements - clear boundary */}
-          <ClientHeroInteractive location={location} />
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 

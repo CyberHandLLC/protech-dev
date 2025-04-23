@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, memo } from 'react';
+import { ServiceLocation } from '@/utils/locationUtils';
 
 type WeatherData = {
   temperature: number | null;
@@ -9,7 +10,7 @@ type WeatherData = {
 };
 
 type ClientWeatherDisplayProps = {
-  location: string;
+  location?: ServiceLocation | string;
   isLoading?: boolean;
 };
 
@@ -82,12 +83,19 @@ function ClientWeatherDisplay({
     }
   }, [fetchWeatherData]);
 
-  // Helper to safely decode location
+  // Helper to safely get location name
   const displayLocation = (() => {
-    try {
-      return decodeURIComponent(location);
-    } catch {
-      return location;
+    if (!location) return 'Northeast Ohio'; // Default fallback
+    
+    if (typeof location === 'string') {
+      try {
+        return decodeURIComponent(location);
+      } catch {
+        return location;
+      }
+    } else {
+      // It's a ServiceLocation object
+      return location.displayName || location.name;
     }
   })();
 
