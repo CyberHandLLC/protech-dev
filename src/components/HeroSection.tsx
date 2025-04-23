@@ -59,15 +59,32 @@ export default function HeroSection({
     isLoading: true
   });
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  
+  // Log for debugging
+  useEffect(() => {
+    console.log('HeroSection render with:', { 
+      location: displayLocation, 
+      isLoading,
+      serverWeather: serverWeather ? 'provided' : 'not provided'
+    });
+  }, [displayLocation, isLoading, serverWeather]);
 
   const fetchWeatherData = useCallback(async () => {
     // Skip client-side weather fetching if we already have server data
     if (serverWeather) {
       console.log('Using server-provided weather data');
+      // Still need to update state with server data to ensure component renders correctly
+      setWeather({
+        temperature: serverWeather.temperature,
+        icon: serverWeather.icon,
+        isLoading: false
+      });
       return;
     }
     
+    console.log('Fetching client-side weather for:', displayLocation);
     try {
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1200));
       const temp = Math.floor(Math.random() * (95 - 65) + 65);
       
@@ -84,15 +101,13 @@ export default function HeroSection({
         isLoading: false
       });
     }
-  }, [location, serverWeather]);
+  }, [displayLocation, serverWeather]);
 
   useEffect(() => {
-    // Skip fetching if we have server data
-    if (!serverWeather) {
-      setWeather(prev => ({ ...prev, isLoading: true }));
-      fetchWeatherData();
-    }
-  }, [location, fetchWeatherData, serverWeather]);
+    // Always set weather to loading state when location changes
+    setWeather(prev => ({ ...prev, isLoading: true }));
+    fetchWeatherData();
+  }, [displayLocation, fetchWeatherData]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVideoLoaded(true), 500);
