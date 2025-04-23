@@ -117,10 +117,10 @@ const allTestimonials: Record<string, Testimonial[]> = {
  * Review platforms for the company
  */
 const reviewPlatforms = [
-  { name: 'Google', url: 'https://google.com/maps', icon: 'G' },
-  { name: 'Yelp', url: 'https://yelp.com', icon: 'Y' },
-  { name: 'Facebook', url: 'https://facebook.com', icon: 'F' },
-  { name: 'BBB', url: 'https://bbb.org', icon: 'B' }
+  { name: 'Google', url: 'https://google.com/maps', logo: '/logos/platforms/google.svg' },
+  { name: 'Yelp', url: 'https://yelp.com', logo: '/logos/platforms/yelp.svg' },
+  { name: 'Facebook', url: 'https://facebook.com', logo: '/logos/platforms/facebook.svg' },
+  { name: 'Instagram', url: 'https://instagram.com', logo: '/logos/platforms/instagram.svg' }
 ];
 
 /**
@@ -132,12 +132,29 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Format location for display - handle URL encoding
-  let decodedLocation;
+  // Format location for display - convert from URL format to proper city, state
+  let formattedLocation = "";
   try {
-    decodedLocation = decodeURIComponent(location);
+    const decodedLocation = decodeURIComponent(location);
+    
+    // Transform URL-style location (e.g., "akron-oh") to proper format (e.g., "Akron, Ohio")
+    const locationParts = decodedLocation.split('-');
+    if (locationParts.length >= 2) {
+      // Format city name (capitalize first letter of each word)
+      const city = locationParts[0].split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      // Format state (convert abbreviation to full name if needed)
+      let state = locationParts[1].toUpperCase();
+      if (state === 'OH') state = 'Ohio';
+      
+      formattedLocation = `${city}, ${state}`;
+    } else {
+      formattedLocation = decodedLocation;
+    }
   } catch (e) {
-    decodedLocation = location;
+    formattedLocation = location;
   }
   
   // Fetch Google Places reviews
@@ -161,22 +178,18 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
         
         setTestimonials(limitedReviews);
       } catch (error) {
-        console.error('Error fetching Google reviews:', error);
-        // Fallback to sample testimonials if API fails
-        const locationKey = decodedLocation.toLowerCase().replace(/\s+/g, '-') + '-oh';
-        const fallbackTestimonials = allTestimonials[locationKey] || 
-          allTestimonials['akron-oh'] || 
-          Object.values(allTestimonials)[0] || 
-          [];
+        console.error('Error fetching Google Places reviews:', error);
         
-        setTestimonials(fallbackTestimonials);
+        // Fall back to sample testimonials if there's an error with the API
+        const sampleTestimonials = allTestimonials[location] || allTestimonials['akron-oh'] || [];
+        setTestimonials(sampleTestimonials);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchGoogleReviews();
-  }, [decodedLocation]);
+  }, [location]);
   
   const handlePrev = useCallback(() => {
     if (testimonials.length <= 1) return;
@@ -217,7 +230,7 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
       <Container>
         <SectionHeading 
           title="What Our Customers Say"
-          subtitle={`Read reviews from real customers in ${decodedLocation} who have experienced our exceptional service firsthand.`}
+          subtitle={`Read reviews from real customers in ${formattedLocation} who have experienced our exceptional service firsthand.`}
           centered={true}
           className="mb-8 sm:mb-12"
         />
@@ -514,7 +527,7 @@ interface ReviewPlatformsProps {
   platforms: Array<{
     name: string;
     url: string;
-    icon: string;
+    logo: string;
   }>;
 }
 
@@ -535,10 +548,14 @@ function ReviewPlatforms({ platforms }: ReviewPlatformsProps) {
             aria-label={`Read our reviews on ${platform.name}`}
           >
             <div 
-              className="w-12 h-12 bg-red/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white group-hover:bg-red/40 transition-colors"
+              className="w-12 h-12 bg-red/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white group-hover:bg-red/40 transition-colors p-3"
               aria-hidden="true"
             >
-              {platform.icon}
+              <img 
+                src={platform.logo} 
+                alt={`${platform.name} logo`} 
+                className="w-full h-full object-contain filter brightness-0 invert opacity-90 group-hover:opacity-100 transition-all" 
+              />
             </div>
             <span className="text-ivory/90 text-sm mt-2">{platform.name}</span>
           </a>

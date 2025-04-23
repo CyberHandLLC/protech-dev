@@ -1,9 +1,11 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
+import PageLayout from '@/components/PageLayout';
+import CTASection from '@/components/CTASection';
 import { convertToLocationSlug } from '@/utils/location';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
-import ServiceDetailsContent from '@/components/services/ServiceDetailsContent';
 
 // Define types for param objects
 type ServiceParams = {
@@ -88,8 +90,11 @@ export async function generateMetadata(
     };
   }
 
+  // Get the user's location from server headers
+  const userLocation = getUserLocationFromHeaders();
+  
   // Format location for display
-  // First decode any URL-encoded characters that might be in the location
+  // First decode any URL-encoded characters that might be in the location parameter
   let decodedLocation;
   try {
     decodedLocation = decodeURIComponent(location);
@@ -102,11 +107,14 @@ export async function generateMetadata(
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+    
+  // Use user's detected location if available and param location is generic
+  const finalLocation = location === 'northeast-ohio' ? userLocation.name : locationDisplay;
 
   return {
-    title: `${serviceInfo.title} in ${locationDisplay} | ProTech HVAC`,
-    description: `${serviceInfo.description} in ${locationDisplay}. Professional, reliable service from certified HVAC technicians.`,
-    keywords: [service.replace('-', ' '), category, 'HVAC', locationDisplay, 'heating and cooling'],
+    title: `${serviceInfo.title} in ${finalLocation} | ProTech HVAC`,
+    description: `${serviceInfo.description} in ${finalLocation}. Professional, reliable service from certified HVAC technicians.`,
+    keywords: [service.replace('-', ' '), category, 'HVAC', finalLocation, 'heating and cooling'],
   };
 }
 
@@ -116,19 +124,19 @@ export async function generateMetadata(
  */
 export default function ServicePage({ params }: ServicePageProps) {
   const { category, service, location } = params;
-  
-  // Get the user's detected location from server headers
-  const userDetectedLocation = getUserLocationFromHeaders();
-  
-  // Get service data
+
+  // Get service info from data - in a real app this would be a database or API call
   const serviceInfo = (serviceData as any)?.[category]?.[service];
   
-  // Return 404 if service doesn't exist
+  // Return 404 if the service doesn't exist
   if (!serviceInfo) {
-    notFound();
+    return notFound();
   }
-
-  // Format location from URL for display fallback
+  
+  // Get the user's location from server headers
+  const userLocation = getUserLocationFromHeaders();
+  
+  // Format location for display from URL parameter
   // First decode any URL-encoded characters that might be in the location
   let decodedLocation;
   try {
@@ -142,14 +150,166 @@ export default function ServicePage({ params }: ServicePageProps) {
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-
-  // Use the client component with both server and URL-based location
+    
+  // Use user's detected location if available and param location is generic
+  const finalLocation = location === 'northeast-ohio' ? userLocation.name : locationDisplay;
+  
   return (
-    <ServiceDetailsContent
-      params={params}
-      serviceInfo={serviceInfo}
-      serverLocation={userDetectedLocation}
-      urlLocationDisplay={locationDisplay}
-    />
+    <PageLayout>
+      <main>
+        {/* Hero section with dark navy background */}
+        <section className="bg-navy py-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            {/* Breadcrumb navigation */}
+            <nav className="text-sm mb-6">
+              <ol className="flex flex-wrap items-center space-x-2">
+                <li>
+                  <Link href="/" className="text-ivory/70 hover:text-red-light transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li><span className="text-ivory/40">/</span></li>
+                <li>
+                  <Link href="/services" className="text-ivory/70 hover:text-red-light transition-colors">
+                    Services
+                  </Link>
+                </li>
+                <li><span className="text-ivory/40">/</span></li>
+                <li>
+                  <Link href={`/services?category=${category}`} className="text-ivory/70 hover:text-red-light transition-colors">
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </Link>
+                </li>
+                <li><span className="text-ivory/40">/</span></li>
+                <li className="text-red-light">{serviceInfo.title}</li>
+              </ol>
+            </nav>
+            
+            {/* Service Title */}
+            <div className="mb-8 max-w-3xl">
+              <div className="h-1 w-24 bg-red mb-4"></div>
+              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
+                {serviceInfo.title} in {finalLocation}
+              </h1>
+              <p className="text-xl text-ivory/80 mt-4">
+                {serviceInfo.description}
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        {/* Service Content - Two columns */}
+        <section className="bg-navy-light py-16 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-10">
+              <div>
+                <p className="text-ivory/80 mb-8 leading-relaxed text-lg">
+                  Trust our experienced technicians to provide reliable {serviceInfo.title.toLowerCase()} in {finalLocation}.
+                  We pride ourselves on prompt service, competitive pricing, and quality workmanship for all HVAC needs.
+                </p>
+                
+                <h3 className="text-2xl font-bold text-white mb-6">
+                  Our {serviceInfo.title} Include:
+                </h3>
+                
+                <ul className="space-y-4 mb-10">
+                  {serviceInfo.details.map((detail: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-red mr-3 text-xl">✓</span>
+                      <span className="text-ivory/90">{detail}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <div className="bg-gradient-to-r from-dark-blue to-dark-blue-light p-6 rounded-xl border border-dark-blue-light/30">
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    Serving {finalLocation}
+                  </h3>
+                  <p className="text-ivory/70">
+                    We provide fast, reliable service throughout {finalLocation} and surrounding areas.
+                    Our technicians are familiar with the unique HVAC needs of homes and businesses in the Northeast Ohio area.
+                  </p>
+                </div>
+              </div>
+              
+              <div>
+                {/* Service Image */}
+                <div className="bg-dark-blue rounded-xl h-64 flex items-center justify-center mb-8 overflow-hidden border border-dark-blue-light/30">
+                  <div className="text-5xl">{serviceInfo.icon}</div>
+                </div>
+                
+                {/* Quote Form */}
+                <div className="bg-dark-blue p-6 rounded-xl border border-dark-blue-light/30">
+                  <h3 className="text-2xl font-bold text-white mb-6">
+                    Get a Free Quote
+                  </h3>
+                  <form className="space-y-4">
+                    <div>
+                      <label className="block text-ivory/80 mb-2">Name</label>
+                      <input 
+                        type="text" 
+                        className="w-full bg-navy border border-dark-blue-light/50 rounded-lg p-3 text-white focus:border-red-light focus:outline-none focus:ring-1 focus:ring-red-light/50" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-ivory/80 mb-2">Phone</label>
+                      <input 
+                        type="tel" 
+                        className="w-full bg-navy border border-dark-blue-light/50 rounded-lg p-3 text-white focus:border-red-light focus:outline-none focus:ring-1 focus:ring-red-light/50" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-ivory/80 mb-2">Email</label>
+                      <input 
+                        type="email" 
+                        className="w-full bg-navy border border-dark-blue-light/50 rounded-lg p-3 text-white focus:border-red-light focus:outline-none focus:ring-1 focus:ring-red-light/50" 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-ivory/80 mb-2">Service Needed</label>
+                      <select className="w-full bg-navy border border-dark-blue-light/50 rounded-lg p-3 text-white focus:border-red-light focus:outline-none focus:ring-1 focus:ring-red-light/50">
+                        <option value={service}>{serviceInfo.title}</option>
+                        <option value="emergency">Emergency Service</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="w-full bg-red hover:bg-red-light text-white font-medium py-3 px-4 rounded-lg transition-colors duration-300 mt-2"
+                    >
+                      Request Quote
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* FAQ Section */}
+        <section className="bg-navy py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="h-1 w-24 bg-red mx-auto mb-4"></div>
+              <h2 className="text-3xl font-bold text-white">
+                Frequently Asked Questions
+              </h2>
+            </div>
+            <div className="space-y-6">
+              {serviceInfo.faqs.map((faq: any, index: number) => (
+                <div key={index} className="bg-dark-blue p-6 rounded-xl border border-dark-blue-light/30">
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    {faq.question}
+                  </h3>
+                  <p className="text-ivory/80">{faq.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        
+        <CTASection location={finalLocation} />
+      </main>
+    </PageLayout>
   );
 }

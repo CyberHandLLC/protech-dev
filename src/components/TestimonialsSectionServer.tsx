@@ -119,10 +119,10 @@ const allTestimonials: Record<string, Testimonial[]> = {
  * Review platforms for the company
  */
 const reviewPlatforms = [
-  { name: 'Google', url: 'https://google.com/maps', icon: 'G' },
-  { name: 'Yelp', url: 'https://yelp.com', icon: 'Y' },
-  { name: 'Facebook', url: 'https://facebook.com', icon: 'F' },
-  { name: 'BBB', url: 'https://bbb.org', icon: 'B' }
+  { name: 'Google', url: 'https://google.com/maps', logo: '/logos/platforms/google.svg' },
+  { name: 'Yelp', url: 'https://yelp.com', logo: '/logos/platforms/yelp.svg' },
+  { name: 'Facebook', url: 'https://facebook.com', logo: '/logos/platforms/facebook.svg' },
+  { name: 'Instagram', url: 'https://instagram.com', logo: '/logos/platforms/instagram.svg' }
 ];
 
 /**
@@ -130,41 +130,64 @@ const reviewPlatforms = [
  * Shows the first testimonial from the relevant location
  */
 export default function TestimonialsSectionServer({ location }: TestimonialsSectionProps) {
-  // Get testimonials for this location (or use default testimonials)
-  const testimonials = allTestimonials[location] || 
-                      allTestimonials['cleveland-oh'] || 
-                      Object.values(allTestimonials)[0];
-  
-  // If no testimonials available, show empty state
-  if (!testimonials || testimonials.length === 0) {
+  // Format location for display - convert from URL format to proper city, state
+  let formattedLocation = "";
+  try {
+    const decodedLocation = decodeURIComponent(location);
+    
+    // Transform URL-style location (e.g., "akron-oh") to proper format (e.g., "Akron, Ohio")
+    const locationParts = decodedLocation.split('-');
+    if (locationParts.length >= 2) {
+      // Format city name (capitalize first letter of each word)
+      const city = locationParts[0].split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      
+      // Format state (convert abbreviation to full name if needed)
+      let state = locationParts[1].toUpperCase();
+      if (state === 'OH') state = 'Ohio';
+      
+      formattedLocation = `${city}, ${state}`;
+    } else {
+      formattedLocation = decodedLocation;
+    }
+  } catch (e) {
+    formattedLocation = location;
+  }
+
+  // Try to get testimonials for the specified location, or fall back to a default
+  const testimonials = 
+    allTestimonials[location] || 
+    allTestimonials['akron-oh'] || 
+    Object.values(allTestimonials)[0] || 
+    [];
+
+  if (testimonials.length === 0) {
     return (
-      <Section className="py-16 bg-dark-blue">
+      <Section className="bg-navy">
         <Container>
-          <SectionHeading
-            title="Customer Testimonials"
-            subtitle="See what our customers are saying about our services"
-            color="light"
+          <SectionHeading 
+            title="What Our Customers Say"
+            subtitle="No testimonials available for this location yet."
+            centered={true}
+            className="mb-12"
           />
-          <div className="py-12 text-center text-ivory/70">
-            No testimonials available for this area yet.
-          </div>
         </Container>
       </Section>
     );
   }
-  
-  // Show featured testimonial (first one)
+
   const featuredTestimonial = testimonials[0];
   
   return (
     <Section className="py-16 bg-dark-blue">
       <Container>
-        <SectionHeading
-          title="Customer Testimonials"
-          subtitle="See what our customers are saying about our services"
-          color="light"
+        <SectionHeading 
+          title="What Our Customers Say"
+          subtitle={`Read reviews from real customers in ${formattedLocation} who have experienced our exceptional service firsthand.`}
+          centered={true}
+          className="mb-12"
         />
-        
         <div className="mt-12 bg-gradient-to-br from-dark-blue-light/30 to-navy/50 rounded-xl overflow-hidden border border-dark-blue-light/30 shadow-2xl">
           <div className="flex flex-col md:flex-row">
             {/* Main testimonial display */}
@@ -268,10 +291,14 @@ export default function TestimonialsSectionServer({ location }: TestimonialsSect
                 aria-label={`Read our reviews on ${platform.name}`}
               >
                 <div 
-                  className="w-12 h-12 bg-red/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                  className="w-12 h-12 bg-red/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white p-3"
                   aria-hidden="true"
                 >
-                  {platform.icon}
+                  <img 
+                    src={platform.logo} 
+                    alt={`${platform.name} logo`} 
+                    className="w-full h-full object-contain filter brightness-0 invert opacity-90" 
+                  />
                 </div>
                 <span className="text-ivory/90 text-sm mt-2">{platform.name}</span>
               </a>
