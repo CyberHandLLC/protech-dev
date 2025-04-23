@@ -84,20 +84,7 @@ export default function HeroSectionServer({
         </div>
       </div>
       
-      {/* Emergency badge - standalone for proper positioning */}
-      <div className="absolute bottom-24 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block pointer-events-none">
-        <Link 
-          href="/emergency-service"
-          className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors pointer-events-auto"
-          aria-label="24/7 Emergency Service"
-        >
-          <span className="text-xl sm:text-2xl mr-2" aria-hidden="true">🚨</span>
-          <div>
-            <p className="text-white font-bold leading-tight text-sm sm:text-base">24/7 Emergency</p>
-            <p className="text-xs sm:text-sm text-white/80 group-hover:text-white transition-colors">Fast Response</p>
-          </div>
-        </Link>
-      </div>
+
       
       {/* Scroll indicator */}
       <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 hidden sm:block" aria-hidden="true">
