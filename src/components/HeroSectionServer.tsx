@@ -44,15 +44,17 @@ export default function HeroSectionServer({
           
           <div className="mb-8"></div>
           
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 animate-fadeIn animate-delay-150">
+          <div className="flex flex-col animate-fadeIn animate-delay-150">
             {/* Mobile-only buttons (stacked) */}
             <div className="flex flex-col gap-3 sm:hidden">
-              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
-                Explore Services
-              </Link>
-              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
-                Contact Us
-              </Link>
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
+                  Explore Services
+                </Link>
+                <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
+                  Contact Us
+                </Link>
+              </div>
               <a 
                 href={`tel:${emergencyPhone}`}
                 className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"

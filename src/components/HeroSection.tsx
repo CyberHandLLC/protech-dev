@@ -71,24 +71,27 @@ export default memo(function HeroSection({
           <div className="mb-8"></div>
           
           <div className="flex flex-col gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
-            <div className="grid grid-cols-2 gap-3">
-              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
-                Explore Services
-              </Link>
-              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
-                Contact Us
-              </Link>
+            {/* Mobile buttons - only visible on small screens */}
+            <div className="sm:hidden flex flex-col gap-3 w-full">
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
+                  Explore Services
+                </Link>
+                <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
+                  Contact Us
+                </Link>
+              </div>
+              
+              <a 
+                href={`tel:${emergencyPhone}`}
+                className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
+                aria-label={`Call us at ${emergencyPhoneDisplay}`}
+              >
+                <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+              </a>
             </div>
             
-            <a 
-              href={`tel:${emergencyPhone}`}
-              className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
-              aria-label={`Call us at ${emergencyPhoneDisplay}`}
-            >
-              <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
-            </a>
-            
-            {/* Switch to horizontal layout on larger screens */}
+            {/* Desktop layout - only visible on medium screens and up */}
             <div className="hidden sm:flex sm:flex-row sm:gap-4 sm:w-auto">
               <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
                 Explore Services
