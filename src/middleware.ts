@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { geolocation } from '@vercel/functions';
+import { convertToLocationSlug } from './utils/location';
 
 export function middleware(request: NextRequest) {
   // For development environment, simulate location detection
@@ -17,8 +18,12 @@ export function middleware(request: NextRequest) {
     // Use query param, cookie, or default to Cleveland
     const locationToUse = queryLocation || savedLocation || 'Cleveland, OH';
     
-    // Set the header for location
+    // Create location slug/ID from the location name
+    const locationId = convertToLocationSlug(locationToUse);
+
+    // Set the headers for location data
     requestHeaders.set('x-user-location', locationToUse);
+    requestHeaders.set('x-user-location-id', locationId);
     
     return NextResponse.next({
       request: {
@@ -40,9 +45,13 @@ export function middleware(request: NextRequest) {
   // Map to service area
   const mappedLocation = mapToServiceArea(formattedLocation);
   
-  // Add location to request headers
+  // Create location slug/ID from the location name
+  const locationId = convertToLocationSlug(mappedLocation);
+
+  // Add location data to request headers
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-user-location', mappedLocation);
+  requestHeaders.set('x-user-location-id', locationId);
   
   // Return the response with modified headers
   return NextResponse.next({

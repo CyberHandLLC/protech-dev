@@ -1,165 +1,299 @@
-// Server Component (no 'use client' directive)
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import Section from './ui/Section';
 import Container from './ui/Container';
 import SectionHeading from './ui/SectionHeading';
+import IconFeature from './ui/IconFeature';
 import { convertToLocationSlug } from '@/utils/location';
-import { ServiceLocation } from '@/utils/locationUtils';
-import ServicesPreviewClient from './client/ServicesPreviewClient';
+import useLocationDetection from '@/hooks/useLocationDetection';
 
-// Service types that are shared with the client component
-export interface Service {
+/**
+ * Service data interface
+ */
+interface Service {
+  /** Unique identifier for the service */
   id: string;
+  /** Display name of the service */
   name: string;
-  description: string;
+  /** Emoji icon representing the service */
   icon: string;
-  features: string[];
+  /** Brief description of the service */
+  description: string;
 }
 
-export interface ServiceCategory {
+/**
+ * Service category interface
+ */
+interface ServiceCategory {
+  /** Unique identifier for the category */
   id: string;
+  /** Display name of the category */
   name: string;
-  description: string;
+  /** List of services in this category */
   services: Service[];
 }
 
-// Service data - defined as a const to be shared with the client component
-export const serviceCategories: ServiceCategory[] = [
+/**
+ * Props for the ServicesPreview component
+ */
+interface ServicesPreviewProps {
+  /** Location name to display and use in service URLs */
+  location: string;
+}
+
+/**
+ * Service categories with their respective services
+ */
+const serviceCategories: ServiceCategory[] = [
   {
     id: 'residential',
-    name: 'Residential',
-    description: 'HVAC solutions for homes and residential properties',
+    name: 'Residential HVAC',
     services: [
-      {
-        id: 'heating',
-        name: 'Heating',
-        description: 'Keep your home warm and comfortable all winter',
-        icon: '🔥',
-        features: ['Furnace Repair', 'Heating Installation', 'Heat Pumps', 'Radiant Heating']
-      },
-      {
-        id: 'cooling',
-        name: 'Cooling',
-        description: 'AC solutions to keep your home comfortable all summer long',
-        icon: '❄️',
-        features: ['AC Repair', 'New Installation', 'Ductless Mini-Splits', 'Seasonal Tune-ups']
-      },
-      {
-        id: 'air-quality',
-        name: 'Indoor Air Quality',
-        description: 'Solutions for healthier, cleaner air in your living spaces',
-        icon: '💨',
-        features: ['Air Purifiers', 'Humidifiers', 'Air Duct Cleaning', 'Ventilation Systems']
-      },
-      {
-        id: 'maintenance',
-        name: 'Maintenance Plans',
-        description: 'Preventative care to extend the life of your HVAC systems',
-        icon: '🔧',
-        features: ['Seasonal Tune-ups', 'Filter Replacements', 'Priority Service', 'Discounted Repairs']
-      }
+      { id: 'ac-installation', name: 'New Installations', icon: '🏡', description: 'Complete home comfort systems' },
+      { id: 'heating', name: 'Heating Systems', icon: '🔥', description: 'Furnaces, boilers & heat pumps' },
+      { id: 'air-conditioning', name: 'Air Conditioning', icon: '❄️', description: 'Central AC & mini-split systems' },
+      { id: 'air-quality', name: 'Indoor Air Quality', icon: '🌬️', description: 'Purifiers & humidity control' },
     ]
   },
   {
     id: 'commercial',
-    name: 'Commercial',
-    description: 'HVAC solutions for businesses and commercial properties',
+    name: 'Commercial HVAC',
     services: [
-      {
-        id: 'commercial-hvac',
-        name: 'Commercial HVAC',
-        description: 'Complete heating and cooling solutions for offices and businesses',
-        icon: '🏢',
-        features: ['Rooftop Units', 'Commercial Repairs', 'System Design', 'Equipment Replacement']
-      },
-      {
-        id: 'refrigeration',
-        name: 'Refrigeration',
-        description: 'Commercial refrigeration solutions for restaurants and retail',
-        icon: '❄️',
-        features: ['Freezer Repair', 'Walk-in Coolers', 'Display Cases', 'Emergency Service']
-      },
-      {
-        id: 'industrial',
-        name: 'Industrial Systems',
-        description: 'Heavy-duty solutions for manufacturing and industrial environments',
-        icon: '🏭',
-        features: ['Boilers', 'Chillers', 'Exhaust Systems', 'Process Cooling']
-      },
-      {
-        id: 'service-contracts',
-        name: 'Service Contracts',
-        description: 'Ongoing maintenance plans for commercial properties',
-        icon: '📋',
-        features: ['Scheduled Maintenance', 'Equipment Monitoring', '24/7 Support', 'Guaranteed Response']
-      }
+      { id: 'commercial-installation', name: 'Commercial Systems', icon: '🏢', description: 'Custom solutions for any business' },
+      { id: 'emergency', name: 'Emergency Service', icon: '🚨', description: '24/7 response to critical failures' },
+      { id: 'refrigeration', name: 'Refrigeration', icon: '🧊', description: 'Restaurant & retail cooling systems' },
+      { id: 'maintenance-plan', name: 'Maintenance Plans', icon: '📆', description: 'Scheduled service & priority care' },
     ]
   }
 ];
 
-// Props type that accepts both string and ServiceLocation object
-interface ServicesPreviewProps {
-  location?: string | ServiceLocation;
+/**
+ * Component that displays a preview of services categorized by type
+ * Allows users to filter by category and view details for each service
+ */
+export default function ServicesPreview({ location }: ServicesPreviewProps) {
+  const [activeCategory, setActiveCategory] = useState('residential');
+  
+  // Use our client-side location detection as a backup/supplement to the server-provided location
+  const { userLocation: detectedLocation, isLocating } = useLocationDetection();
+  
+  // Generate location slug for URLs and get active category services - combined in one useMemo
+  const { locationSlug, activeServices, displayLocation } = useMemo(() => {
+    // Get services for active category
+    const services = serviceCategories.find(cat => cat.id === activeCategory)?.services || [];
+    
+    // Create location slug from either provided location or detected location
+    // Important: prioritize the location passed from the parent component
+    let locationToUse = location || detectedLocation || 'Northeast Ohio';
+    
+    // Log location usage to help with debugging
+    console.log('ServicesPreview using location:', { 
+      providedLocation: location, 
+      detectedLocation, 
+      finalLocationUsed: locationToUse 
+    });
+    
+    // Make sure to decode any URL-encoded characters for display
+    let decodedLocation;
+    try {
+      decodedLocation = decodeURIComponent(locationToUse);
+    } catch (e) {
+      console.error('Error decoding location in ServicesPreview:', e);
+      decodedLocation = locationToUse;
+    }
+    
+    // Create location slug for URLs
+    const slug = convertToLocationSlug(locationToUse);
+    
+    return { 
+      locationSlug: slug, 
+      activeServices: services,
+      displayLocation: decodedLocation
+    };
+  }, [location, detectedLocation, activeCategory]);
+
+  return (
+    <Section className="bg-navy text-white">
+      <Container>
+        <SectionHeading
+          title="Our Services"
+          subtitle={`Professional HVAC solutions for your home and business in ${displayLocation}. Our certified technicians provide expert service for all your heating and cooling needs.`}
+          centered
+          className="px-4"
+        />
+        
+        {/* Service Category Tabs */}
+        <CategoryTabs 
+          categories={serviceCategories} 
+          activeCategory={activeCategory} 
+          onCategoryChange={setActiveCategory} 
+        />
+        
+        {/* Services Grid */}
+        <ServiceGrid 
+          services={activeServices} 
+          categoryId={activeCategory} 
+          locationSlug={locationSlug} 
+          isLoading={isLocating}
+        />
+        
+        {/* All Services Button */}
+        <div className="text-center">
+          <Link 
+            href="/services" 
+            className="inline-block px-8 py-3 mt-8 bg-red text-white rounded-lg hover:bg-red-dark transition-colors shadow-lg">
+            View All Services
+          </Link>
+        </div>
+      </Container>
+    </Section>
+  );
 }
 
 /**
- * ServicesPreview Component - Server Component
- * Following Next.js App Router pattern to optimize mobile TBT
- * All static and data preparation is done on the server
- * All interactive elements are isolated in the client component
- * 
- * @param location - Optional location string or object to override detected location
+ * Category tabs component for filtering services
  */
-export default function ServicesPreview({ location }: ServicesPreviewProps) {
-  // Prepare initial server-side data
-  let initialLocationName = 'Northeast Ohio'; // Default fallback
-  
-  // Process location prop on the server - handle both string and object types
-  if (location) {
-    if (typeof location === 'string' && location.trim() !== '') {
-      initialLocationName = location;
-    } else if (typeof location === 'object' && location.name) {
-      initialLocationName = location.name;
-    }
-  }
-  
-  // Format display location on the server - handle URL encoding
-  let displayLocation;
-  try {
-    displayLocation = decodeURIComponent(initialLocationName);
-  } catch (e) {
-    displayLocation = initialLocationName;
-  }
-  
-  // Create location slug for URLs on the server
-  const locationSlug = convertToLocationSlug(initialLocationName);
-  
-  // Initial category and services - processed on server
-  const initialCategory = serviceCategories[0].id;
-  const initialServices = serviceCategories[0].services;
+interface CategoryTabsProps {
+  categories: ServiceCategory[];
+  activeCategory: string;
+  onCategoryChange: (categoryId: string) => void;
+}
 
-  // Return server-rendered static content with client component for interactivity
-  // This pattern keeps the JavaScript bundle for the client minimal
+function CategoryTabs({ categories, activeCategory, onCategoryChange }: CategoryTabsProps) {
   return (
-    <Section backgroundColor="navy" paddingY="lg">
-      <Container>
-        {/* Heading is rendered on the server */}
-        <SectionHeading
-          title="Our Services"
-          subtitle={`Expert HVAC solutions in ${displayLocation}`}
-          centered={true}
-          className="text-white"
+    <div className="mb-6 sm:mb-8 px-4 sm:px-0">
+      <div 
+        className="flex gap-2 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0" 
+        role="tablist"
+        aria-label="Service Categories"
+      >
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => onCategoryChange(category.id)}
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full transition-all text-xs sm:text-sm md:text-base font-medium whitespace-nowrap ${
+              activeCategory === category.id 
+                ? 'bg-red text-white shadow-md' 
+                : 'text-ivory hover:text-white'
+            }`}
+            role="tab"
+            aria-selected={activeCategory === category.id}
+            aria-controls={`${category.id}-panel`}
+            id={`${category.id}-tab`}
+            type="button"
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Service grid component displaying service cards
+ */
+interface ServiceGridProps {
+  services: Service[];
+  categoryId: string;
+  locationSlug: string;
+  isLoading?: boolean;
+}
+
+function ServiceGrid({ services, categoryId, locationSlug, isLoading }: ServiceGridProps) {
+  // Loading state when location is being detected
+  if (isLoading) {
+    return (
+      <div 
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12 px-4 sm:px-0"
+        role="tabpanel" 
+        id={`${categoryId}-panel`}
+        aria-labelledby={`${categoryId}-tab`}
+      >
+        {/* Show loading skeleton when detecting location */}
+        {Array(4).fill(0).map((_, index) => (
+          <div key={index} className="bg-dark-blue h-64 rounded-xl animate-pulse border border-dark-blue-light/30"></div>
+        ))}
+      </div>
+    );
+  }
+  
+  // Use our reusable IconFeature component for consistent design
+  return (
+    <div 
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 mb-8 sm:mb-12 px-4 sm:px-0"
+      role="tabpanel" 
+      id={`${categoryId}-panel`}
+      aria-labelledby={`${categoryId}-tab`}
+    >
+      {services.map((service) => (
+        <IconFeature
+          key={service.id}
+          icon={<span className="text-2xl">{service.icon}</span>}
+          title={service.name}
+          description={service.description}
+          href={`/services/${categoryId}/${service.id}/${locationSlug}`}
+          interactive
         />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Individual service card component
+ */
+interface ServiceCardProps {
+  service: Service;
+  href: string;
+}
+
+function ServiceCard({ service, href }: ServiceCardProps) {
+  return (
+    <Link 
+      href={href}
+      className="group block h-full"
+      aria-labelledby={`service-${service.id}`}
+    >
+      <div className="bg-gradient-to-br from-dark-blue to-navy h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:transform group-hover:-translate-y-2 border border-dark-blue-light/30 relative">
+        {/* Diagonal accent ribbon */}
+        <div className="absolute -right-12 top-6 bg-red shadow-lg transform rotate-45 w-40 h-5 z-10"></div>
         
-        {/* Client component handles all interactive elements */}
-        <ServicesPreviewClient
-          serviceCategories={serviceCategories}
-          initialCategory={initialCategory} 
-          initialServices={initialServices}
-          locationSlug={locationSlug}
-          displayLocation={displayLocation}
-          locationProp={location}
-        />
-      </Container>
-    </Section>
+        <div className="p-7 flex flex-col h-full">
+          {/* Icon in a styled circle with shadow */}
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-navy-light to-dark-blue-light flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-lg border-2 border-red/20">
+            <span className="text-3xl transform group-hover:rotate-12 transition-transform duration-300">{service.icon}</span>
+          </div>
+          
+          <h3 
+            id={`service-${service.id}`}
+            className="font-bold text-xl mb-3 text-white group-hover:text-red transition-colors duration-300"
+          >
+            {service.name}
+          </h3>
+          
+          <p className="text-ivory/70 mb-auto min-h-[3.5em] text-sm md:text-base">{service.description}</p>
+          
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-dark-blue-light/50">
+            <span className="inline-flex items-center text-red-light font-medium text-sm md:text-base group-hover:font-semibold transition-all">
+              <span className="mr-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">→</span>
+              View Details
+            </span>
+            
+            <svg 
+              className="w-4 h-4 text-red transform group-hover:translate-x-1 transition-transform duration-500" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useLocation } from '@/contexts/LocationContext';
 
 type LocationPromptProps = {
-  onLocationUpdated?: () => void;
+  onLocationUpdated: () => void;
 };
 
 /**
@@ -28,12 +28,7 @@ export default function LocationPrompt({ onLocationUpdated }: LocationPromptProp
       const success = await promptForLocation();
       if (success) {
         console.log('Location permission granted');
-        if (onLocationUpdated) {
-          onLocationUpdated();
-        }
-        
-        // Dispatch a global event for other components
-        window.dispatchEvent(new CustomEvent('locationUpdated'));
+        onLocationUpdated();
       }
     } finally {
       setIsPrompting(false);

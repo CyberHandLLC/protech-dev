@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { ServiceLocation, getLocationById, defaultLocation } from './locationUtils';
 import { convertToLocationSlug } from './location';
+import { ReadonlyHeaders } from 'next/dist/server/web/spec-extension/adapters/headers';
 
 /**
  * Convert a detected city and region to a ServiceLocation object
@@ -66,55 +67,54 @@ function getKnownLocation(city: string, region: string): ServiceLocation | null 
 
 /**
  * Get the user's location from request headers (server-side only)
- * Uses Vercel's geolocation headers set by our middleware
+ * Uses location data set by our enhanced middleware
  */
 export function getUserLocationFromHeaders(): ServiceLocation {
   try {
-    // Using request.headers in middleware.ts guarantees these are available
+    // Get headers using Next.js headers() function
     const headersList = headers();
-    let userLocationHeader = '';
-    let city = '';
-    let region = '';
     
-    try {
-      // First try the custom header set by our middleware
-      const headerObj = headersList as any;
-      if (typeof headerObj.get === 'function') {
-        userLocationHeader = headerObj.get('x-user-location') || '';
-        city = headerObj.get('x-vercel-ip-city') || '';
-        region = headerObj.get('x-vercel-ip-country-region') || '';
+    // Safe header access function
+    const getHeaderSafe = (name: string): string => {
+      try {
+        // Cast the headers to ReadonlyHeaders to access get method
+        const h = headersList as unknown as ReadonlyHeaders;
+        return h?.get?.(name) || '';
+      } catch (e) {
+        console.error(`Error getting header ${name}:`, e);
+        return '';
       }
-    } catch (e) {
-      console.log('Error accessing headers:', e);
-    }
+    };
     
-    // Use data from our middleware header
-    if (userLocationHeader) {
+    // Get location data from headers
+    const userLocationHeader = getHeaderSafe('x-user-location');
+    const userLocationId = getHeaderSafe('x-user-location-id');
+    
+    // If we have both the location name and ID from middleware, create a ServiceLocation
+    if (userLocationHeader && userLocationId) {
       const parts = userLocationHeader.split(',');
       const headerCity = parts[0]?.trim() || '';
       const headerRegion = parts[1]?.trim() || '';
       
-      if (headerCity && headerRegion) {
-        return createServiceLocation(headerCity, headerRegion);
-      }
+      // Create a ServiceLocation using the data from middleware
+      return {
+        id: userLocationId,
+        name: headerCity,
+        state: 'Ohio',  // Assuming all are in Ohio for now
+        stateCode: headerRegion || 'OH',
+        zip: [],
+        coordinates: { lat: 0, lng: 0 }, // We could enhance this with actual coordinates if needed
+        serviceArea: true, // Assuming it's in our service area since middleware mapped it
+        primaryArea: false
+      };
     }
     
-    // Use data from Vercel headers directly
+    // Fallback to using Vercel's headers if our middleware headers are missing
+    const city = getHeaderSafe('x-vercel-ip-city');
+    const region = getHeaderSafe('x-vercel-ip-country-region');
+    
     if (city && region) {
       return createServiceLocation(city, region);
-    }
-    
-    // If we're here, try one more approach with request headers
-    try {
-      const reqHeaders = new Headers();
-      const fromVercelCity = reqHeaders.get('x-vercel-ip-city');
-      const fromVercelRegion = reqHeaders.get('x-vercel-ip-country-region');
-      
-      if (fromVercelCity && fromVercelRegion) {
-        return createServiceLocation(fromVercelCity, fromVercelRegion);
-      }
-    } catch (e) {
-      console.log('Error accessing request headers:', e);
     }
     
     // Fall back to default location
