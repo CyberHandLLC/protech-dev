@@ -1,20 +1,24 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the contact form
+const HeroContactForm = dynamic(() => import('./HeroContactForm'), {
+  ssr: false,
+  loading: () => <div className="h-[350px] w-full bg-navy/50 animate-pulse rounded-lg" />
+});
 
 type HeroSectionProps = {
-  location: string;
-  isLoading?: boolean;
+  location: string | null;
   emergencyPhone?: string;
   emergencyPhoneDisplay?: string;
 };
 
 // Memoize the HeroSection component to prevent unnecessary re-renders
-export default memo(function HeroSection({ 
+export default function HeroSection({ 
   location, 
-  isLoading = false,
   emergencyPhone = '8005554822',
   emergencyPhoneDisplay = '800-555-HVAC'
 }: HeroSectionProps) {
@@ -38,6 +42,7 @@ export default memo(function HeroSection({
   
   // Image loading optimization - use native loading="lazy" instead of JS timeout
   const [isImageVisible, setIsImageVisible] = useState(true);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Use intersection observer to defer image loading
   useEffect(() => {
@@ -46,15 +51,7 @@ export default memo(function HeroSection({
   }, []);
 
   return (
-    <section className="relative md:h-[85vh] max-h-[800px] min-h-[500px] flex items-center overflow-hidden bg-navy py-16 sm:py-0" aria-label="Hero Section">
-      {/* Decorative diagonal SVG element */}
-      <div className="absolute right-0 top-0 h-full w-1/3 hidden lg:block">
-        <svg className="h-full w-full" viewBox="0 0 200 800" preserveAspectRatio="none" fill="none">
-          <path d="M0 0L200 100V800H0V0Z" fill="#132035" opacity="0.6" />
-        </svg>
-      </div>
-      
-      {/* Background image with overlay */}
+    <section className="relative py-12 md:py-16 overflow-hidden bg-navy" aria-label="Hero Section">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
           className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-500 ${isImageVisible ? 'opacity-100' : 'opacity-0'}`}
@@ -65,73 +62,85 @@ export default memo(function HeroSection({
         </div>
       </div>
       
-      {/* Main content - using grid for better desktop layout */}
-      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8 w-full">
+      <div className="relative z-10 container mx-auto px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left content area */}
-          <div className="lg:col-span-7 xl:col-span-6 lg:pr-8">
-            <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4 animate-fadeIn">
-              Trusted HVAC Services in {displayLocation}
+          {/* Content column - takes more space on desktop */}
+          <div className="lg:col-span-7">
+            <span className="inline-block bg-teal-500/20 backdrop-blur-sm text-ivory px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4">
+              {isLocating ? 
+                <span className="animate-pulse">Detecting your location...</span> :
+                `Trusted HVAC Services in ${displayLocation}`
+              }
             </span>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 animate-fadeIn leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
               Expert Heating & <span className="text-ivory">Cooling Solutions</span>
             </h1>
-            <p className="text-white/90 text-base mb-6 max-w-lg animate-fadeIn animate-delay-75">
+            <p className="text-white/90 text-base mb-6 max-w-2xl">
               Professional HVAC services tailored to your comfort needs. From emergency repairs to routine maintenance, our certified technicians deliver reliable solutions.
             </p>
             
-            <div className="flex flex-col gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
-              {/* Mobile buttons - only visible on small screens */}
-              <div className="sm:hidden flex flex-col gap-3 w-full">
-                <div className="grid grid-cols-2 gap-3">
-                  <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
-                    Explore Services
-                  </Link>
-                  <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
-                    Contact Us
-                  </Link>
-                </div>
-                
-                <a 
-                  href={`tel:${emergencyPhone}`}
-                  className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
-                  aria-label={`Call us at ${emergencyPhoneDisplay}`}
-                >
-                  <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
-                </a>
+            {/* Feature points */}
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-center">
+                <span className="w-6 h-6 flex-shrink-0 rounded-full bg-red flex items-center justify-center mr-2" aria-hidden="true">✓</span>
+                <span className="text-white text-sm">24/7 Emergency Service</span>
               </div>
-              
-              {/* Desktop layout - only visible on medium screens and up */}
-              <div className="hidden sm:flex sm:flex-row sm:gap-4 sm:w-auto">
-                <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
+              <div className="flex items-center">
+                <span className="w-6 h-6 flex-shrink-0 rounded-full bg-red flex items-center justify-center mr-2" aria-hidden="true">✓</span>
+                <span className="text-white text-sm">Licensed & Insured</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-6 h-6 flex-shrink-0 rounded-full bg-red flex items-center justify-center mr-2" aria-hidden="true">✓</span>
+                <span className="text-white text-sm">Same-Day Service</span>
+              </div>
+              <div className="flex items-center">
+                <span className="w-6 h-6 flex-shrink-0 rounded-full bg-red flex items-center justify-center mr-2" aria-hidden="true">✓</span>
+                <span className="text-white text-sm">Satisfaction Guaranteed</span>
+              </div>
+            </div>
+            
+            {/* Desktop buttons */}
+            <div className="hidden md:flex md:flex-row md:gap-4 md:items-center">
+              <Link href="/services" className="bg-white text-navy hover:bg-ivory px-6 py-3 rounded-lg font-medium transition-colors text-center">
+                Explore Services
+              </Link>
+              <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
+                Contact Us
+              </Link>
+              <a 
+                href={`tel:${emergencyPhone}`}
+                className="text-white hover:text-yellow-300 flex justify-start items-center transition-colors py-3 ml-4"
+                aria-label={`Call us at ${emergencyPhoneDisplay}`}
+              >
+                <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+              </a>
+            </div>
+            
+            {/* Mobile buttons - only visible on mobile */}
+            <div className="flex md:hidden flex-col gap-3 mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Link href="/services" className="bg-white text-navy hover:bg-ivory px-4 py-3 rounded-lg font-medium transition-colors text-center text-sm">
                   Explore Services
                 </Link>
-                <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center">
+                <Link href="/contact" className="bg-red border-2 border-red text-white hover:bg-red-dark px-4 py-3 rounded-lg font-medium transition-all text-center text-sm">
                   Contact Us
                 </Link>
-                <a 
-                  href={`tel:${emergencyPhone}`}
-                  className="text-white hover:text-yellow-300 flex justify-start items-center transition-colors py-3"
-                  aria-label={`Call us at ${emergencyPhoneDisplay}`}
-                >
-                  <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
-                </a>
               </div>
+              <a 
+                href={`tel:${emergencyPhone}`}
+                className="text-white hover:text-yellow-300 flex justify-center items-center transition-colors text-sm py-2 border border-white/20 rounded-lg"
+                aria-label={`Call us at ${emergencyPhoneDisplay}`}
+              >
+                <span className="mr-2" aria-hidden="true">📞</span> {emergencyPhoneDisplay}
+              </a>
             </div>
           </div>
           
-          {/* Right visual element - only visible on large screens */}
-          <div className="hidden lg:flex lg:col-span-5 xl:col-span-6 items-center justify-center relative">
-            <div className="relative w-full max-w-md aspect-square">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-red/20 to-red/10 animate-pulse-slow"></div>
-              <div className="absolute inset-8 rounded-full bg-gradient-to-br from-navy-light to-dark-blue-light flex items-center justify-center">
-                <div className="text-white text-center p-4">
-                  <div className="text-5xl mb-2">🌡️</div>
-                  <div className="text-lg font-medium">Comfort Solutions</div>
-                  <div className="text-sm text-white/70 mt-1">Year-Round</div>
-                </div>
-              </div>
-            </div>
+          {/* Form column - contact form with suspense fallback */}
+          <div className="lg:col-span-5">
+            <Suspense fallback={<div className="h-[350px] w-full bg-navy/50 animate-pulse rounded-lg" />}>
+              <HeroContactForm className="w-full" />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -139,13 +148,11 @@ export default memo(function HeroSection({
       <ScrollIndicator />
     </section>
   );
-});
-
-
+}
 
 // Memoize scroll indicator component to prevent unnecessary re-renders
 
-const ScrollIndicator = memo(function ScrollIndicator() {
+const ScrollIndicator = function ScrollIndicator() {
   return (
     <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block" aria-hidden="true">
       <div className="w-6 sm:w-8 h-10 sm:h-12 rounded-full border-2 border-white/50 flex items-start justify-center">
@@ -153,4 +160,4 @@ const ScrollIndicator = memo(function ScrollIndicator() {
       </div>
     </div>
   );
-});
+};

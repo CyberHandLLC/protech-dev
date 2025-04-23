@@ -118,8 +118,7 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
       <OptimizedClientWrapper priority="critical" defer={false} id="hero-section">
         <Suspense fallback={<div className="h-[600px] bg-navy/50 animate-pulse rounded-md" />}>
           <HeroSection 
-            location={combinedLocation.name} 
-            isLoading={combinedLocation.isLoading}
+            location={combinedLocation.name}
           />
         </Suspense>
       </OptimizedClientWrapper>
