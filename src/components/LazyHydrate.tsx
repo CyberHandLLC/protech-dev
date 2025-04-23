@@ -7,7 +7,7 @@ interface LazyHydrateProps {
   children: ReactNode;
   
   /** When to hydrate the component */
-  whenToHydrate?: 'idle' | 'visible' | 'delay' | 'never';
+  whenToHydrate: 'idle' | 'visible' | 'delay' | 'never';
   
   /** Delay in ms (for 'delay' mode) */
   delayMs?: number;
@@ -17,12 +17,6 @@ interface LazyHydrateProps {
   
   /** Unique ID for debugging */
   id?: string;
-  
-  /** Root margin for Intersection Observer (e.g., '-200px') */
-  rootMargin?: string;
-  
-  /** Priority level (0=highest, larger numbers=lower priority) */
-  priority?: number;
 }
 
 /**
@@ -38,18 +32,12 @@ interface LazyHydrateProps {
  * - delay: hydrates after a specified delay
  * - never: never hydrates (SSR only, for completely static parts)
  */
-/**
- * Optimized LazyHydrate component with low-impact initial rendering and prioritized hydration
- * This version significantly reduces TBT by managing hydration timing more aggressively
- */
 export default function LazyHydrate({
   children,
-  whenToHydrate = 'visible', // Change default to visible for best TBT results
+  whenToHydrate = 'idle',
   delayMs = 2000,
   fallback = null,
-  id,
-  rootMargin = '200px',
-  priority = 0
+  id
 }: LazyHydrateProps) {
   const [hydrated, setHydrated] = useState(false);
   
@@ -57,85 +45,67 @@ export default function LazyHydrate({
     // Skip hydration for the 'never' option (useful for pure static content)
     if (whenToHydrate === 'never') return;
     
-    // Added queuing system for TBT reduction based on priority
-    const queueHydration = (callback: Function, delay = 0) => {
-      // Use requestIdleCallback with timeout to ensure eventual execution
-      if ('requestIdleCallback' in window) {
-        return (window as any).requestIdleCallback(
-          () => setTimeout(callback, delay),
-          { timeout: 2000 + (priority * 500) } // Higher priority gets shorter timeout
-        );
-      } else {
-        return setTimeout(callback, delay + (priority * 100));
-      }
-    };
+    // Log hydration status for debugging
+    if (id) console.log(`LazyHydrate: ${id} ready to hydrate when ${whenToHydrate}`);
     
     const triggerHydration = () => {
       if (!hydrated) {
-        // Use queueMicrotask to batch state updates for better performance
-        queueMicrotask(() => setHydrated(true));
+        if (id) console.log(`LazyHydrate: ${id} hydrating now`);
+        setHydrated(true);
       }
     };
-    
-    let cleanupFunction: Function | undefined;
     
     // Different hydration strategies
     switch (whenToHydrate) {
       case 'idle':
-        // Priority-based idle hydration 
-        const idleId = queueHydration(triggerHydration, priority * 100);
-        cleanupFunction = () => {
-          if ('cancelIdleCallback' in window && idleId) {
-            (window as any).cancelIdleCallback(idleId);
-          } else if (idleId) {
-            clearTimeout(idleId as any);
-          }
-        };
+        // Wait until the browser is idle using requestIdleCallback or setTimeout fallback
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(triggerHydration);
+        } else {
+          setTimeout(triggerHydration, 1000); // Fallback for browsers without requestIdleCallback
+        }
         break;
         
       case 'visible':
-        // Use Intersection Observer with configurable rootMargin
-        // This enables different view thresholds for different components
+        // Use Intersection Observer to detect visibility
         const observer = new IntersectionObserver(
           ([entry]) => {
             if (entry.isIntersecting) {
-              queueHydration(triggerHydration);
+              triggerHydration();
               observer.disconnect();
             }
           },
-          { rootMargin } // Configurable preload distance
+          { rootMargin: '200px' } // Pre-load when element is within 200px of viewport
         );
         
-        // Delay observer attachment slightly for better initial page load
-        setTimeout(() => {
-          // Get the element directly from DOM (more reliable)
-          const element = document.getElementById(id || 'hydrate-wrapper');
-          if (element) {
-            observer.observe(element);
-          }
-        }, 100);
-        
-        cleanupFunction = () => observer.disconnect();
+        // Get the first DOM element in our children
+        const element = document.getElementById(id || 'hydrate-wrapper');
+        if (element) {
+          observer.observe(element);
+        }
         break;
         
       case 'delay':
-        // Delay with priority consideration
-        const finalDelay = delayMs + (priority * 200);
-        const timeoutId = setTimeout(triggerHydration, finalDelay);
-        cleanupFunction = () => clearTimeout(timeoutId);
+        // Simple delay before hydration
+        setTimeout(triggerHydration, delayMs);
         break;
     }
     
     return () => {
-      // Cleanup observer and timers
-      if (cleanupFunction) cleanupFunction();
+      // Cleanup if component unmounts before hydration
+      if (whenToHydrate === 'visible') {
+        const element = document.getElementById(id || 'hydrate-wrapper');
+        if (element) {
+          const observer = new IntersectionObserver(() => {});
+          observer.disconnect();
+        }
+      }
     };
-  }, [whenToHydrate, delayMs, hydrated, id, rootMargin, priority]);
+  }, [whenToHydrate, delayMs, hydrated, id]);
   
   // Render a wrapper with id for reference by the observer
-  // Using data attributes instead of ids to prevent conflicts
   return (
-    <div id={id || 'hydrate-wrapper'} data-hydrated={hydrated} data-priority={priority}>
+    <div id={id || 'hydrate-wrapper'}>
       {hydrated ? children : fallback}
     </div>
   );

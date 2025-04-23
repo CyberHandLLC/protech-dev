@@ -5,39 +5,12 @@ import useLocationDetection from '@/hooks/useLocationDetection';
 import dynamic from 'next/dynamic';
 import PageLayout from '@/components/PageLayout';
 import LazyHydrate from '@/components/LazyHydrate';
-// Enable SSR but defer hydration for better TBT
-// The below-the-fold components use ssr:true for server rendering with client hydration only when visible
-const HeroSection = dynamic(() => import('@/components/HeroSection'), { 
-  // Hero section is critical above-the-fold content
-  ssr: true,
-  loading: () => <div className="h-[600px] bg-gray-200 animate-pulse" /> 
-});
-
-// Below-the-fold components with SSR enabled for better performance
-const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { 
-  ssr: true, 
-  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
-});
-
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
-  ssr: true, 
-  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
-});
-
-const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { 
-  ssr: true, 
-  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
-});
-
-const CTASection = dynamic(() => import('@/components/CTASection'), { 
-  ssr: true, 
-  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
-});
-
-const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { 
-  ssr: true, 
-  loading: () => <div className="h-40 bg-gray-200 animate-pulse" /> 
-});
+const HeroSection = dynamic(() => import('@/components/HeroSection'), { ssr: false, loading: () => <div className="h-[600px] bg-gray-200 animate-pulse" /> });
+const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { ssr: false, loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> });
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { ssr: false, loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> });
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: false, loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> });
+const CTASection = dynamic(() => import('@/components/CTASection'), { ssr: false, loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> });
+const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { ssr: false, loading: () => <div className="h-40 bg-gray-200 animate-pulse" /> });
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
 
@@ -108,61 +81,25 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
 
   return (
     <PageLayout>
-      {/* Hero section loads immediately - it's above the fold */}
       <HeroSection 
         location={combinedLocation.name} 
         isLoading={combinedLocation.isLoading} 
         // Pass the server-provided weather data to avoid client-side fetch
         serverWeather={serverWeather}
       />
-      
-      {/* Services preview - first section below the fold, high priority */}
-      <LazyHydrate 
-        whenToHydrate="visible" 
-        rootMargin="-100px" 
-        priority={1}
-        id="services-section"
-      >
+      <LazyHydrate rootMargin="-200px">
         <ServicesPreview location={combinedLocation.name} />
       </LazyHydrate>
-      
-      {/* Testimonials - medium priority */}
-      <LazyHydrate 
-        whenToHydrate="visible" 
-        rootMargin="-150px" 
-        priority={2}
-        id="testimonials-section"
-      >
+      <LazyHydrate rootMargin="-200px">
         <TestimonialsSection location={combinedLocation.id} />
       </LazyHydrate>
-      
-      {/* Why Choose Us - medium priority */}
-      <LazyHydrate 
-        whenToHydrate="visible" 
-        rootMargin="-150px" 
-        priority={3}
-        id="why-choose-us-section"
-      >
+      <LazyHydrate rootMargin="-200px">
         <WhyChooseUs />
       </LazyHydrate>
-      
-      {/* Partner logos - low priority, mostly static content */}
-      <LazyHydrate 
-        whenToHydrate="visible" 
-        rootMargin="-200px" 
-        priority={4}
-        id="partner-logos-section"
-      >
+      <LazyHydrate rootMargin="-200px">
         <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
       </LazyHydrate>
-      
-      {/* CTA section - slightly higher priority than partners since it has interactive elements */}
-      <LazyHydrate 
-        whenToHydrate="visible" 
-        rootMargin="-200px" 
-        priority={3}
-        id="cta-section"
-      >
+      <LazyHydrate rootMargin="-200px">
         <CTASection location={combinedLocation.name} />
       </LazyHydrate>
     </PageLayout>

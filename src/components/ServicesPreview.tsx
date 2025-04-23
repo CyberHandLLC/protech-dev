@@ -112,7 +112,7 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
       activeServices: services,
       displayLocation: decodedLocation
     };
-  }, [activeCategory, location, detectedLocation, isLocating]);
+  }, [location, detectedLocation, activeCategory]);
 
   return (
     <Section className="bg-navy text-white">
@@ -163,21 +163,26 @@ interface CategoryTabsProps {
 
 function CategoryTabs({ categories, activeCategory, onCategoryChange }: CategoryTabsProps) {
   return (
-    <div className="mb-8 sm:mb-12 flex justify-center px-4 sm:px-0">
+    <div className="mb-6 sm:mb-8 px-4 sm:px-0">
       <div 
-        className="flex w-full sm:inline-flex p-1 rounded-lg bg-navy shadow-inner" 
-        role="tablist" 
-        aria-label="Service categories"
+        className="flex gap-2 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0" 
+        role="tablist"
+        aria-label="Service Categories"
       >
-        {categories.map(category => (
+        {categories.map((category) => (
           <button
             key={category.id}
-            id={`${category.id}-tab`}
-            role="tab"
-            aria-controls={`${category.id}-panel`}
-            aria-selected={activeCategory === category.id}
             onClick={() => onCategoryChange(category.id)}
-            className={`flex-1 sm:flex-initial px-3 py-2 sm:px-6 sm:py-3 rounded-md text-xs sm:text-base font-medium transition-all duration-300 ${activeCategory === category.id ? 'bg-dark-blue text-white shadow-sm' : 'text-ivory/80 hover:text-white'}`}
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full transition-all text-xs sm:text-sm md:text-base font-medium whitespace-nowrap ${
+              activeCategory === category.id 
+                ? 'bg-red text-white shadow-md' 
+                : 'text-ivory hover:text-white'
+            }`}
+            role="tab"
+            aria-selected={activeCategory === category.id}
+            aria-controls={`${category.id}-panel`}
+            id={`${category.id}-tab`}
+            type="button"
           >
             {category.name}
           </button>
