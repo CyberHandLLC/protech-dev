@@ -410,15 +410,23 @@ function TestimonialCarousel({
               {/* Customer info */}
               <div className="flex items-center">
                 {/* Avatar in attractive circle with glow */}
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-navy-light to-dark-blue flex items-center justify-center text-white mr-5 border-2 border-red/10 shadow-lg shadow-red/5">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-navy-light to-dark-blue flex items-center justify-center text-white mr-5 border-2 border-red/10 shadow-lg shadow-red/5 overflow-hidden">
                   {testimonial.avatar ? (
-                    <Image 
-                      src={testimonial.avatar} 
-                      alt={`${testimonial.name}'s avatar`} 
-                      width={56} 
-                      height={56} 
-                      className="rounded-full"
-                    />
+                    <div className="w-full h-full relative">
+                      <Image 
+                        src={testimonial.avatar} 
+                        alt={`${testimonial.name}'s avatar`} 
+                        width={56} 
+                        height={56}
+                        className="rounded-full object-cover" 
+                        onError={(e) => {
+                          // Replace with initial on error
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = `<span class="text-xl font-semibold">${testimonial.name.charAt(0)}</span>`;
+                        }}
+                        unoptimized={true}
+                      />
+                    </div>
                   ) : (
                     <span className="text-xl font-semibold">{testimonial.name.charAt(0)}</span>
                   )}

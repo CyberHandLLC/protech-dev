@@ -18,9 +18,22 @@ const nextConfig = {
     optimizePackageImports: ['react', 'react-dom'],
   },
   
-  // Handle images from external sources if needed
+  // Handle images from external sources including Google profile photos
   images: {
-    domains: ['localhost']
+    domains: [
+      'localhost',
+      'maps.googleapis.com',
+      'maps.gstatic.com',
+      'lh3.googleusercontent.com',
+      'streetviewpixels-pa.googleapis.com'
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+        pathname: '**',
+      }
+    ]
   },
   
   // Enable compression for better performance
