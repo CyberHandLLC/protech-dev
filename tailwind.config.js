@@ -22,6 +22,7 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 1.5s ease-out',
         'bounce': 'bounce 2s infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
@@ -34,6 +35,14 @@ module.exports = {
           },
           '50%': {
             transform: 'translateY(-10px)',
+          },
+        },
+        pulse: {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '0.5',
           },
         }
       },
