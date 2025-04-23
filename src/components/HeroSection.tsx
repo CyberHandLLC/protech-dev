@@ -1,31 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Link from 'next/link';
-
-type WeatherData = {
-  temperature: number | null;
-  icon: string;
-  isLoading: boolean;
-};
 
 type HeroSectionProps = {
   location: string;
   isLoading?: boolean;
   emergencyPhone?: string;
   emergencyPhoneDisplay?: string;
-  serverWeather?: {
-    temperature: number;
-    icon: string;
-    isLoading: boolean;
-  };
-};
-
-const getWeatherIcon = (temp: number): string => {
-  if (temp > 85) return '☀️';
-  if (temp > 70) return '⛅';
-  if (temp > 50) return '🌥️';
-  return '❄️';
 };
 
 // Memoize the HeroSection component to prevent unnecessary re-renders
@@ -33,8 +15,7 @@ export default memo(function HeroSection({
   location, 
   isLoading = false,
   emergencyPhone = '8005554822',
-  emergencyPhoneDisplay = '800-555-HVAC',
-  serverWeather
+  emergencyPhoneDisplay = '800-555-HVAC'
 }: HeroSectionProps) {
   // Ensure we have a valid location and decode any URL-encoded characters
   // Only log errors in development mode
@@ -54,70 +35,8 @@ export default memo(function HeroSection({
     displayLocation = location || 'Northeast Ohio'; // Use original or fallback if decoding fails
   }
   
-  // Initialize weather state efficiently from server data if available
-  // This significantly reduces the need for client-side data fetching
-  const [weather, setWeather] = useState<WeatherData>(serverWeather ? {
-    temperature: serverWeather.temperature,
-    icon: serverWeather.icon || getWeatherIcon(serverWeather.temperature),
-    isLoading: false
-  } : {
-    temperature: null,
-    icon: '☀️',
-    isLoading: true
-  });
-  
   // Image loading optimization - use native loading="lazy" instead of JS timeout
   const [isImageVisible, setIsImageVisible] = useState(true);
-
-  // Only perform weather fetching if server data is not available
-  // This is a significant TBT optimization as it avoids unnecessary network requests
-  const fetchWeatherData = useCallback(async () => {
-    // Skip client-side weather fetching if we already have server data
-    if (serverWeather) return;
-    
-    try {
-      // Use a shorter timeout to improve performance
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const temp = Math.floor(Math.random() * (95 - 65) + 65);
-      
-      // Schedule the state update outside of the main execution path
-      // This reduces the impact on TBT
-      requestAnimationFrame(() => {
-        setWeather({
-          temperature: temp,
-          icon: getWeatherIcon(temp),
-          isLoading: false
-        });
-      });
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('Error fetching weather data:', error);
-      }
-      setWeather({
-        temperature: null,
-        icon: '🌡️',
-        isLoading: false
-      });
-    }
-  }, [serverWeather]); // Only depend on serverWeather, not location
-
-  // Fetch weather data only if needed and use requestIdleCallback to defer execution
-  useEffect(() => {
-    // Skip fetching if we have server data
-    if (serverWeather) return;
-  
-    // Mark as loading 
-    setWeather(prev => ({ ...prev, isLoading: true }));
-    
-    // Use requestIdleCallback to defer the fetch until the browser is idle
-    // This significantly reduces TBT by moving work off the critical path
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(() => fetchWeatherData(), { timeout: 2000 });
-    } else {
-      // Fallback with a short timeout for browsers without requestIdleCallback
-      setTimeout(fetchWeatherData, 200);
-    }
-  }, [fetchWeatherData, serverWeather]);
 
   // Use intersection observer to defer image loading
   useEffect(() => {
@@ -149,14 +68,7 @@ export default memo(function HeroSection({
             Professional HVAC services tailored to your comfort needs. From emergency repairs to routine maintenance, our certified technicians deliver reliable solutions.
           </p>
           
-          <div className="mb-8">
-            <WeatherDisplay 
-              location={displayLocation} 
-              temperature={weather.temperature}
-              icon={weather.icon} 
-              isLoading={isLoading || weather.isLoading} 
-            />
-          </div>
+          <div className="mb-8"></div>
           
           <div className="flex flex-col gap-4 animate-fadeIn animate-delay-200 w-full sm:w-auto">
             <div className="grid grid-cols-2 gap-3">
@@ -202,42 +114,7 @@ export default memo(function HeroSection({
   );
 });
 
-type WeatherDisplayProps = {
-  location: string;
-  temperature: number | null;
-  icon: string;
-  isLoading: boolean;
-};
 
-// Memoize the WeatherDisplay component to prevent unnecessary re-renders
-const WeatherDisplay = memo(function WeatherDisplay({ location, temperature, icon, isLoading }: WeatherDisplayProps) {
-  // Decode any URL-encoded characters in the location name
-  let displayLocation;
-  try {
-    displayLocation = decodeURIComponent(location);
-  } catch (e) {
-    // Only log errors in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('Error decoding location in WeatherDisplay:', e);
-    }
-    displayLocation = location; // Use original if decoding fails
-  }
-  return (
-    <div className="bg-white/10 backdrop-blur-sm px-3 py-3 sm:px-4 sm:py-3 rounded-lg inline-flex items-center justify-center animate-fadeIn animate-delay-150 text-center sm:text-left w-full sm:w-auto"
-         aria-live="polite">
-      <span className="text-xl sm:text-2xl mr-2 sm:mr-3" aria-hidden="true">{icon}</span>
-      <div>
-        <span className="text-white text-xs sm:text-sm">Current Weather in {displayLocation}</span>
-        {isLoading ? (
-          <div className="h-5 sm:h-6 w-16 sm:w-20 bg-white/30 animate-pulse rounded mt-1" 
-               aria-label="Loading weather data"></div>
-        ) : (
-          <p className="text-white font-bold text-xl">{temperature !== null ? `${temperature}°F` : 'Unavailable'}</p>
-        )}
-      </div>
-    </div>
-  );
-});
 
 // Memoize these components to prevent unnecessary re-renders
 const EmergencyBadge = memo(function EmergencyBadge() {

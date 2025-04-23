@@ -40,18 +40,12 @@ const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), {
   loading: () => <div className="h-40 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
-type WeatherData = {
-  temperature: number;
-  icon: string;
-};
-
 type HomeContentProps = { 
   defaultLocation: ServiceLocation;
-  weatherData?: WeatherData;
 };
 
 // Component implementation
-function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
+function HomeContent({ defaultLocation }: HomeContentProps) {
   // Use the client-side location detection hook
   const { userLocation: clientLocation, isLocating } = useLocationDetection();
   
@@ -116,12 +110,7 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
     }
   }, [clientLocation, isLocating, defaultLocation]);
 
-  // Prepare weather data from the server
-  const serverWeather = weatherData ? {
-    temperature: weatherData.temperature,
-    icon: weatherData.icon,
-    isLoading: false
-  } : undefined;
+  // No weather data needed
 
   return (
     <PageLayout>
@@ -130,8 +119,7 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
         <Suspense fallback={<div className="h-[600px] bg-navy/50 animate-pulse rounded-md" />}>
           <HeroSection 
             location={combinedLocation.name} 
-            isLoading={combinedLocation.isLoading} 
-            serverWeather={serverWeather}
+            isLoading={combinedLocation.isLoading}
           />
         </Suspense>
       </OptimizedClientWrapper>
@@ -181,6 +169,6 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
 const MemoizedHomeContent = memo(HomeContent);
 
 // Simple wrapper that just passes props to the memoized component
-export default function ClientHomeContent({ defaultLocation, weatherData }: HomeContentProps) {
-  return <MemoizedHomeContent defaultLocation={defaultLocation} weatherData={weatherData} />;
+export default function ClientHomeContent({ defaultLocation }: HomeContentProps) {
+  return <MemoizedHomeContent defaultLocation={defaultLocation} />;
 }

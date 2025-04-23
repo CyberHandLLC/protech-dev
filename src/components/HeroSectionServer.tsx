@@ -1,6 +1,6 @@
 /**
  * Server Component version of HeroSection
- * Pre-renders the entire hero section with static weather data
+ * Pre-renders the entire hero section
  */
 import Link from 'next/link';
 
@@ -8,17 +8,12 @@ type HeroSectionProps = {
   location: string;
   emergencyPhone?: string;
   emergencyPhoneDisplay?: string;
-  // Optional weather data that can be provided by the server
-  temperature?: number;
-  weatherIcon?: string;
 };
 
 export default function HeroSectionServer({ 
   location,
   emergencyPhone = '8005554822',
-  emergencyPhoneDisplay = '800-555-HVAC',
-  temperature = 75,
-  weatherIcon = '⛅'
+  emergencyPhoneDisplay = '800-555-HVAC'
 }: HeroSectionProps) {
   // We're guaranteed to have a valid location since it's coming from the server
   const displayLocation = location || 'Northeast Ohio';
@@ -47,17 +42,7 @@ export default function HeroSectionServer({
             Professional HVAC services tailored to your comfort needs. From emergency repairs to routine maintenance, our certified technicians deliver reliable solutions.
           </p>
           
-          <div className="mb-8">
-            {/* Static Weather Display component */}
-            <div className="bg-white/10 backdrop-blur-sm px-3 py-3 sm:px-4 sm:py-3 rounded-lg inline-flex items-center justify-center text-center sm:text-left w-full sm:w-auto"
-                aria-live="polite">
-              <span className="text-xl sm:text-2xl mr-2 sm:mr-3" aria-hidden="true">{weatherIcon}</span>
-              <div>
-                <span className="text-white text-xs sm:text-sm">Current Weather in {displayLocation}</span>
-                <p className="text-white font-bold text-xl">{temperature}°F</p>
-              </div>
-            </div>
-          </div>
+          <div className="mb-8"></div>
           
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 animate-fadeIn animate-delay-150">
             {/* Mobile-only buttons (stacked) */}
