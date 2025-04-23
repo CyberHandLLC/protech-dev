@@ -20,7 +20,7 @@ const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), {
   loading: () => <div className="h-80 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSectionApi'), { 
   ssr: true,
   loading: () => <div className="h-60 bg-navy/50 animate-pulse rounded-md" /> 
 });
@@ -143,7 +143,7 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
       {/* Testimonials section - medium priority, deferred until in viewport */}
       <OptimizedClientWrapper priority="medium" id="testimonials-section">
         <Suspense fallback={<div className="h-60 bg-navy/50 animate-pulse rounded-md" />}>
-          <TestimonialsSection location={combinedLocation.id} />
+          <TestimonialsSection location={combinedLocation.name} />
         </Suspense>
       </OptimizedClientWrapper>
       
