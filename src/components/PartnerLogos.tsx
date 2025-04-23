@@ -40,26 +40,26 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
         />
       
         {/* Logos scroll container with single row */}
-        <div className="relative overflow-hidden py-8 max-w-5xl mx-auto">
+        <div className="relative overflow-hidden max-w-5xl mx-auto">
           {/* Gradient overlays */}
-          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-navy z-10"></div>
-          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-navy z-10"></div>
+          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-navy to-transparent z-10"></div>
+          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-navy to-transparent z-10"></div>
           
           {/* Logo track - using two identical containers for continuous loop */}
-          <div className="overflow-hidden py-4 relative">
+          <div className="overflow-hidden relative h-20">
             <div className="inline-flex space-x-8 animate-marquee">
               {allLogos.map((logo, index) => (
                 <div 
                   key={`first-${logo.name}-${index}`}
                   className="inline-flex"
                 >
-                  <div className="h-20 w-48 flex items-center justify-center">
+                  <div className="h-20 w-48 flex items-center justify-center overflow-hidden">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-24 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-36 max-w-[350px]' : 'max-h-15 max-w-[175px]'}`} 
+                      className="w-auto h-auto max-h-16 object-contain drop-shadow-lg brightness-150"
                       priority
                       unoptimized={true}
                     />
@@ -75,13 +75,13 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
                   key={`second-${logo.name}-${index}`}
                   className="inline-flex"
                 >
-                  <div className="h-20 w-48 flex items-center justify-center">
+                  <div className="h-20 w-48 flex items-center justify-center overflow-hidden">
                     <Image 
                       src={logo.logoPath} 
                       alt={`${logo.name} logo`}
                       width={logo.width}
                       height={logo.height}
-                      className={`w-auto object-contain drop-shadow-lg brightness-150 ${logo.name === 'Planet Fitness' ? 'max-h-24 max-w-[145px]' : logo.name === 'Steingass' ? 'max-h-36 max-w-[350px]' : 'max-h-15 max-w-[175px]'}`} 
+                      className="w-auto h-auto max-h-16 object-contain drop-shadow-lg brightness-150"
                       unoptimized={true}
                     />
                   </div>

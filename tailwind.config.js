@@ -22,6 +22,8 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 1.5s ease-out',
         'bounce': 'bounce 2s infinite',
+        'marquee': 'marquee 25s linear infinite',
+        'marquee-2': 'marquee2 25s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -35,6 +37,14 @@ module.exports = {
           '50%': {
             transform: 'translateY(-10px)',
           },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' }
+        },
+        marquee2: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0%)' }
         }
       },
     },
