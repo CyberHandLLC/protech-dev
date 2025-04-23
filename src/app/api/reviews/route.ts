@@ -1,4 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
+
+// Helper function to set CORS headers
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
 
 // Google Places API constants
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
@@ -35,20 +45,29 @@ export interface ReviewData {
   source: string;
 }
 
-export async function GET() {
+// Set proper caching headers using Next.js 15 metadata feature
+export const dynamic = 'force-dynamic'; // Default is auto, which means it's static by default
+export const revalidate = 3600; // Revalidate every hour
+
+export async function GET(request: NextRequest) {
+  // Get the pathname from the request
+  const pathname = request.nextUrl.pathname;
   try {
     if (!GOOGLE_PLACES_API_KEY || !GOOGLE_PLACE_ID) {
       return NextResponse.json(
-        { error: 'API keys not configured' },
-        { status: 500 }
+        { error: 'API keys not configured', success: false },
+        { status: 500, headers: corsHeaders() }
       );
     }
 
     // Fetch details from Google Places API
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/place/details/json?place_id=${GOOGLE_PLACE_ID}&fields=name,rating,review,user_ratings_total&key=${GOOGLE_PLACES_API_KEY}`,
-      { next: { revalidate: 60 * 60 } } // Cache for 1 hour
+      { next: { revalidate } } // Use the defined revalidation period
     );
+    
+    // Manually revalidate the path to ensure freshness
+    revalidatePath(pathname);
 
     if (!response.ok) {
       throw new Error(`Google Places API returned ${response.status}`);
@@ -82,13 +101,29 @@ export async function GET() {
       reviews,
       businessName: data.result.name,
       averageRating: data.result.rating,
-      totalReviews: data.result.user_ratings_total
+      totalReviews: data.result.user_ratings_total,
+      success: true
+    }, {
+      headers: corsHeaders(),
+      status: 200
     });
   } catch (error) {
     console.error('Error fetching Google reviews:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch reviews' },
-      { status: 500 }
+      { error: 'Failed to fetch reviews', success: false },
+      { 
+        status: 500,
+        headers: corsHeaders() 
+      }
     );
   }
+}
+
+
+
+// Handle OPTIONS requests for CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, {
+    headers: corsHeaders(),
+  });
 }
