@@ -7,7 +7,7 @@ import SectionHeading from './ui/SectionHeading';
 import Container from './ui/Container';
 import StarRating from './ui/StarRating';
 import { Testimonial, ReviewPlatform } from '@/types/reviews';
-import { fetchReviewsByLocation, fetchTopReviews } from '@/services/reviewsApi';
+import { getAllReviews, getTopReviews, getPlaceDetails } from '@/services/reviewsApi';
 import { convertToLocationSlug } from '@/utils/location';
 
 /**
@@ -43,32 +43,29 @@ export default function TestimonialsSectionApi({ location }: { location: string 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Fetch testimonials based on location
+  // Fetch testimonials from Google Places
   useEffect(() => {
-    async function loadReviews() {
+    async function loadGoogleReviews() {
       try {
         setIsLoading(true);
         setError(null);
         
-        // Convert the location to a slug format for API
-        const locationSlug = convertToLocationSlug(location);
+        // Get all Google reviews - we don't need to filter by location since they're all for this business
+        let reviews = await getAllReviews();
         
-        // Try to get location-specific reviews
-        let reviews = await fetchReviewsByLocation(locationSlug);
-        
-        // If no location-specific reviews, get top reviews instead
+        // If no reviews, use top reviews or fallback
         if (!reviews || reviews.length === 0) {
-          reviews = await fetchTopReviews(5);
+          reviews = await getTopReviews(5);
         }
         
-        // If we still have no reviews, use fallback
+        // If still no reviews, use fallback
         if (!reviews || reviews.length === 0) {
           reviews = fallbackTestimonials;
         }
         
         setTestimonials(reviews);
       } catch (err) {
-        console.error('Error loading reviews:', err);
+        console.error('Error loading Google reviews:', err);
         setError('Unable to load reviews. Please try again later.');
         setTestimonials(fallbackTestimonials);
       } finally {
@@ -76,8 +73,8 @@ export default function TestimonialsSectionApi({ location }: { location: string 
       }
     }
     
-    loadReviews();
-  }, [location]);
+    loadGoogleReviews();
+  }, []);
   
   // Navigation functions
   const handlePrev = useCallback(() => {
@@ -104,7 +101,7 @@ export default function TestimonialsSectionApi({ location }: { location: string 
       <Container className="py-16">
         <SectionHeading
           title="What Our Customers Say"
-          subtitle="Read reviews from real customers in your area"
+          subtitle="Real Google reviews from our satisfied customers"
           centered
         />
         
@@ -303,7 +300,7 @@ function TestimonialCarousel({
                 <p className="font-bold text-white">{currentTestimonial.name}</p>
                 <p className="text-ivory/60 text-sm flex items-center">
                   <span className="mr-2" aria-hidden="true">📍</span>
-                  <span>{currentTestimonial.location}</span>
+                  <span>{currentTestimonial.source || 'Google'}</span>
                 </p>
                 <p className="text-ivory/60 text-sm mt-1">
                   <span className="text-red font-medium">{currentTestimonial.service}</span>

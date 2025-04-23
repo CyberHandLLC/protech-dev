@@ -1,45 +1,42 @@
 /**
- * Reviews API service for fetching customer reviews
+ * Reviews API service for fetching customer reviews from Google Places
  */
 
 import { Testimonial } from '@/types/reviews';
 
 /**
- * Convert API review format to our app's Testimonial format
+ * Convert Google Places review format to our app's Testimonial format
  */
-export function mapApiReviewToTestimonial(apiReview: any): Testimonial {
-  // Map the API response fields to our application's Testimonial format
-  // Adjust this mapping based on your actual API response structure
+export function mapGoogleReviewToTestimonial(googleReview: any, index: number): Testimonial {
   return {
-    id: apiReview.id || Math.floor(Math.random() * 10000),
-    name: apiReview.customerName || apiReview.name || 'Customer',
-    location: apiReview.location || 'Local Area',
-    rating: apiReview.rating || apiReview.stars || 5,
-    text: apiReview.text || apiReview.content || apiReview.review || '',
-    service: apiReview.service || apiReview.serviceType || 'HVAC Service',
-    date: apiReview.date || apiReview.reviewDate || new Date().toISOString().split('T')[0],
-    avatar: apiReview.avatar || apiReview.profileImage || undefined,
-    // Add any additional fields you need
+    id: index, // Google doesn't provide unique IDs for reviews, so we use the array index
+    name: googleReview.author_name || 'Google Reviewer',
+    location: googleReview.author_location || 'Google Maps', // Google doesn't always provide reviewer location
+    rating: googleReview.rating || 5,
+    text: googleReview.text || '',
+    service: 'HVAC Service', // Google reviews don't specify which service was used
+    date: googleReview.time ? new Date(googleReview.time * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    avatar: googleReview.profile_photo_url,
+    source: 'Google',
   };
 }
 
 /**
- * Fetch reviews from the API and transform them to the Testimonial format
+ * Fetch Google Places reviews through our secure server-side API route
  */
-export async function fetchReviews(locationSlug?: string): Promise<{
+export async function fetchGoogleReviews(): Promise<{
   reviews: Testimonial[];
-  locations: Record<string, Testimonial[]>;
+  placeDetails: {
+    name: string;
+    rating: number;
+    address: string;
+  }
 }> {
   try {
-    // Replace with your actual API endpoint
-    const apiUrl = locationSlug 
-      ? `${process.env.NEXT_PUBLIC_REVIEWS_API_URL}/reviews?location=${locationSlug}`
-      : `${process.env.NEXT_PUBLIC_REVIEWS_API_URL}/reviews`;
-    
-    const response = await fetch(apiUrl, {
+    // Use our secure API route which keeps the API key private
+    const response = await fetch('/api/reviews', {
+      method: 'GET',
       headers: {
-        // Add any required headers for your API
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_REVIEWS_API_KEY || ''}`,
         'Content-Type': 'application/json'
       }
     });
@@ -50,56 +47,51 @@ export async function fetchReviews(locationSlug?: string): Promise<{
 
     const data = await response.json();
     
-    // Transform API responses to our Testimonial format
-    const transformedReviews = Array.isArray(data) 
-      ? data.map(mapApiReviewToTestimonial)
-      : Array.isArray(data.reviews) 
-        ? data.reviews.map(mapApiReviewToTestimonial)
-        : [];
-
-    // Group reviews by location for location-based filtering
-    const locationGroups: Record<string, Testimonial[]> = {};
+    if (data.error) {
+      throw new Error(data.error);
+    }
     
-    transformedReviews.forEach(review => {
-      // Create a slug from the location or use a default
-      const locationKey = review.location
-        ? review.location.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-        : 'uncategorized';
-      
-      if (!locationGroups[locationKey]) {
-        locationGroups[locationKey] = [];
-      }
-      
-      locationGroups[locationKey].push(review);
-    });
+    const result = data.result || {};
+    const googleReviews = result.reviews || [];
+    
+    // Transform Google reviews to our Testimonial format
+    const transformedReviews = googleReviews.map(mapGoogleReviewToTestimonial);
 
-    // Return both the full list and the grouped reviews
     return {
       reviews: transformedReviews,
-      locations: locationGroups
+      placeDetails: {
+        name: result.name || 'ProTech HVAC',
+        rating: result.rating || 5,
+        address: result.formatted_address || 'Local Area'
+      }
     };
   } catch (error) {
-    console.error('Error fetching reviews:', error);
+    console.error('Error fetching Google reviews:', error);
     // Return empty arrays in case of error to prevent app crashes
-    return { reviews: [], locations: {} };
+    return { 
+      reviews: [], 
+      placeDetails: {
+        name: 'ProTech HVAC',
+        rating: 5,
+        address: 'Local Area'
+      }
+    };
   }
 }
 
 /**
- * Fetch reviews for a specific location
+ * Get all Google reviews
  */
-export async function fetchReviewsByLocation(locationSlug: string): Promise<Testimonial[]> {
-  const { locations } = await fetchReviews();
-  
-  // Return reviews for the requested location or an empty array
-  return locations[locationSlug] || [];
+export async function getAllReviews(): Promise<Testimonial[]> {
+  const { reviews } = await fetchGoogleReviews();
+  return reviews;
 }
 
 /**
- * Get the top-rated reviews regardless of location
+ * Get the top-rated Google reviews
  */
-export async function fetchTopReviews(limit = 5): Promise<Testimonial[]> {
-  const { reviews } = await fetchReviews();
+export async function getTopReviews(limit = 5): Promise<Testimonial[]> {
+  const { reviews } = await fetchGoogleReviews();
   
   // Sort by rating (highest first) and return limited number
   return reviews
@@ -108,13 +100,25 @@ export async function fetchTopReviews(limit = 5): Promise<Testimonial[]> {
 }
 
 /**
- * Get the most recent reviews regardless of location
+ * Get the most recent Google reviews
  */
-export async function fetchRecentReviews(limit = 5): Promise<Testimonial[]> {
-  const { reviews } = await fetchReviews();
+export async function getRecentReviews(limit = 5): Promise<Testimonial[]> {
+  const { reviews } = await fetchGoogleReviews();
   
   // Sort by date (newest first) and return limited number
   return reviews
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, limit);
+}
+
+/**
+ * Get place details from Google
+ */
+export async function getPlaceDetails(): Promise<{
+  name: string;
+  rating: number;
+  address: string;
+}> {
+  const { placeDetails } = await fetchGoogleReviews();
+  return placeDetails;
 }

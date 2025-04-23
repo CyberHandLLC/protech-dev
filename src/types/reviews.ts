@@ -22,6 +22,8 @@ export interface Testimonial {
   service: string;
   /** Date of review (ISO format) */
   date: string;
+  /** Source of the review (e.g., 'Google', 'Yelp') */
+  source?: string;
 }
 
 /**
