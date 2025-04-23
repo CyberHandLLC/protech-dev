@@ -21,6 +21,8 @@ interface Service {
   icon: string;
   /** Brief description of the service */
   description: string;
+  /** Optional background image for the service card */
+  image?: string;
 }
 
 /**
@@ -51,20 +53,20 @@ const serviceCategories: ServiceCategory[] = [
     id: 'residential',
     name: 'Residential HVAC',
     services: [
-      { id: 'ac-installation', name: 'New Installations', icon: '🏡', description: 'Complete home comfort systems' },
-      { id: 'heating', name: 'Heating Systems', icon: '🔥', description: 'Furnaces, boilers & heat pumps' },
-      { id: 'air-conditioning', name: 'Air Conditioning', icon: '❄️', description: 'Central AC & mini-split systems' },
-      { id: 'air-quality', name: 'Indoor Air Quality', icon: '🌬️', description: 'Purifiers & humidity control' },
+      { id: 'ac-installation', name: 'New Installations', icon: '🏡', description: 'Complete home comfort systems', image: '/images/hvac-installation.jpg' },
+      { id: 'heating', name: 'Heating Systems', icon: '🔥', description: 'Furnaces, boilers & heat pumps', image: '/images/heating-system.jpg' },
+      { id: 'air-conditioning', name: 'Air Conditioning', icon: '❄️', description: 'Central AC & mini-split systems', image: '/images/modern-ac-unit.jpg' },
+      { id: 'air-quality', name: 'Indoor Air Quality', icon: '🌬️', description: 'Purifiers & humidity control', image: '/images/comfortable-home.jpg' },
     ]
   },
   {
     id: 'commercial',
     name: 'Commercial HVAC',
     services: [
-      { id: 'commercial-installation', name: 'Commercial Systems', icon: '🏢', description: 'Custom solutions for any business' },
-      { id: 'emergency', name: 'Emergency Service', icon: '🚨', description: '24/7 response to critical failures' },
-      { id: 'refrigeration', name: 'Refrigeration', icon: '🧊', description: 'Restaurant & retail cooling systems' },
-      { id: 'maintenance-plan', name: 'Maintenance Plans', icon: '📆', description: 'Scheduled service & priority care' },
+      { id: 'commercial-installation', name: 'Commercial Systems', icon: '🏢', description: 'Custom solutions for any business', image: '/images/hvac-technician.jpg' },
+      { id: 'emergency', name: 'Emergency Service', icon: '🚨', description: '24/7 response to critical failures', image: '/images/hvac-tools.jpg' },
+      { id: 'refrigeration', name: 'Refrigeration', icon: '🧊', description: 'Restaurant & retail cooling systems', image: '/images/modern-interior.jpg' },
+      { id: 'maintenance-plan', name: 'Maintenance Plans', icon: '📆', description: 'Scheduled service & priority care', image: '/images/smart-thermostat.jpg' },
     ]
   }
 ];
@@ -258,10 +260,21 @@ function ServiceCard({ service, href }: ServiceCardProps) {
       aria-labelledby={`service-${service.id}`}
     >
       <div className="bg-navy h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:transform group-hover:-translate-y-2 border border-navy-light/30 relative">
+        {/* Background image with overlay */}
+        {service.image && (
+          <div className="absolute inset-0 z-0 opacity-20 group-hover:opacity-30 transition-opacity duration-300">
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{ backgroundImage: `url(${service.image})` }}
+            ></div>
+            <div className="absolute inset-0 bg-navy/90"></div>
+          </div>
+        )}
+        
         {/* Diagonal accent ribbon */}
         <div className="absolute -right-12 top-6 bg-red shadow-lg transform rotate-45 w-40 h-5 z-10"></div>
         
-        <div className="p-7 flex flex-col h-full">
+        <div className="p-7 flex flex-col h-full relative z-1">
           {/* Icon in a styled circle with shadow */}
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-navy-light to-dark-blue-light flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-lg border-2 border-red/20">
             <span className="text-3xl transform group-hover:rotate-12 transition-transform duration-300">{service.icon}</span>

@@ -30,8 +30,17 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
   const allLogos = [...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos, ...partnerLogos];
 
   return (
-    <Section className="py-12 bg-dark-blue/30">
-      <Container>
+    <Section className="py-12 bg-dark-blue/30 relative">
+      {/* Background image with overlay */}
+      <div className="absolute inset-0 z-0 opacity-5">
+        <div 
+          className="w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: `url('/images/hvac-technician.jpg')` }}
+        ></div>
+        <div className="absolute inset-0 bg-navy/95"></div>
+      </div>
+      
+      <Container className="relative z-10">
         <SectionHeading 
           title={title}
           subtitle={subtitle}
