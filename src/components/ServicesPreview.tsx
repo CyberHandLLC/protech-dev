@@ -121,7 +121,7 @@ export default function ServicesPreview({ location }: ServicesPreviewProps) {
           title="Our Services"
           subtitle={`Professional HVAC solutions for your home and business in ${displayLocation}. Our certified technicians provide expert service for all your heating and cooling needs.`}
           centered
-          className="px-4"
+          className="px-4 mb-12"
         />
         
         {/* Service Category Tabs */}
