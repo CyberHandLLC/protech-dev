@@ -1,7 +1,17 @@
 // Page is a Server Component by default in Next.js App Router
-import ClientHomeContent from '@/components/ClientHomeContent';
 import type { Metadata } from 'next';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
+
+// Import server components directly
+import HeroSectionServer from '@/components/HeroSectionServer';
+import ServicesPreviewServer from '@/components/ServicesPreviewServer';
+import TestimonialsSectionServer from '@/components/TestimonialsSectionServer';
+import WhyChooseUsServer from '@/components/WhyChooseUsServer';
+import PartnerLogosServer from '@/components/PartnerLogosServer';
+import CTASectionServer from '@/components/CTASectionServer';
+
+// Client components with interactivity - imported with special wrapper
+import ClientOnly from '../components/ClientOnly';
 
 /**
  * Metadata for the home page with optimized SEO
@@ -14,9 +24,9 @@ export const metadata: Metadata = {
 
 /**
  * Home page - Server Component
- * Optimized for performance by moving data fetching to the server
+ * Fully optimized for performance using React Server Components
  */
-// Using Edge runtime for optimal performance with server-side location detection
+// Using Edge runtime for optimal location detection
 export const runtime = 'edge';
 export const revalidate = 60;
 
@@ -66,14 +76,37 @@ export default async function HomePage() {
     console.error('Invalid or missing user location in HomePage');
   }
   
-  // Pass both location and weather data to the client component
+  // Render the entire page with server components
+  // Only wrapping minimal interactive elements with ClientOnly
   return (
-    <ClientHomeContent 
-      defaultLocation={userLocation} 
-      weatherData={{
-        temperature: weatherData.temperature,
-        icon: weatherData.icon
-      }} 
-    />
+    <div className="min-h-screen flex flex-col bg-navy text-ivory">
+      {/* The main navigation will be client-hydrated via layout.tsx */}
+      
+      <div className="flex-grow">
+        {/* LCP Priority: Hero Section - Preloaded with server data */}
+        <HeroSectionServer 
+          location={userLocation.name}
+          temperature={weatherData.temperature}
+          weatherIcon={weatherData.icon}
+        />
+        
+        {/* Priority Loading Order: Services section is often interacted with early */}
+        <ServicesPreviewServer location={userLocation.name} />
+        
+        {/* Below the fold - Can be server rendered for optimal TBT */}
+        <TestimonialsSectionServer location={userLocation.id} />
+        
+        <WhyChooseUsServer />
+        
+        <PartnerLogosServer 
+          title="Brands We Work With" 
+          subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+        />
+        
+        <CTASectionServer location={userLocation.name} />
+      </div>
+      
+      {/* Footer will be handled by the layout */}
+    </div>
   );
 }

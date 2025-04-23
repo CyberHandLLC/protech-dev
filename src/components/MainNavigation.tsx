@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { menuItems } from '@/data/navigationData';
@@ -10,24 +10,46 @@ export default function MainNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const pathname = usePathname();
+  
+  // Use refs to avoid expensive re-renders
+  const scrollListenerRef = useRef<Function | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Delay scroll listener attachment to improve TBT
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Skip initial scroll monitoring to reduce TBT
+    timeoutRef.current = setTimeout(() => {
+      const handleScroll = () => setIsScrolled(window.scrollY > 20);
+      scrollListenerRef.current = handleScroll;
+      
+      // Use passive event listener to avoid blocking the main thread
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      };
+    }, 1000); // Delay scroll handling by 1 second to improve initial load performance
+    
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
+  // Reset mobile menu state on navigation
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setOpenSubmenu(null);
   }, [pathname]);
 
+  // Memoized submenu toggle to reduce function creation on renders
   const toggleSubmenu = useCallback((name: string) => {
     setOpenSubmenu(prev => (prev === name ? null : name));
   }, []);
 
+  // Memoized active link detection
   const isActive = useCallback((href: string) => {
-    return pathname === href || pathname.startsWith(`${href}/`);
+    if (!pathname) return false;
+    return pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
   }, [pathname]);
 
   return (
@@ -122,13 +144,14 @@ export default function MainNavigation() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <div 
-        id="mobile-menu"
-        className={`md:hidden bg-dark-blue absolute w-full shadow-lg transition-all duration-300 ${isMobileMenuOpen ? 'top-full opacity-100 visible' : 'top-[calc(100%-10px)] opacity-0 invisible'}`}
-        aria-hidden={!isMobileMenuOpen}
-      >
-        <nav className="container mx-auto px-4 py-3" aria-label="Mobile Navigation">
+      {/* Mobile Menu - only render when open to reduce initial HTML/JS size */}
+      {isMobileMenuOpen && (
+        <div 
+          id="mobile-menu"
+          className={`md:hidden bg-dark-blue absolute w-full shadow-lg transition-all duration-300 top-full opacity-100 visible`}
+          aria-hidden="false"
+        >
+          <nav className="container mx-auto px-4 py-3" aria-label="Mobile Navigation">
           {menuItems.map((item) => (
             <div key={item.name} className="border-b border-dark-blue-light last:border-b-0">
               {item.subItems ? (
@@ -184,7 +207,8 @@ export default function MainNavigation() {
             </Link>
           </div>
         </nav>
-      </div>
+        </div>
+      )}
     </header>
   );
 }
