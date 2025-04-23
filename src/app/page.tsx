@@ -18,8 +18,7 @@ export const metadata: Metadata = {
  */
 // Using Edge runtime for optimal performance with server-side location detection
 export const runtime = 'edge';
-// Force static rendering with selective hydration
-export const dynamic = 'force-static';
+// Set revalidation interval
 export const revalidate = 60;
 // Prefetch key routes for better navigation performance
 export const prefetch = true;

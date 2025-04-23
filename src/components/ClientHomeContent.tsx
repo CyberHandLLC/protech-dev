@@ -5,6 +5,8 @@ import useLocationDetection from '@/hooks/useLocationDetection';
 import dynamic from 'next/dynamic';
 import PageLayout from '@/components/PageLayout';
 import OptimizedClientWrapper from '@/components/OptimizedClientWrapper';
+import { ServiceLocation } from '@/utils/locationUtils';
+import { convertToLocationSlug } from '@/utils/location';
 
 // Next.js 15 optimized dynamic imports with enhanced TBT reduction
 // Use SSR with proper error boundaries and suspense boundaries
@@ -37,8 +39,6 @@ const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), {
   ssr: true,
   loading: () => <div className="h-40 bg-navy/50 animate-pulse rounded-md" /> 
 });
-import { ServiceLocation } from '@/utils/locationUtils';
-import { convertToLocationSlug } from '@/utils/location';
 
 type WeatherData = {
   temperature: number;
@@ -50,8 +50,8 @@ type HomeContentProps = {
   weatherData?: WeatherData;
 };
 
-// Memoize HomeContent to prevent unnecessary re-renders
-const HomeContent = memo(function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
+// Component implementation
+function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
   // Use the client-side location detection hook
   const { userLocation: clientLocation, isLocating } = useLocationDetection();
   
@@ -177,7 +177,10 @@ const HomeContent = memo(function HomeContent({ defaultLocation, weatherData }: 
   );
 }
 
+// Use memo to optimize both components
+const MemoizedHomeContent = memo(HomeContent);
+
 // Simple wrapper that just passes props to the memoized component
-export default memo(function ClientHomeContent({ defaultLocation, weatherData }: HomeContentProps) {
-  return <HomeContent defaultLocation={defaultLocation} weatherData={weatherData} />;
-});
+export default function ClientHomeContent({ defaultLocation, weatherData }: HomeContentProps) {
+  return <MemoizedHomeContent defaultLocation={defaultLocation} weatherData={weatherData} />;
+}
