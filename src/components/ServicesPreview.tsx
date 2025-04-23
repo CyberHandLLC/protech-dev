@@ -165,7 +165,7 @@ function CategoryTabs({ categories, activeCategory, onCategoryChange }: Category
   return (
     <div className="mb-6 sm:mb-8 px-4 sm:px-0">
       <div 
-        className="flex gap-2 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0" 
+        className="flex justify-center gap-6 sm:gap-8 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0" 
         role="tablist"
         aria-label="Service Categories"
       >
