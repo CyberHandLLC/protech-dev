@@ -109,9 +109,10 @@ export default memo(function HeroSection({
             </div>
           </div>
         </div>
+        {/* Emergency badge integrated in container */}
+        <EmergencyBadge />
       </div>
       
-      <EmergencyBadge />
       <ScrollIndicator />
     </section>
   );
@@ -122,10 +123,10 @@ export default memo(function HeroSection({
 // Memoize these components to prevent unnecessary re-renders
 const EmergencyBadge = memo(function EmergencyBadge() {
   return (
-    <div className="absolute bottom-4 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block">
+    <div className="absolute bottom-4 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block pointer-events-none">
       <Link 
         href="/emergency-service"
-        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors"
+        className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors pointer-events-auto"
         aria-label="24/7 Emergency Service"
       >
         <span className="text-xl sm:text-2xl mr-2 animate-pulse" aria-hidden="true">🚨</span>
