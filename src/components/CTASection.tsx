@@ -37,13 +37,9 @@ export default function CTASection({
 
   return (
     <Section className="relative overflow-hidden py-16 md:py-20">
-      {/* Background with image and overlay */}
-      <div className="absolute inset-0 z-0 bg-cover bg-center">
-        <div 
-          className="w-full h-full bg-cover bg-center"
-          style={{ backgroundImage: `url('/images/modern-interior.jpg')` }}
-        ></div>
-        <div className="absolute inset-0 bg-navy opacity-90"></div>
+      {/* Background with gradient overlay */}
+      <div className="absolute inset-0 z-0 bg-[url('/cta-bg-placeholder.jpg')] bg-cover bg-center">
+        <div className="absolute inset-0 bg-navy opacity-95"></div>
       </div>
       
       {/* Diagonal accent at top */}

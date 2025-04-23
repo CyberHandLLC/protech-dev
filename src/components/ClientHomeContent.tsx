@@ -124,6 +124,16 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
         </Suspense>
       </OptimizedClientWrapper>
       
+      {/* Partner logos - moved above services, medium priority */}
+      <OptimizedClientWrapper priority="medium" id="partner-logos">
+        <Suspense fallback={<div className="h-40 bg-navy/50 animate-pulse rounded-md" />}>
+          <PartnerLogos 
+            title="Brands We Work With" 
+            subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
+          />
+        </Suspense>
+      </OptimizedClientWrapper>
+      
       {/* Services preview - high priority, deferred until almost in viewport */}
       <OptimizedClientWrapper priority="high" id="services-preview">
         <Suspense fallback={<div className="h-80 bg-navy/50 animate-pulse rounded-md" />}>
@@ -142,16 +152,6 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
       <OptimizedClientWrapper priority="medium" id="why-choose-us">
         <Suspense fallback={<div className="h-80 bg-navy/50 animate-pulse rounded-md" />}>
           <WhyChooseUs />
-        </Suspense>
-      </OptimizedClientWrapper>
-      
-      {/* Partner logos - lower priority */}
-      <OptimizedClientWrapper priority="low" id="partner-logos">
-        <Suspense fallback={<div className="h-40 bg-navy/50 animate-pulse rounded-md" />}>
-          <PartnerLogos 
-            title="Brands We Work With" 
-            subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" 
-          />
         </Suspense>
       </OptimizedClientWrapper>
       
