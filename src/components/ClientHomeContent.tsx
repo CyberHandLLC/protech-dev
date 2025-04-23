@@ -143,7 +143,7 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
       {/* Testimonials section - medium priority, deferred until in viewport */}
       <OptimizedClientWrapper priority="medium" id="testimonials-section">
         <Suspense fallback={<div className="h-60 bg-navy/50 animate-pulse rounded-md" />}>
-          <TestimonialsSection location={combinedLocation.name} />
+          <TestimonialsSection location={combinedLocation.id} />
         </Suspense>
       </OptimizedClientWrapper>
       
