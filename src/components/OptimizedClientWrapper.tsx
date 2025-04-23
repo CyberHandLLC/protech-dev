@@ -123,11 +123,21 @@ export default memo(function OptimizedClientWrapper({
     }
   }, [shouldRender, componentId]);
 
-  // Skip client-side rendering entirely for server-only content
-  if (!isClient && typeof window === 'undefined') {
-    return <div id={componentId}>{children}</div>;
+  // For server-side rendering, always render a simple container with the actual content
+  // This prevents hydration mismatches by using the same structure on server and client
+  if (typeof window === 'undefined') {
+    return (
+      <div 
+        id={componentId} 
+        data-priority={priority} 
+        data-hydration="pending"
+      >
+        {children}
+      </div>
+    );
   }
 
+  // Client-side rendering with all dynamic behavior
   return (
     <div 
       id={componentId}

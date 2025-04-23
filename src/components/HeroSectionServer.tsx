@@ -84,34 +84,17 @@ export default function HeroSectionServer({
         </div>
       </div>
       
-      {/* Emergency badge - container-based approach */}
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative">
-        <div className="absolute bottom-4 sm:bottom-8 right-4 z-20 hidden sm:block">
-          <Link 
-            href="/emergency-service"
-            className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors"
-            aria-label="24/7 Emergency Service"
-          >
-            <span className="text-xl sm:text-2xl mr-2" aria-hidden="true">🚨</span>
-            <div>
-              <p className="text-white font-bold leading-tight text-sm sm:text-base">24/7 Emergency</p>
-              <p className="text-xs sm:text-sm text-white/80 group-hover:text-white transition-colors">Fast Response</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* Mobile Emergency Badge (centered) */}
-      <div className="sm:hidden absolute bottom-4 right-0 left-0 z-20 flex justify-center">
+      {/* Emergency badge */}
+      <div className="absolute bottom-4 sm:bottom-8 right-0 left-0 sm:left-auto sm:right-8 z-20 flex justify-center sm:block">
         <Link 
           href="/emergency-service"
-          className="group flex items-center bg-red rounded-full px-4 py-2 shadow-lg hover:bg-red-dark transition-colors"
+          className="group flex items-center bg-red rounded-full px-4 sm:px-5 py-2 sm:py-3 shadow-lg hover:bg-red-dark transition-colors"
           aria-label="24/7 Emergency Service"
         >
-          <span className="text-xl mr-2" aria-hidden="true">🚨</span>
+          <span className="text-xl sm:text-2xl mr-2" aria-hidden="true">🚨</span>
           <div>
-            <p className="text-white font-bold leading-tight text-sm">24/7 Emergency</p>
-            <p className="text-xs text-white/80 group-hover:text-white transition-colors">Fast Response</p>
+            <p className="text-white font-bold leading-tight text-sm sm:text-base">24/7 Emergency</p>
+            <p className="text-xs sm:text-sm text-white/80 group-hover:text-white transition-colors">Fast Response</p>
           </div>
         </Link>
       </div>
