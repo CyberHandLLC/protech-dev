@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { convertToLocationSlug } from '@/utils/location';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
-import ServicePageClient from '../../../../../components/services/ServicePageClient';
+import ServicePageClient from '@/components/services/ServicePageClient';
 
 // Define types for param objects
 type ServiceParams = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ServiceCategory } from '@/data/serviceData';
 import IconFeature from '@/components/ui/IconFeature';
 import useLocationDetection from '@/hooks/useLocationDetection';
@@ -15,30 +15,61 @@ export default function ServicesList({ category, userLocation: serverLocation }:
   // Use client-side hook as backup to server-provided location
   const { userLocation: clientLocation, isLocating, error } = useLocationDetection();
   
-  // Prioritize server location, then client location, then default
-  let locationToUse = serverLocation?.name || clientLocation || 'Northeast Ohio';
+  // State to store the final location after combining server and client data
+  const [combinedLocation, setCombinedLocation] = useState<{
+    name: string;
+    slug: string;
+    isDetecting: boolean;
+  }>({
+    name: serverLocation?.name || 'Northeast Ohio',
+    slug: serverLocation?.id || 'northeast-ohio',
+    isDetecting: true
+  });
   
-  // Make sure to decode any URL-encoded characters in the location name
-  try {
-    // Try to decode in case the location contains URL-encoded characters
-    locationToUse = decodeURIComponent(locationToUse);
-  } catch (e) {
-    // If decoding fails, use the original
-    console.error('Error decoding location:', e);
-  }
-  // Create a location slug for URLs
-  const locationSlug = serverLocation?.id || 
-    (clientLocation ? convertToLocationSlug(clientLocation) : 'northeast-ohio');
+  // Update location when client-side detection completes
+  useEffect(() => {
+    // Wait for location detection to complete
+    if (!isLocating) {
+      let locationName = '';
+      let locationSlug = '';
+
+      // Prioritize client location if available, otherwise use server location
+      if (clientLocation) {
+        try {
+          locationName = decodeURIComponent(clientLocation);
+        } catch (e) {
+          locationName = clientLocation;
+          console.error('Error decoding location:', e);
+        }
+        locationSlug = convertToLocationSlug(clientLocation);
+      } else if (serverLocation?.name) {
+        // Use server-provided location if client detection fails
+        locationName = serverLocation.name;
+        locationSlug = serverLocation.id;
+      } else {
+        // Fallback to default
+        locationName = 'Northeast Ohio';
+        locationSlug = 'northeast-ohio';
+      }
+      
+      // Update the combined location state
+      setCombinedLocation({
+        name: locationName,
+        slug: locationSlug,
+        isDetecting: false
+      });
+    }
+  }, [clientLocation, isLocating, serverLocation]);
   
   return (
     <section className="mb-16">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">{category.name}</h2>
-        {isLocating && !serverLocation ? (
+        {combinedLocation.isDetecting ? (
           <p className="text-ivory/70 animate-pulse">Detecting your location...</p>
         ) : (
           <p className="text-ivory/80">
-            Services available in <span className="text-red-light font-medium">{locationToUse}</span>
+            Services available in <span className="text-red-light font-medium">{combinedLocation.name}</span>
           </p>
         )}
       </div>
@@ -55,10 +86,10 @@ export default function ServicesList({ category, userLocation: serverLocation }:
               {service.name}
             </h3>
             <p className="text-ivory/70 mb-3">
-              {service.description || `Professional ${service.name.toLowerCase()} services tailored to your needs.`}
+              {`Professional ${service.name.toLowerCase()} services tailored to your needs.`}
             </p>
             <a 
-              href={`/services/${category.id}/${service.id}/${locationSlug}`}
+              href={`/services/${category.id}/${service.id}/${combinedLocation.slug}`}
               className="inline-flex items-center text-red-light font-medium hover:text-red transition-colors"
             >
               <span className="mr-2">View Details</span>
