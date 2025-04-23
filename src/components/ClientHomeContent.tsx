@@ -21,7 +21,7 @@ const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), {
 });
 
 const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSectionApi'), { 
-  ssr: true,
+  ssr: false, // Use client-side rendering for API-based component
   loading: () => <div className="h-60 bg-navy/50 animate-pulse rounded-md" /> 
 });
 

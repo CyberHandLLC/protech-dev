@@ -20,7 +20,29 @@ const nextConfig = {
   
   // Handle images from external sources if needed
   images: {
-    domains: ['localhost']
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '**',
+      }
+    ]
+  },
+  
+  // Environment variables
+  env: {
+    GOOGLE_PLACES_API_KEY: 'AIzaSyDQM0JzTTB_Nh5BlJmL9866-6Jt9InByRw',
+    GOOGLE_PLACE_ID: 'ChIJXwWa3Gg3N4gR18IWw-UDM_M'
   },
   
   // Enable compression for better performance
