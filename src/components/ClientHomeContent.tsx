@@ -20,8 +20,8 @@ const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), {
   loading: () => <div className="h-80 bg-navy/50 animate-pulse rounded-md" /> 
 });
 
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSectionApi'), { 
-  ssr: false, // Use client-side rendering for API-based component
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
+  ssr: true,
   loading: () => <div className="h-60 bg-navy/50 animate-pulse rounded-md" /> 
 });
 

@@ -132,7 +132,7 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Format location for testimonial lookup - handle URL encoding
+  // Format location for display - handle URL encoding
   let decodedLocation;
   try {
     decodedLocation = decodeURIComponent(location);
@@ -140,31 +140,43 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
     decodedLocation = location;
   }
   
-  const locationKey = decodedLocation.toLowerCase().replace(/\s+/g, '-') + '-oh';
-  
-  // Simulate fetching testimonials from the database
+  // Fetch Google Places reviews
   useEffect(() => {
-    const loadTestimonials = () => {
+    const fetchGoogleReviews = async () => {
       setIsLoading(true);
+      setActiveIndex(0); // Reset index when location changes
       
-      // Reset index when location changes
-      setActiveIndex(0);
-      
-      // Simulate API delay
-      setTimeout(() => {
-        // Get location-specific testimonials or use a default set
-        const locationTestimonials = allTestimonials[locationKey] || 
+      try {
+        // Fetch reviews from our API endpoint
+        const response = await fetch('/api/reviews');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch reviews: ${response.status}`);
+        }
+        
+        const reviews = await response.json();
+        
+        // Limit to 3 reviews as requested
+        const limitedReviews = reviews.slice(0, 3);
+        
+        setTestimonials(limitedReviews);
+      } catch (error) {
+        console.error('Error fetching Google reviews:', error);
+        // Fallback to sample testimonials if API fails
+        const locationKey = decodedLocation.toLowerCase().replace(/\s+/g, '-') + '-oh';
+        const fallbackTestimonials = allTestimonials[locationKey] || 
           allTestimonials['akron-oh'] || 
           Object.values(allTestimonials)[0] || 
           [];
-          
-        setTestimonials(locationTestimonials);
+        
+        setTestimonials(fallbackTestimonials);
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
     };
     
-    loadTestimonials();
-  }, [locationKey]);
+    fetchGoogleReviews();
+  }, [decodedLocation]);
   
   const handlePrev = useCallback(() => {
     if (testimonials.length <= 1) return;

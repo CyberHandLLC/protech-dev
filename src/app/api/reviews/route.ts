@@ -1,45 +1,64 @@
 import { NextResponse } from 'next/server';
 
-// Environment variables for the Google Places API
-const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || 'AIzaSyDQM0JzTTB_Nh5BlJmL9866-6Jt9InByRw';
-const GOOGLE_PLACE_ID = process.env.GOOGLE_PLACE_ID || 'ChIJXwWa3Gg3N4gR18IWw-UDM_M';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+let cachedReviews: any = null;
+let lastFetchTime: number = 0;
 
+/**
+ * GET handler for /api/reviews
+ * Fetches Google Places reviews with daily caching
+ */
 export async function GET() {
-  try {
-    // Fetch reviews from Google Places API
-    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${GOOGLE_PLACE_ID}&fields=name,rating,reviews&key=${GOOGLE_PLACES_API_KEY}`;
-    
-    const response = await fetch(detailsUrl, { next: { revalidate: 3600 } }); // Cache for 1 hour
-    const data = await response.json();
+  // Check if we have cached reviews that are still valid
+  const now = Date.now();
+  if (cachedReviews && now - lastFetchTime < CACHE_DURATION) {
+    return NextResponse.json(cachedReviews);
+  }
 
-    if (!response.ok) {
-      console.error('Google Places API error:', data);
-      throw new Error('Failed to fetch reviews from Google Places API');
+  try {
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    const placeId = process.env.GOOGLE_PLACE_ID;
+
+    if (!apiKey || !placeId) {
+      throw new Error('Missing required environment variables');
     }
 
-    // Extract and format the reviews
-    const reviews = data.result?.reviews || [];
+    // Fetch place details including reviews
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&reviews_sort=newest&key=${apiKey}`;
+    
+    const response = await fetch(url, { next: { revalidate: CACHE_DURATION / 1000 } });
+    const data = await response.json();
+
+    if (data.status !== 'OK') {
+      throw new Error(`Google Places API error: ${data.status}`);
+    }
+
+    const reviews = data.result.reviews || [];
+    
+    // Format reviews to match our Testimonial interface
     const formattedReviews = reviews.map((review: any, index: number) => ({
       id: index + 1,
       name: review.author_name,
-      location: 'Google Review', // Since Google doesn't provide location in reviews
+      location: '',  // Google doesn't provide reviewer location
       rating: review.rating,
       text: review.text,
-      service: 'HVAC Service', // Default service type
-      date: new Date(review.time * 1000).toISOString().split('T')[0], // Convert Unix timestamp to YYYY-MM-DD
       avatar: review.profile_photo_url,
+      service: 'Residential', // Default as per requirements
+      date: new Date(review.time * 1000).toISOString().split('T')[0]
     }));
 
+    // Cache the results
+    cachedReviews = formattedReviews;
+    lastFetchTime = now;
+
+    return NextResponse.json(formattedReviews);
+  } catch (error: any) {
+    console.error('Error fetching Google reviews:', error.message);
+    
+    // Return an empty array with error info in case of failure
     return NextResponse.json({ 
-      success: true, 
-      reviews: formattedReviews,
-      placeRating: data.result?.rating || 0
-    });
-  } catch (error) {
-    console.error('Error fetching Google reviews:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch reviews' },
-      { status: 500 }
-    );
+      error: error.message,
+      reviews: [] 
+    }, { status: 500 });
   }
 }
