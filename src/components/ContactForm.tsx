@@ -202,7 +202,7 @@ export default function ContactForm() {
   if (formStatus.submitted) {
     const isSuccess = !formStatus.error;
     return (
-      <div className="bg-dark-blue rounded-xl p-6 shadow-sm border border-dark-blue-light">
+      <div className="bg-navy rounded-xl p-6 shadow-sm border border-navy-light">
         <div className={`p-4 rounded-lg ${isSuccess ? 'bg-green-800/20 text-green-300' : 'bg-red-dark/20 text-red-300'}`}>
           <p className="font-medium">{formStatus.message}</p>
           
@@ -220,7 +220,7 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="bg-dark-blue rounded-xl p-6 shadow-sm border border-dark-blue-light">
+    <div className="bg-navy rounded-xl p-6 shadow-sm border border-navy-light">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name Field */}
         <FormInput

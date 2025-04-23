@@ -25,7 +25,7 @@ export default function CTASectionServer({
     <Section className="relative overflow-hidden py-16 md:py-20">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/cta-bg-placeholder.jpg')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-navy to-dark-blue opacity-95"></div>
+        <div className="absolute inset-0 bg-navy opacity-95"></div>
       </div>
       
       {/* Diagonal accent at top */}

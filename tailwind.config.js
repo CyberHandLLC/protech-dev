@@ -9,10 +9,12 @@ module.exports = {
     extend: {
       colors: {
         'dark-blue': '#1a202c', // Dark navy blue from screenshot
+        'dark-blue-light': '#2d3748', // Lighter version of dark blue
         'teal': '#20a39e',
         'ivory': '#f8f9fa',
         'red': '#e53e3e', // Red for emergency button
         'navy': '#131b2c', // Even darker navy for backgrounds
+        'navy-light': '#1c2639', // Lighter version of navy for borders and accents
       },
       fontFamily: {
         'inter': ['var(--font-inter)', 'sans-serif'],

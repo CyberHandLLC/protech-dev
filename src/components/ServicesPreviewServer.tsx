@@ -81,7 +81,7 @@ export default function ServicesPreviewServer({ location, initialCategory = 'res
   const displayLocation = location;
   
   return (
-    <Section className="py-16 sm:py-20 bg-gradient-to-b from-dark-blue/20 to-navy/5">
+    <Section className="py-16 sm:py-20 bg-navy">
       <Container>
         <SectionHeading
           title={`HVAC Services in ${displayLocation}`}

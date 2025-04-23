@@ -31,7 +31,7 @@ export default function HeroSectionServer({
           role="img"
           aria-label="HVAC service background image"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-navy/95 via-navy/90 to-navy/85"></div>
+          <div className="absolute inset-0 bg-navy opacity-95"></div>
         </div>
       </div>
       

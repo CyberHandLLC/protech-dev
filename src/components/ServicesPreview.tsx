@@ -257,7 +257,7 @@ function ServiceCard({ service, href }: ServiceCardProps) {
       className="group block h-full"
       aria-labelledby={`service-${service.id}`}
     >
-      <div className="bg-gradient-to-br from-dark-blue to-navy h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:transform group-hover:-translate-y-2 border border-dark-blue-light/30 relative">
+      <div className="bg-navy h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:transform group-hover:-translate-y-2 border border-navy-light/30 relative">
         {/* Diagonal accent ribbon */}
         <div className="absolute -right-12 top-6 bg-red shadow-lg transform rotate-45 w-40 h-5 z-10"></div>
         

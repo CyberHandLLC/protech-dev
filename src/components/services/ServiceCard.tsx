@@ -12,7 +12,7 @@ export default function ServiceCard({
   locations: string[] 
 }) {
   return (
-    <div className="bg-gradient-to-br from-dark-blue-light to-dark-blue h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 border border-dark-blue-light/30 relative group">
+    <div className="bg-navy h-full rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 border border-navy-light/30 relative group">
       {/* Diagonal accent ribbon */}
       <div className="absolute -right-12 top-6 bg-red shadow-lg transform rotate-45 w-40 h-5 z-10"></div>
       

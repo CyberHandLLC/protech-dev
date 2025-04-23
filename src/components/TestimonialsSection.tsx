@@ -201,7 +201,7 @@ export default function TestimonialsSection({ location }: TestimonialsSectionPro
   }, [handleNext, testimonials.length]);
   
   return (
-    <Section className="bg-gradient-to-br from-navy to-dark-blue">
+    <Section className="bg-navy">
       <Container>
         <SectionHeading 
           title="What Our Customers Say"
@@ -349,7 +349,7 @@ function TestimonialCarousel({
   }
 
   return (
-    <div className="relative bg-gradient-to-b from-dark-blue to-navy rounded-xl overflow-hidden max-w-full">
+    <div className="relative bg-navy rounded-xl overflow-hidden max-w-full">
       {/* Main featured testimonial */}
       <div className="md:flex min-h-[400px]">
         {/* Large Featured Testimonial */}

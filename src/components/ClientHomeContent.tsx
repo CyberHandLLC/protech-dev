@@ -1,16 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import useLocationDetection from '@/hooks/useLocationDetection';
 import dynamic from 'next/dynamic';
 import PageLayout from '@/components/PageLayout';
 import LazyHydrate from '@/components/LazyHydrate';
-const HeroSection = dynamic(() => import('@/components/HeroSection'), { ssr: false, loading: () => <div className="h-[600px] bg-gray-200 animate-pulse" /> });
-const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { ssr: false, loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> });
-const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { ssr: false, loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> });
-const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { ssr: false, loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> });
-const CTASection = dynamic(() => import('@/components/CTASection'), { ssr: false, loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> });
-const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { ssr: false, loading: () => <div className="h-40 bg-gray-200 animate-pulse" /> });
+
+// Optimize dynamic imports for better TBT performance
+// Instead of ssr: false, we use a combination of ssr and suspense
+// This allows components to be rendered on the server but hydrated progressively
+const HeroSection = dynamic(() => import('@/components/HeroSection'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-[600px] bg-gray-200 animate-pulse" /> 
+});
+
+const ServicesPreview = dynamic(() => import('@/components/ServicesPreview'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
+});
+
+const TestimonialsSection = dynamic(() => import('@/components/TestimonialsSection'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
+});
+
+const WhyChooseUs = dynamic(() => import('@/components/WhyChooseUs'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-80 bg-gray-200 animate-pulse" /> 
+});
+
+const CTASection = dynamic(() => import('@/components/CTASection'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-60 bg-gray-200 animate-pulse" /> 
+});
+
+const PartnerLogos = dynamic(() => import('@/components/PartnerLogos'), { 
+  ssr: true, // Server render this component
+  loading: () => <div className="h-40 bg-gray-200 animate-pulse" /> 
+});
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
 
@@ -81,26 +108,49 @@ function HomeContent({ defaultLocation, weatherData }: HomeContentProps) {
 
   return (
     <PageLayout>
-      <HeroSection 
-        location={combinedLocation.name} 
-        isLoading={combinedLocation.isLoading} 
-        // Pass the server-provided weather data to avoid client-side fetch
-        serverWeather={serverWeather}
-      />
-      <LazyHydrate rootMargin="-200px">
-        <ServicesPreview location={combinedLocation.name} />
+      {/* Hero section is critical for LCP, so render it immediately but with suspense boundary */}
+      <Suspense fallback={<div className="h-[600px] bg-gray-200 animate-pulse" />}>
+        <HeroSection 
+          location={combinedLocation.name} 
+          isLoading={combinedLocation.isLoading} 
+          serverWeather={serverWeather}
+        />
+      </Suspense>
+      
+      {/* Progressive hydration for below-the-fold content */}
+      {/* Use whenToHydrate="visible" to only hydrate when the component is about to enter viewport */}
+      <LazyHydrate whenToHydrate="visible" id="services-preview" fallback={<div className="h-80 bg-gray-200" />}>
+        <Suspense fallback={<div className="h-80 bg-gray-200 animate-pulse" />}>
+          <ServicesPreview location={combinedLocation.name} />
+        </Suspense>
       </LazyHydrate>
-      <LazyHydrate rootMargin="-200px">
-        <TestimonialsSection location={combinedLocation.id} />
+      
+      {/* Testimonials with visible-trigger lazy hydration */}
+      <LazyHydrate whenToHydrate="visible" id="testimonials-section" fallback={<div className="h-60 bg-gray-200" />}>
+        <Suspense fallback={<div className="h-60 bg-gray-200 animate-pulse" />}>
+          <TestimonialsSection location={combinedLocation.id} />
+        </Suspense>
       </LazyHydrate>
-      <LazyHydrate rootMargin="-200px">
-        <WhyChooseUs />
+      
+      {/* Why Choose Us section with visible-trigger lazy hydration */}
+      <LazyHydrate whenToHydrate="visible" id="why-choose-us" fallback={<div className="h-80 bg-gray-200" />}>
+        <Suspense fallback={<div className="h-80 bg-gray-200 animate-pulse" />}>
+          <WhyChooseUs />
+        </Suspense>
       </LazyHydrate>
-      <LazyHydrate rootMargin="-200px">
-        <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
+      
+      {/* Partner logos with visible-trigger lazy hydration */}
+      <LazyHydrate whenToHydrate="visible" id="partner-logos" fallback={<div className="h-40 bg-gray-200" />}>
+        <Suspense fallback={<div className="h-40 bg-gray-200 animate-pulse" />}>
+          <PartnerLogos title="Brands We Work With" subtitle="We partner with industry-leading HVAC manufacturers to provide the best solutions" />
+        </Suspense>
       </LazyHydrate>
-      <LazyHydrate rootMargin="-200px">
-        <CTASection location={combinedLocation.name} />
+      
+      {/* CTA section with visible-trigger lazy hydration */}
+      <LazyHydrate whenToHydrate="visible" id="cta-section" fallback={<div className="h-60 bg-gray-200" />}>
+        <Suspense fallback={<div className="h-60 bg-gray-200 animate-pulse" />}>
+          <CTASection location={combinedLocation.name} />
+        </Suspense>
       </LazyHydrate>
     </PageLayout>
   );

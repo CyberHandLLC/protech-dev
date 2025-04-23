@@ -39,11 +39,11 @@ export default function CTASection({
     <Section className="relative overflow-hidden py-16 md:py-20">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/cta-bg-placeholder.jpg')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-navy to-dark-blue opacity-95"></div>
+        <div className="absolute inset-0 bg-navy opacity-95"></div>
       </div>
       
       {/* Diagonal accent at top */}
-      <div className="absolute top-0 left-0 w-full h-8 bg-navy-light clip-diagonal"></div>
+      <div className="absolute top-0 left-0 w-full h-8 clip-diagonal"></div>
       
       <Container className="text-center relative z-10">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-4 sm:mb-6">

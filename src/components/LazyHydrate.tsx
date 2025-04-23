@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useRef } from 'react';
 
 interface LazyHydrateProps {
   /** Content to be lazily hydrated */
@@ -17,6 +17,12 @@ interface LazyHydrateProps {
   
   /** Unique ID for debugging */
   id?: string;
+  
+  /** Root margin for IntersectionObserver (visible mode) */
+  rootMargin?: string;
+  
+  /** Threshold for IntersectionObserver (visible mode) */
+  threshold?: number;
 }
 
 /**
@@ -37,75 +43,119 @@ export default function LazyHydrate({
   whenToHydrate = 'idle',
   delayMs = 2000,
   fallback = null,
-  id
+  id,
+  rootMargin = '200px',
+  threshold = 0.1
 }: LazyHydrateProps) {
   const [hydrated, setHydrated] = useState(false);
+  const elementRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  // Generate a unique ID for this instance if none is provided
+  const uniqueId = useRef<string>(id || `lazy-hydrate-${Math.random().toString(36).substring(2, 9)}`);
   
   useEffect(() => {
     // Skip hydration for the 'never' option (useful for pure static content)
     if (whenToHydrate === 'never') return;
     
-    // Log hydration status for debugging
-    if (id) console.log(`LazyHydrate: ${id} ready to hydrate when ${whenToHydrate}`);
+    // Only log in development to avoid console spam in production
+    if (process.env.NODE_ENV !== 'production' && uniqueId.current) {
+      console.log(`LazyHydrate: ${uniqueId.current} ready to hydrate when ${whenToHydrate}`);
+    }
     
     const triggerHydration = () => {
       if (!hydrated) {
-        if (id) console.log(`LazyHydrate: ${id} hydrating now`);
-        setHydrated(true);
+        if (process.env.NODE_ENV !== 'production' && uniqueId.current) {
+          console.log(`LazyHydrate: ${uniqueId.current} hydrating now`);
+          // Add a performance mark to help with debugging
+          if (typeof performance !== 'undefined' && performance.mark) {
+            performance.mark(`hydrate-${uniqueId.current}`);
+          }
+        }
+        // Use requestAnimationFrame to ensure we're not blocking the main thread
+        requestAnimationFrame(() => {
+          setHydrated(true);
+        });
       }
     };
     
     // Different hydration strategies
+    let cleanupFunction: (() => void) | undefined;
+    
     switch (whenToHydrate) {
       case 'idle':
         // Wait until the browser is idle using requestIdleCallback or setTimeout fallback
         if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(triggerHydration);
+          const idleCallback = (window as any).requestIdleCallback(triggerHydration, { timeout: 2000 });
+          cleanupFunction = () => (window as any).cancelIdleCallback(idleCallback);
         } else {
-          setTimeout(triggerHydration, 1000); // Fallback for browsers without requestIdleCallback
+          // Fallback for browsers without requestIdleCallback
+          const timeoutId = setTimeout(triggerHydration, 1000);
+          cleanupFunction = () => clearTimeout(timeoutId);
         }
         break;
         
       case 'visible':
         // Use Intersection Observer to detect visibility
-        const observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) {
-              triggerHydration();
-              observer.disconnect();
+        if (typeof IntersectionObserver !== 'undefined' && elementRef.current) {
+          // Disconnect any existing observer
+          if (observerRef.current) {
+            observerRef.current.disconnect();
+          }
+          
+          // Create a new observer with the specified options
+          observerRef.current = new IntersectionObserver(
+            ([entry]) => {
+              if (entry.isIntersecting) {
+                triggerHydration();
+                // Immediately disconnect once triggered
+                if (observerRef.current) {
+                  observerRef.current.disconnect();
+                  observerRef.current = null;
+                }
+              }
+            },
+            { rootMargin, threshold }
+          );
+          
+          // Start observing our element
+          observerRef.current.observe(elementRef.current);
+          
+          // Setup cleanup
+          cleanupFunction = () => {
+            if (observerRef.current) {
+              observerRef.current.disconnect();
+              observerRef.current = null;
             }
-          },
-          { rootMargin: '200px' } // Pre-load when element is within 200px of viewport
-        );
-        
-        // Get the first DOM element in our children
-        const element = document.getElementById(id || 'hydrate-wrapper');
-        if (element) {
-          observer.observe(element);
+          };
+        } else {
+          // Fallback if IntersectionObserver is not available
+          const timeoutId = setTimeout(triggerHydration, 500);
+          cleanupFunction = () => clearTimeout(timeoutId);
         }
         break;
         
       case 'delay':
         // Simple delay before hydration
-        setTimeout(triggerHydration, delayMs);
+        const timeoutId = setTimeout(triggerHydration, delayMs);
+        cleanupFunction = () => clearTimeout(timeoutId);
         break;
     }
     
+    // Return a cleanup function
     return () => {
-      // Cleanup if component unmounts before hydration
-      if (whenToHydrate === 'visible') {
-        const element = document.getElementById(id || 'hydrate-wrapper');
-        if (element) {
-          const observer = new IntersectionObserver(() => {});
-          observer.disconnect();
-        }
-      }
+      if (cleanupFunction) cleanupFunction();
     };
-  }, [whenToHydrate, delayMs, hydrated, id]);
+  }, [whenToHydrate, delayMs, hydrated, rootMargin, threshold]);
   
-  // Render a wrapper with id for reference by the observer
+  // Render wrapper with ref for IntersectionObserver
   return (
-    <div id={id || 'hydrate-wrapper'}>
+    <div 
+      ref={elementRef}
+      id={uniqueId.current}
+      data-hydration-state={hydrated ? 'hydrated' : 'pending'}
+      className="lazy-hydrate-wrapper"
+    >
       {hydrated ? children : fallback}
     </div>
   );

@@ -37,7 +37,7 @@ export default function Section({
       case 'navy-light':
         return 'bg-navy-light';
       case 'gradient':
-        return 'bg-gradient-to-br from-navy to-dark-blue';
+        return 'bg-navy'; // Changed from gradient to solid navy
       case 'white':
         return 'bg-white';
       case 'ivory':

@@ -42,8 +42,8 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
         {/* Logos scroll container with single row */}
         <div className="relative overflow-hidden py-8 max-w-5xl mx-auto">
           {/* Gradient overlays */}
-          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-navy to-transparent z-10"></div>
-          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-navy to-transparent z-10"></div>
+          <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-navy z-10"></div>
+          <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-navy z-10"></div>
           
           {/* Logo track - using two identical containers for continuous loop */}
           <div className="overflow-hidden py-4 relative">

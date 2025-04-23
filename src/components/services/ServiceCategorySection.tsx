@@ -10,9 +10,9 @@ export default function ServiceCategorySection({
 }) {
   return (
     <section id={category.id} className="bg-dark-blue rounded-xl shadow-lg overflow-hidden border border-dark-blue-light/30">
-      <div className="bg-gradient-to-r from-navy to-dark-blue p-6 sm:p-8 relative">
+      <div className="bg-navy p-6 sm:p-8 relative">
         {/* Red accent line */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red to-red-dark"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-red"></div>
         
         <h2 className="text-2xl font-bold text-white mt-2">{category.name}</h2>
         <p className="text-ivory/80 mt-2">{category.description}</p>
