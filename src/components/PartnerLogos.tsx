@@ -36,22 +36,22 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
           title={title}
           subtitle={subtitle}
           centered={true}
-          className="mb-12"
+          className="mb-8"
         />
       
         {/* Logos scroll container with single row */}
-        <div className="relative overflow-hidden max-w-5xl mx-auto">
+        <div className="relative overflow-hidden max-w-6xl mx-auto">
           {/* Gradient overlays */}
           <div className="absolute left-0 top-0 h-full w-24 md:w-32 bg-gradient-to-r from-navy to-transparent z-10"></div>
           <div className="absolute right-0 top-0 h-full w-24 md:w-32 bg-gradient-to-l from-navy to-transparent z-10"></div>
           
           {/* Logo track - using two identical containers for continuous loop */}
           <div className="overflow-hidden relative h-36">
-            <div className="inline-flex space-x-8 animate-marquee">
+            <div className="inline-flex animate-marquee">
               {allLogos.map((logo, index) => (
                 <div 
                   key={`first-${logo.name}-${index}`}
-                  className="inline-flex"
+                  className="inline-flex px-10"
                 >
                   <div className={`h-36 ${logo.name === 'Steingass' ? 'w-96' : 'w-48'} flex items-center justify-center overflow-hidden`}>
                     <Image 
@@ -69,11 +69,11 @@ export default function PartnerLogos({ title = "Trusted by Industry-Leading Bran
             </div>
             
             {/* Second copy of the same content to ensure continuous loop */}
-            <div className="inline-flex space-x-8 animate-marquee-2" aria-hidden="true">
+            <div className="inline-flex animate-marquee-2" aria-hidden="true">
               {allLogos.map((logo, index) => (
                 <div 
                   key={`second-${logo.name}-${index}`}
-                  className="inline-flex"
+                  className="inline-flex px-10"
                 >
                   <div className={`h-36 ${logo.name === 'Steingass' ? 'w-96' : 'w-48'} flex items-center justify-center overflow-hidden`}>
                     <Image 
