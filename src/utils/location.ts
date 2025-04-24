@@ -1,90 +1,63 @@
-/**
- * Location detection utility functions
- */
+// Utility functions for location handling
 
-/**
- * Normalize location string for URLs and comparisons
- */
-export function normalizeLocation(location: string): string {
-  return location.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+// Get default location when no location is detected
+export function getDefaultLocation() {
+  return {
+    id: 'northeast-ohio',
+    name: 'Northeast Ohio',
+    isDefault: true
+  };
 }
 
-/**
- * Get the display name for a location from its normalized form
- */
-export function getLocationDisplayName(normalizedLocation: string): string {
-  if (!normalizedLocation || normalizedLocation === 'northeast-ohio') {
-    return 'Northeast Ohio';
-  }
-  
-  // Convert from slug format to readable format
-  // Example: cleveland-oh -> Cleveland, OH
-  return normalizedLocation
-    .split('-')
-    .map((part, index, arr) => {
-      // Keep state abbreviations uppercase
-      if (index === arr.length - 1 && part.length === 2) {
-        return part.toUpperCase();
-      }
-      // Capitalize first letter of each word
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    })
-    .join(', ');
-}
-
-/**
- * Get default location when user location isn't available
- */
-export function getDefaultLocation(): string {
-  return 'Northeast Ohio';
-}
-
-/**
- * Convert a full location name to its normalized form
- * Example: "Cleveland, OH" -> "cleveland-oh"
- * Example: "Lewis Center, OH" -> "lewis-center-oh"
- * Example: Handles "Lewis%20Center" -> "lewis-center"
- */
+// Convert a location name to a URL-friendly slug
 export function convertToLocationSlug(locationName: string): string {
   if (!locationName) return 'northeast-ohio';
   
-  // First decode any URL-encoded characters (like %20 for spaces)
-  let decodedName;
-  try {
-    // Try to decode in case the name is URL-encoded
-    decodedName = decodeURIComponent(locationName);
-  } catch (e) {
-    // If decoding fails, use the original
-    decodedName = locationName;
-  }
-  
-  // Next, trim any whitespace
-  const trimmed = decodedName.trim();
-  
-  // Convert to lowercase and replace spaces and other non-alphanumeric characters with hyphens
-  // Specifically handle multiple spaces and special characters properly
-  const slug = trimmed
+  // Remove special characters, replace spaces with hyphens, and convert to lowercase
+  return locationName
     .toLowerCase()
-    // Replace spaces with hyphens first to ensure proper handling of multi-word cities
-    .replace(/\s+/g, '-')
-    // Replace any other non-alphanumeric characters
-    .replace(/[^a-z0-9\-]+/g, '-')
-    // Remove any duplicate hyphens
-    .replace(/-+/g, '-')
-    // Remove leading or trailing hyphens
-    .replace(/^-|-$/g, '');
-  
-  return slug;
+    .replace(/[^\w\s-]/g, '')  // Remove special characters
+    .replace(/\s+/g, '-')      // Replace spaces with hyphens
+    .replace(/--+/g, '-')      // Replace multiple hyphens with a single hyphen
+    .trim();                   // Trim leading/trailing spaces
 }
 
-/**
- * Detect if current location is in the service area
- * This is a simplified mock implementation - in a real app, this would check against API data
- */
-export function isInServiceArea(location: string): boolean {
-  const serviceAreas = ['akron', 'cleveland', 'canton', 'medina', 'stow', 'hudson'];
+// Format a location slug for display (e.g., "akron-oh" to "Akron OH")
+export function formatLocationName(locationSlug: string): string {
+  if (!locationSlug) return 'Northeast Ohio';
   
-  return serviceAreas.some(area => 
-    normalizeLocation(location).includes(normalizeLocation(area))
-  );
+  return locationSlug
+    .split('-')
+    .map(word => {
+      if (word.toLowerCase() === 'oh') return 'OH';
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
+// Mock function to get location from coordinates
+// In a real app, this would use a geolocation API service
+export async function getLocationFromCoordinates(latitude: number, longitude: number): Promise<string> {
+  // This is a simplified mock implementation
+  console.log(`Getting location from coordinates: ${latitude}, ${longitude}`);
+  
+  // Mock locations based on general US regions
+  // In a real app, this would be a call to a geolocation API
+  const mockLocations = [
+    { lat: 41.0, lng: -81.5, name: 'Akron OH' },
+    { lat: 41.5, lng: -81.7, name: 'Cleveland OH' },
+    { lat: 40.8, lng: -81.4, name: 'Canton OH' },
+    { lat: 40.0, lng: -82.0, name: 'Columbus OH' },
+  ];
+  
+  // Find the closest match in our mock data
+  // This is simplified - a real implementation would use proper distance calculations
+  const closestLocation = mockLocations.reduce((closest, location) => {
+    const currentDist = Math.abs(location.lat - latitude) + Math.abs(location.lng - longitude);
+    const closestDist = Math.abs(closest.lat - latitude) + Math.abs(closest.lng - longitude);
+    
+    return currentDist < closestDist ? location : closest;
+  }, mockLocations[0]);
+  
+  return closestLocation.name;
 }
