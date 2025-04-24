@@ -5,6 +5,8 @@ import Link from 'next/link';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
 
+import { type WeatherData } from '@/utils/weatherApi';
+
 type ServicePageContentProps = {
   serviceInfo: any;
   category: string;
@@ -12,6 +14,8 @@ type ServicePageContentProps = {
   locationParam: string;
   userLocation: string;
   isLocating: boolean;
+  weatherData?: WeatherData | null;
+  weatherRecommendation?: string;
 };
 
 /**
@@ -24,7 +28,9 @@ export default function ServicePageContent({
   service,
   locationParam,
   userLocation,
-  isLocating
+  isLocating,
+  weatherData,
+  weatherRecommendation
 }: ServicePageContentProps) {
   
   // Format location for display from either the URL parameter or detected location
@@ -95,15 +101,45 @@ export default function ServicePageContent({
             <p className="text-xl text-ivory/80 mt-4">
               {serviceInfo.description}
             </p>
+            
+            {/* Location-specific introduction */}
+            {serviceInfo.locationIntro && (
+              <div className="mt-6 text-ivory/90">
+                <p>{serviceInfo.locationIntro}</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
       
-      {/* Service Details */}
+      {/* Main content section */}
       <section className="bg-navy py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-10">
-            <div>
+          {/* Weather Alert - only shown when weather data is available */}
+          {weatherData && (
+            <div className="mb-8 p-4 bg-gradient-to-r from-dark-blue-light to-navy border border-dark-blue-light/50 rounded-lg">
+              <div className="flex items-center">
+                <div className="text-4xl mr-3">{weatherData.icon}</div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white">
+                    Current Weather: {weatherData.description}
+                  </h3>
+                  <p className="text-ivory/70">
+                    {weatherData.temperature}°F • Humidity: {weatherData.humidity}%
+                  </p>
+                </div>
+              </div>
+              
+              {weatherRecommendation && (
+                <div className="mt-4 p-3 bg-navy/50 rounded border-l-4 border-red">
+                  <p className="text-ivory/90">💡 <span className="font-medium">HVAC Tip:</span> {weatherRecommendation}</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
               <p className="text-ivory/80 mb-8 leading-relaxed text-lg">
                 Trust our experienced technicians to provide reliable {serviceInfo.title.toLowerCase()} in {finalLocation}.
                 We pride ourselves on prompt service, competitive pricing, and quality workmanship for all HVAC needs.
@@ -118,6 +154,29 @@ export default function ServicePageContent({
                   </li>
                 ))}
               </ul>
+              
+              {/* Sub-services section - only display if service has sub-services */}
+              {serviceInfo.subServices && serviceInfo.subServices.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white mb-4">Available {serviceInfo.title}:</h2>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {serviceInfo.subServices.map((subService: any, index: number) => (
+                      <div key={index} className="bg-dark-blue p-4 rounded-lg border border-dark-blue-light/30 hover:border-red-light/50 transition-colors">
+                        <div className="flex items-start">
+                          <span className="text-2xl text-red mr-3">{subService.icon}</span>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{subService.name}</h3>
+                            {subService.description && (
+                              <p className="text-ivory/70 text-sm mt-1">{subService.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="bg-gradient-to-r from-dark-blue to-dark-blue-light p-6 rounded-xl border border-dark-blue-light/30">
                 <h3 className="text-xl font-semibold text-white mb-3">
@@ -167,6 +226,9 @@ export default function ServicePageContent({
                     <label className="block text-ivory/80 mb-2">Service Needed</label>
                     <select className="w-full bg-navy border border-dark-blue-light/50 rounded-lg p-3 text-white focus:border-red-light focus:outline-none focus:ring-1 focus:ring-red-light/50">
                       <option value={service}>{serviceInfo.title}</option>
+                      {serviceInfo.subServices && serviceInfo.subServices.map((subService: any, index: number) => (
+                        <option key={index} value={`${service}-${subService.id}`}>{subService.name}</option>
+                      ))}
                       <option value="emergency">Emergency Service</option>
                       <option value="other">Other</option>
                     </select>

@@ -2,20 +2,26 @@ Title: ProTech Heating & Cooling — Services
 
 Services Overview:
 - Residential HVAC 
-  - Installations, Maintenance, Repairs, Tune-ups
+  - Installations, Maintenance (Seasonal Tune-ups, Priority Scheduling), Repairs, Tune-ups (Seasonal Tune-ups), Inspections
+    - Air Conditioning
+      - Central AC, Mini Splits, Heat Pumps
+    - Heating Systems
+      - Furnaces, Boilers, Rooftop Units
+    - Indoor Air Quality Solutions 
+  - Air Purifiers, Humidifiers, Dehumidifiers 
+
+
 - Commercial HVAC 
-  - Installations, Maintenance, Repairs, Rooftop Units, Data Center Cooling (CRAC/CRAH Units), Tune-ups
+  - Installations, Maintenance (Seasonal Tune-ups, Priority Scheduling), Repairs, Tune-ups (Seasonal Tune-ups), Inspections
+    - Air Conditioning
+      - Commercial Refrigeration Systems (e.g., restaurants, stores). Data Center Cooling, Rooftop Units, Central AC, Mini Splits, Heat Pumps
+    - Heating Systems
+      - Furnaces, Boilers, Rooftop Units
+    - Indoor Air Quality Solutions 
+  - Air Purifiers, Humidifiers, Dehumidifiers   
+
 - Emergency Services 
-  - 24/7 for Heating, Cooling, and Refrigeration breakdowns
-- New Installations 
-  - Air Conditioners, Furnaces, Boilers, Heat Pumps, Mini Splits
-- Maintenance Plans 
-  - Seasonal Tune-ups, Priority Scheduling
-- Indoor Air Quality Solutions 
-  - Air Purifiers, Humidifiers, Dehumidifiers
-- Air Conditioning 
-  - Central AC, Mini Splits, Heat Pumps
-- Heating Systems 
-  - Furnaces, Boilers, Rooftop Units
-- Refrigeration 
-  - Commercial Refrigeration Systems (e.g., restaurants, stores)
+  - 24/7 for Cooling, Heating, and Refrigeration breakdowns
+
+
+

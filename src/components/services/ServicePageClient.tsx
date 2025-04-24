@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import useLocationDetection from '@/hooks/useLocationDetection';
-import PageLayout from '@/components/PageLayout';
 import ServicePageContent from './ServicePageContent';
+import PageLayout from '@/components/PageLayout';
+import { getWeatherRecommendation } from '@/utils/dynamicContent';
+import type { WeatherData } from '@/utils/weatherApi';
 
 type ServicePageClientProps = {
   serviceInfo: any;
@@ -25,33 +26,36 @@ export default function ServicePageClient({
   locationParam,
   serverLocation
 }: ServicePageClientProps) {
-  // Use the client-side location detection hook
-  const { userLocation: clientLocation, isLocating } = useLocationDetection();
+  const { userLocation, isLocating, error } = useLocationDetection();
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [weatherRecommendation, setWeatherRecommendation] = useState('');
   
-  // Combine server-side and client-side location data
-  const [combinedLocation, setCombinedLocation] = useState<string>(serverLocation);
+  // Use server-provided location as a starting value
+  const [finalLocation, setFinalLocation] = useState(serverLocation);
   
-  // Update location when client-side location is detected
+  // Update with client-side location detection result when available
   useEffect(() => {
-    // Only update if the URL has a generic location (northeast-ohio)
-    if (locationParam !== 'northeast-ohio') {
-      return;
+    if (userLocation && locationParam === 'northeast-ohio') {
+      setFinalLocation(userLocation);
+    }
+  }, [userLocation, locationParam]);
+  
+  // Fetch weather data when location is available
+  useEffect(() => {
+    async function fetchWeatherData() {
+      try {
+        const { weatherData, recommendation } = await getWeatherRecommendation(locationParam, service);
+        setWeatherData(weatherData);
+        setWeatherRecommendation(recommendation);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+      }
     }
     
-    // If there's a client-side detected location and we're not currently detecting, use it
-    if (clientLocation && !isLocating) {
-      let locationName = clientLocation;
-      try {
-        locationName = decodeURIComponent(clientLocation);
-      } catch (e) {
-        // Only log errors in development
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('Error decoding location:', e);
-        }
-      }
-      setCombinedLocation(locationName);
+    if (!isLocating) {
+      fetchWeatherData();
     }
-  }, [clientLocation, isLocating, locationParam]);
+  }, [locationParam, service, isLocating]);
 
   // Wrap in PageLayout at the client component level
   return (
@@ -61,8 +65,10 @@ export default function ServicePageClient({
         category={category} 
         service={service} 
         locationParam={locationParam}
-        userLocation={combinedLocation} 
-        isLocating={isLocating} 
+        userLocation={finalLocation} 
+        isLocating={isLocating}
+        weatherData={weatherData}
+        weatherRecommendation={weatherRecommendation}
       />
     </PageLayout>
   );
