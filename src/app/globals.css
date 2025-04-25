@@ -157,4 +157,33 @@
   .card {
     @apply bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-all;
   }
+  
+  /* Fix for low contrast text across the site */
+  .text-ivory\/30 {
+    color: rgba(255, 255, 255, 0.55) !important;
+  }
+
+  .text-ivory\/40 {
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+
+  .text-ivory\/50 {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  .text-ivory\/60 {
+    color: rgba(255, 255, 255, 0.80) !important;
+  }
+
+  .text-ivory\/70 {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .text-ivory\/80 {
+    color: rgba(255, 255, 255, 0.90) !important;
+  }
+
+  .text-ivory\/90 {
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
 }
