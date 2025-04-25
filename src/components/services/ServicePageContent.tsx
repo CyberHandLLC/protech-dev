@@ -9,6 +9,7 @@ import ServiceFAQs from '@/components/services/ServiceFAQs';
 import CTACallout from '@/components/ui/CTACallout';
 import { generateFAQs } from '@/utils/faqs';
 import PageLayout from '@/components/PageLayout';
+import SectionHeading from '@/components/ui/SectionHeading';
 
 interface ServiceInfo {
   name: string;
@@ -103,14 +104,14 @@ export default function ServicePageContent({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-center gap-8">
               <div className="md:w-2/3">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 flex items-center gap-3">
-                  <span className="text-red-light text-3xl">{serviceInfo.item.icon}</span>
-                  {serviceInfo.name}
-                </h1>
-                <p className="text-lg text-ivory/90 mb-6">
-                  {serviceInfo.description}
-                </p>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-ivory/70">
+                <SectionHeading
+                  accentText={`${serviceInfo.system.name} Services`}
+                  title={serviceInfo.name}
+                  subtitle={serviceInfo.description}
+                  centered={false}
+                  size="lg"
+                />
+                <div className="flex flex-wrap items-center gap-2 text-sm text-ivory/70 mt-6">
                   <span className="bg-dark-blue-light rounded-full px-4 py-1">
                     {serviceInfo.categoryName}
                   </span>
@@ -125,12 +126,12 @@ export default function ServicePageContent({
               </div>
               
               <div className="md:w-1/3">
-                <div className="bg-dark-blue rounded-lg p-6 shadow-lg">
+                <div className="bg-dark-blue rounded-lg p-6 shadow-lg border border-navy-light">
                   <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
                     <span className="text-red">📞</span> Need help now?
                   </h3>
                   <p className="text-ivory/80 mb-6">Our certified technicians are ready to assist with your {serviceInfo.item.name.toLowerCase()} {serviceInfo.serviceType.name.toLowerCase()}.</p>
-                  <a href="tel:330-555-1234" className="block w-full bg-red hover:bg-red-dark text-white font-bold py-3 px-4 rounded text-center transition-colors">
+                  <a href="tel:330-555-1234" className="block w-full bg-red hover:bg-red-dark text-white font-bold py-3 px-4 rounded-lg text-center transition-colors shadow-md">
                     Call (330) 555-1234
                   </a>
                 </div>
@@ -157,11 +158,15 @@ export default function ServicePageContent({
               
               {/* Service description */}
               <section className="mb-12">
-                <h2 className="text-2xl font-bold text-navy mb-4">
-                  About Our {serviceInfo.item.name} {serviceInfo.serviceType.name}
-                </h2>
+                <div className="mb-6">
+                  <div className="h-1 w-24 bg-red mb-3"></div>
+                  <h2 className="text-2xl font-bold text-navy mb-2">
+                    About Our {serviceInfo.item.name} {serviceInfo.serviceType.name}
+                  </h2>
+                  <div className="h-1 w-12 bg-navy-light"></div>
+                </div>
                 
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-lg max-w-none prose-headings:text-navy prose-p:text-gray-700 prose-a:text-red prose-a:no-underline hover:prose-a:text-red-dark">
                   <p>
                     ProTech HVAC provides professional {serviceInfo.item.name.toLowerCase()} {serviceInfo.serviceType.name.toLowerCase()} services in {serviceInfo.locationName} and surrounding areas. Our certified technicians use the latest equipment and follow industry best practices to ensure your {system} system operates at peak efficiency.
                   </p>
@@ -259,10 +264,14 @@ export default function ServicePageContent({
               </section>
               
               {/* Why choose us section */}
-              <section className="mb-12 bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-2xl font-bold text-navy mb-4">
-                  Why Choose ProTech HVAC for Your {serviceInfo.item.name} Needs
-                </h2>
+              <section className="mb-12 bg-navy-light/10 p-6 rounded-lg border border-navy-light/20">
+                <div className="mb-6">
+                  <div className="h-1 w-24 bg-red mb-3"></div>
+                  <h2 className="text-2xl font-bold text-navy mb-2">
+                    Why Choose ProTech HVAC for Your {serviceInfo.item.name} Needs
+                  </h2>
+                  <div className="h-1 w-12 bg-navy-light"></div>
+                </div>
                 
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="flex items-start gap-3">
@@ -312,9 +321,9 @@ export default function ServicePageContent({
             
             {/* Sidebar */}
             <div className="lg:w-1/3">
-              <div className="sticky top-32">
+            <div className="sticky top-32 space-y-8">
                 {/* Service Request Form */}
-                <div className="bg-navy text-white rounded-lg overflow-hidden mb-8">
+                <div className="bg-navy text-white rounded-lg overflow-hidden border border-navy-light">
                   <div className="p-6">
                     <h3 className="text-xl font-semibold mb-4">Request Service</h3>
                     <form className="space-y-4">
@@ -386,8 +395,11 @@ export default function ServicePageContent({
                 </div>
                 
                 {/* Related Services */}
-                <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                  <h3 className="text-lg font-semibold text-navy mb-4">Related Services</h3>
+                <div className="bg-navy-light/10 rounded-lg p-6 border border-navy-light/20">
+                  <div className="mb-4">
+                    <div className="h-1 w-16 bg-red mb-2"></div>
+                    <h3 className="text-lg font-semibold text-navy">Related Services</h3>
+                  </div>
                   <ul className="space-y-3">
                     {serviceType !== 'maintenance' && (
                       <li>
@@ -440,7 +452,7 @@ export default function ServicePageContent({
                 </div>
                 
                 {/* Customer Testimonial */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="bg-white border border-navy-light/20 rounded-lg p-6 shadow-sm">
                   <div className="flex items-center mb-4">
                     <div className="mr-4">
                       <Image 
@@ -473,12 +485,14 @@ export default function ServicePageContent({
         </div>
         
         {/* CTA Section */}
-        <CTACallout
-          title={`Ready to schedule your ${serviceInfo.item.name} ${serviceInfo.serviceType.name}?`}
-          subtitle={`Contact our team today for expert service in ${serviceInfo.locationName} and surrounding areas.`}
-          ctaText="Schedule Now"
-          ctaLink="/contact"
-        />
+        <div className="bg-navy border-t border-navy-light">
+          <CTACallout
+            title={`Ready to schedule your ${serviceInfo.item.name} ${serviceInfo.serviceType.name}?`}
+            subtitle={`Contact our team today for expert service in ${serviceInfo.locationName} and surrounding areas.`}
+            ctaText="Schedule Now"
+            ctaLink="/contact"
+          />
+        </div>
       </main>
     </PageLayout>
   );
