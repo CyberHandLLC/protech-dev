@@ -160,30 +160,40 @@
   
   /* Fix for low contrast text across the site */
   .text-ivory\/30 {
-    color: rgba(255, 255, 255, 0.55) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
   }
 
   .text-ivory\/40 {
-    color: rgba(255, 255, 255, 0.65) !important;
-  }
-
-  .text-ivory\/50 {
     color: rgba(255, 255, 255, 0.75) !important;
   }
 
-  .text-ivory\/60 {
-    color: rgba(255, 255, 255, 0.80) !important;
-  }
-
-  .text-ivory\/70 {
+  .text-ivory\/50 {
     color: rgba(255, 255, 255, 0.85) !important;
   }
 
+  .text-ivory\/60 {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .text-ivory\/70 {
+    color: rgba(255, 255, 255, 0.95) !important;
+  }
+
   .text-ivory\/80 {
-    color: rgba(255, 255, 255, 0.90) !important;
+    color: rgba(255, 255, 255, 0.98) !important;
   }
 
   .text-ivory\/90 {
-    color: rgba(255, 255, 255, 0.95) !important;
+    color: rgba(255, 255, 255, 1) !important;
+  }
+  
+  /* Also enhance any low contrast classes for backgrounds */
+  .bg-navy-light\/20, .bg-navy-light\/30, .bg-navy-light\/40 {
+    background-color: rgba(45, 55, 72, 0.5) !important;
+  }
+  
+  /* Enhance text contrast in CTA sections */
+  .text-lg.text-ivory\/80 {
+    color: rgba(255, 255, 255, 1) !important;
   }
 }
