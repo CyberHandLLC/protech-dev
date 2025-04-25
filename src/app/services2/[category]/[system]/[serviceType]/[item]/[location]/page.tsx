@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { serviceCategories } from '@/data/serviceDataNew';
-import ServicePageContent from '@/components/services/ServicePageContent';
+import ServicePageContentNew from '@/components/services/ServicePageContentNew';
 import { getWeatherData } from '@/utils/weather';
 import { getServiceRecommendation } from '@/utils/recommendations';
 import { generateServiceMetadata } from '@/utils/metadata';
@@ -116,7 +116,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   };
   
   return (
-    <ServicePageContent
+    <ServicePageContentNew
       serviceInfo={serviceInfo}
       category={category}
       system={system}
