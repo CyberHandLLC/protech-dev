@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { serviceCategories } from '@/data/serviceDataNew';
 import ServicePageContentNew from '@/components/services/ServicePageContentNew';
-import { getWeatherData } from '@/utils/weather';
+import { getWeatherData } from '@/utils/weatherApi';
 import { getServiceRecommendation } from '@/utils/recommendations';
 import { generateServiceMetadata } from '@/utils/metadata';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
