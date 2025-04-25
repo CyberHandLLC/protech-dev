@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { menuItems } from '@/data/navigationData';
 
@@ -32,15 +33,22 @@ export default function MainNavigation() {
 
   return (
     <header 
-      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-navy shadow-md py-2' : 'bg-navy py-4'}`}
+      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-navy shadow-md py-3' : 'bg-navy py-5'}`}
       role="banner"
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center" aria-label="ProTech HVAC - Home">
-          <span className="font-bold text-2xl text-ivory">
-            ProTech HVAC
-          </span>
+          <div className="relative w-[180px] h-[60px] sm:w-[220px] sm:h-[70px] transition-all duration-300">
+            <Image 
+              src="/images/logo-protech.png" 
+              alt="ProTech HVAC Logo" 
+              fill
+              sizes="(max-width: 640px) 180px, 220px"
+              priority
+              className="object-contain"
+            />
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
