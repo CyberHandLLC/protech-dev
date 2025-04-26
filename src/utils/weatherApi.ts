@@ -53,17 +53,22 @@ export async function getWeatherData(locationParam: string): Promise<WeatherData
   console.log(`Getting real weather data for ${locationParam} (${lat}, ${lng})`);
   
   // Try to fetch real weather data if API key is available
-  if (process.env.NEXT_PUBLIC_WEATHER_API_KEY) {
+  const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+  if (apiKey) {
     try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&units=imperial`
-      );
+      console.log(`Attempting to fetch weather with API key: ${apiKey ? 'Available (hidden)' : 'Missing'}`);
+      
+      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=imperial`;
+      console.log(`Fetching weather from: ${apiUrl.replace(apiKey, 'API_KEY_HIDDEN')}`);
+      
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
-        throw new Error(`Weather API returned ${response.status}`);
+        throw new Error(`Weather API returned ${response.status}: ${await response.text()}`);
       }
       
       const data = await response.json();
+      console.log('Weather API response:', JSON.stringify(data, null, 2));
       
       // Convert API response to our WeatherData format
       return {
@@ -76,9 +81,11 @@ export async function getWeatherData(locationParam: string): Promise<WeatherData
         hvacTip: generateHvacTip(data.main.temp, data.weather[0].main, data.main.humidity)
       };
     } catch (error) {
-      console.warn('Weather API error, using mock data instead:', error);
+      console.error('Weather API error, using mock data instead:', error);
       // Fall back to mock data if API fails
     }
+  } else {
+    console.error('OpenWeatherMap API key is missing. Please add NEXT_PUBLIC_WEATHER_API_KEY to your environment variables.');
   }
   
   // Generate mock data for development or if API call fails
