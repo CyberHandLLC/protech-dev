@@ -67,7 +67,7 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
         
         <div className="bg-navy-light py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Suspense fallback={<div className="py-20 text-center text-ivory/70">Loading services...</div>}>
+            <Suspense fallback={<div className="py-20 text-center text-white">Loading services...</div>}>
               <ServicesListMobile
                 category={currentCategory}
                 userLocation={userLocation}

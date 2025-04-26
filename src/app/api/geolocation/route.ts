@@ -49,9 +49,9 @@ export async function GET(request: Request) {
     // Extract geolocation information
     const { city, countryRegion, region } = geoData;
     
-    // Default to Akron, OH if location can't be determined
-    const userLocation = city || 'Akron';
-    const userRegion = countryRegion || region || 'OH';
+    // Default to Northeast Ohio if location can't be determined
+    const userLocation = city || 'Northeast';
+    const userRegion = countryRegion || region || 'Ohio';
     
     // Format the location for display
     let formattedLocation = 'Northeast Ohio'; // Default

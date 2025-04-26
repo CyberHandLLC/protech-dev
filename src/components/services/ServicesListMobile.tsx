@@ -41,8 +41,8 @@ export default function ServicesListMobile({
     slug: string;
     isDetecting: boolean;
   }>({
-    name: serverLocation?.name || 'Northeast Ohio',
-    slug: serverLocation?.id || 'northeast-ohio',
+    name: serverLocation?.name || '',
+    slug: serverLocation?.id || '',
     isDetecting: true
   });
   
@@ -64,8 +64,36 @@ export default function ServicesListMobile({
         locationName = serverLocation.name;
         locationSlug = serverLocation.id;
       } else {
-        locationName = 'Northeast Ohio';
-        locationSlug = 'northeast-ohio';
+        // If neither client nor server location is available, use geolocation API directly
+        fetch('/api/geolocation')
+          .then(response => response.json())
+          .then(data => {
+            if (data.location) {
+              locationName = data.location;
+              locationSlug = convertToLocationSlug(data.location);
+              
+              setCombinedLocation({
+                name: locationName,
+                slug: locationSlug,
+                isDetecting: false
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching location from API:', error);
+            // Only use Northeast Ohio as absolute last resort
+            locationName = 'Northeast Ohio';
+            locationSlug = 'northeast-ohio';
+            
+            setCombinedLocation({
+              name: locationName,
+              slug: locationSlug,
+              isDetecting: false
+            });
+          });
+          
+        // Return early since we're handling state update in the async callback
+        return;
       }
 
       setCombinedLocation({
@@ -398,7 +426,7 @@ export default function ServicesListMobile({
                   </div>
                   <div>
                     <h4 className="font-semibold text-white">Fast Response Times</h4>
-                    <p className="text-ivory/70 text-sm">Available when you need us most.</p>
+                    <p className="text-white text-sm">Available when you need us most.</p>
                   </div>
                 </div>
                 
@@ -422,7 +450,7 @@ export default function ServicesListMobile({
                   </div>
                   <div>
                     <h4 className="font-semibold text-white">Satisfaction Guaranteed</h4>
-                    <p className="text-ivory/70 text-sm">We stand behind our work 100%.</p>
+                    <p className="text-white text-sm">We stand behind our work 100%.</p>
                   </div>
                 </div>
               </div>
@@ -433,7 +461,7 @@ export default function ServicesListMobile({
         {/* Call to Action */}
         <div className="mt-12 text-center">
           <div className="inline-block p-6">
-            <h3 className="text-xl font-bold text-ivory mb-4">Need service in {combinedLocation.name}?</h3>
+            <h3 className="text-xl font-bold text-white mb-4">Need service in {combinedLocation.name}?</h3>
             <Link
               href="/contact"
               className="inline-flex items-center bg-red hover:bg-red-dark text-white font-bold py-3 px-8 rounded-md transition-colors"

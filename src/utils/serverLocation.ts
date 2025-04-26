@@ -9,7 +9,8 @@ export function getUserLocationFromHeaders() {
   // For now, we'll just parse a custom header or return a default
   const geoHeader = headersList.get('x-user-location') || '';
   
-  // Default location if none is detected
+  // Default location if none is detected - we'll try to get a more precise location
+  // This will only be used as a final fallback
   const defaultLocation = {
     id: 'northeast-ohio',
     name: 'Northeast Ohio',

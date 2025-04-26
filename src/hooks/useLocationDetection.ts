@@ -28,11 +28,17 @@ export default function useLocationDetection() {
         }
         
         const data = await response.json();
-        setUserLocation(data.location || getDefaultLocation());
+        // Only use the location from the API response if it actually exists
+        if (data.location) {
+          setUserLocation(data.location);
+        } else {
+          console.error('No location returned from geolocation API');
+          setUserLocation(getDefaultLocation().name);
+        }
       } catch (err) {
         console.error('Failed to get user location', err);
         setError('Unable to detect location');
-        setUserLocation(getDefaultLocation());
+        setUserLocation(getDefaultLocation().name);
       } finally {
         setIsLocating(false);
       }
