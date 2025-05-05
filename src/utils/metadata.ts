@@ -39,6 +39,7 @@ export function generateBaseMetadata(): Metadata {
       googleBot: {
         index: true,
         follow: true,
+        noimageindex: false,
       },
     },
   };
@@ -67,7 +68,7 @@ export function generateServiceMetadata({
       type: 'website',
       locale: 'en_US',
       siteName: 'ProTech HVAC',
-      url: canonicalUrl || 'https://protechhvac.com',
+      url: canonicalUrl || 'https://protech-ohio.com',
       images: [{
         url: fullImageUrl,
         width: 1200,

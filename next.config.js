@@ -18,19 +18,32 @@ const nextConfig = {
     optimizePackageImports: ['react', 'react-dom'],
   },
   
-  // Handle images from external sources including Google profile photos
+  // Handle images from external sources including Google profile photos and Facebook trackers
   images: {
     domains: [
       'localhost',
       'maps.googleapis.com',
       'maps.gstatic.com',
       'lh3.googleusercontent.com',
-      'streetviewpixels-pa.googleapis.com'
+      'streetviewpixels-pa.googleapis.com',
+      'www.facebook.com',
+      'connect.facebook.net',
+      'graph.facebook.com'
     ],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.googleusercontent.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.facebook.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.facebook.net',
         pathname: '**',
       }
     ]
