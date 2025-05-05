@@ -22,11 +22,13 @@ GOOGLE_PLACE_ID=your_google_place_id
 ### Analytics Tracking (Optional)
 ```
 NEXT_PUBLIC_FACEBOOK_PIXEL_ID=your_facebook_pixel_id
+FACEBOOK_CONVERSIONS_API_TOKEN=your_facebook_conversions_api_token
 NEXT_PUBLIC_INSTAGRAM_PIXEL_ID=your_instagram_pixel_id
 NEXT_PUBLIC_GTM_ID=your_google_tag_manager_id
 ```
 
-- **NEXT_PUBLIC_FACEBOOK_PIXEL_ID**: Your Facebook Pixel ID for conversion tracking
+- **NEXT_PUBLIC_FACEBOOK_PIXEL_ID**: Your Facebook Pixel ID for client-side conversion tracking
+- **FACEBOOK_CONVERSIONS_API_TOKEN**: Your Facebook Conversions API access token for server-side conversion tracking (more reliable tracking)
 - **NEXT_PUBLIC_INSTAGRAM_PIXEL_ID**: Your Instagram Pixel ID for conversion tracking
 - **NEXT_PUBLIC_GTM_ID**: Your Google Tag Manager container ID
 

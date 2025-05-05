@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Button from './ui/Button';
+import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 
 type FormField = 'name' | 'phone' | 'service' | 'location';
 type FormData = Record<FormField, string>;
@@ -120,6 +121,9 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
     error: false,
     message: ''
   });
+  
+  // Initialize Facebook conversion tracking
+  const { trackSchedule, trackLead } = useFacebookEvents();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -151,6 +155,40 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
       const result = await response.json();
       
       if (response.ok && result.success) {
+        // Track form submission events with Facebook
+        try {
+          // Track as a scheduling event
+          await trackSchedule({
+            userData: {
+              phone: formData.phone,
+              firstName: formData.name.split(' ')[0],
+              lastName: formData.name.split(' ').slice(1).join(' ')
+            },
+            customData: {
+              contentCategory: 'Quick Schedule',
+              contentName: formData.service || 'General Service',
+              status: 'scheduled'
+            }
+          });
+          
+          // Also track as a lead event for conversion tracking
+          await trackLead({
+            userData: {
+              phone: formData.phone
+            },
+            customData: {
+              contentCategory: 'Hero Form Lead',
+              contentName: formData.service || 'General Service',
+              contentType: 'service_scheduling'
+            }
+          });
+          
+          console.log('Facebook conversion events tracked successfully');
+        } catch (trackingError) {
+          // Don't let tracking errors affect the user experience
+          console.error('Error tracking Facebook conversion event:', trackingError);
+        }
+        
         // Success state
         setFormStatus({
           submitted: true,
