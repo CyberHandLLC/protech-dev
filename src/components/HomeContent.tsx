@@ -36,7 +36,7 @@ interface HomeContentProps {
  */
 export default function HomeContent({ 
   location,
-  weatherData = { temperature: 75, icon: '⛅' }
+  weatherData = { temperature: 75, icon: 'partly-cloudy' }
 }: HomeContentProps) {
   // Location is already processed on the server, so it's ready to use
   return (
@@ -44,8 +44,6 @@ export default function HomeContent({
       {/* All content is server-rendered with no client-side JS */}
       <HeroSectionServer 
         location={location.name} 
-        temperature={weatherData.temperature}
-        weatherIcon={weatherData.icon}
       />
       <ServicesPreviewServer location={location.name} />
       <TestimonialsSectionServer location={location.id} />

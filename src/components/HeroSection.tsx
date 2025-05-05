@@ -20,7 +20,7 @@ type HeroSectionProps = {
 export default function HeroSection({ 
   location, 
   emergencyPhone = '8005554822',
-  emergencyPhoneDisplay = '800-555-HVAC'
+  emergencyPhoneDisplay = '330-642-HVAC'
 }: HeroSectionProps) {
   // Ensure we have a valid location and decode any URL-encoded characters
   // Only log errors in development mode

@@ -13,7 +13,7 @@ type CTASectionProps = {
 
 export default function CTASection({ 
   location = 'Northeast Ohio',
-  phoneDisplay = '800-555-HVAC',
+  phoneDisplay = '330-642-HVAC',
   phoneNumber = '8005554822'
 }: CTASectionProps) {
   // Validate the provided location

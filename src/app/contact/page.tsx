@@ -23,40 +23,10 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
-  const officeLocations = [
-    {
-      name: 'Akron Office (Main)',
-      address: '123 Main Street, Akron, OH 44301',
-      phone: '330-555-4822',
-      email: 'info@protechheatingandcooling.net',
-      hours: [
-        'Monday - Friday: 8:00 AM - 6:00 PM',
-        'Saturday: 9:00 AM - 2:00 PM',
-        'Sunday: Closed (Emergency Service Available)'
-      ]
-    },
-    {
-      name: 'Cleveland Office',
-      address: '456 Euclid Avenue, Cleveland, OH 44101',
-      phone: '216-555-4822',
-      email: 'cleveland@protechheatingandcooling.net',
-      hours: [
-        'Monday - Friday: 8:00 AM - 6:00 PM',
-        'Saturday: 9:00 AM - 2:00 PM',
-        'Sunday: Closed (Emergency Service Available)'
-      ]
-    },
-    {
-      name: 'Canton Office',
-      address: '789 Market Ave, Canton, OH 44702',
-      phone: '330-555-4823',
-      email: 'canton@protechheatingandcooling.net',
-      hours: [
-        'Monday - Friday: 8:00 AM - 6:00 PM',
-        'Saturday: 9:00 AM - 2:00 PM',
-        'Sunday: Closed (Emergency Service Available)'
-      ]
-    }
+  const businessHours = [
+    'Monday - Friday: 8:00 AM - 6:00 PM',
+    'Saturday: 9:00 AM - 2:00 PM',
+    'Sunday: Closed (Emergency Service Available)'
   ];
 
   return (
@@ -98,7 +68,7 @@ export default function ContactPage() {
                 href="tel:8005554822" 
                 className="inline-flex items-center justify-center w-full py-3 bg-teal text-white rounded-lg font-medium hover:bg-teal/90 transition-colors"
               >
-                <span className="mr-2">📞</span> Call Now: 800-555-HVAC
+                <span className="mr-2">📞</span> Call Now: 330-642-HVAC
               </a>
             </div>
             
@@ -139,64 +109,69 @@ export default function ContactPage() {
         </div>
       </section>
       
-      {/* Contact Form and Locations */}
-      <section className="py-16 px-4 md:px-8 bg-navy-light" id="contact-form">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Contact Form */}
-          <div className="lg:col-span-3 bg-dark-blue rounded-xl p-8 border border-dark-blue-light">
+      {/* Contact Form and Business Hours Section */}
+      <section className="py-12 px-4 md:px-8 bg-navy-light">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+          <div className="lg:col-span-1">
             <div className="mb-6">
               <div className="h-1 w-16 bg-red mb-3"></div>
               <h2 className="text-2xl font-bold text-white">Send Us a Message</h2>
+              <p className="text-ivory/80 mt-2">Fill out the form below and we'll get back to you as soon as possible.</p>
             </div>
+            
             <ContactForm />
           </div>
             
-            {/* Office Locations */}
+          {/* Business Hours and Contact Info */}
           <div className="lg:col-span-2">
             <div className="mb-6">
               <div className="h-1 w-16 bg-red mb-3"></div>
-              <h2 className="text-2xl font-bold text-white">Our Locations</h2>
+              <h2 className="text-2xl font-bold text-white">Contact Information</h2>
             </div>
             
             <div className="space-y-6">
-              {officeLocations.map((office, index) => (
-                <div key={index} className="bg-dark-blue rounded-xl p-6 border border-dark-blue-light hover:border-red transition-colors group border-l-4 border-l-red">
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-red transition-colors">{office.name}</h3>
-                  <address className="not-italic mb-4 text-ivory/80">
-                    {office.address}<br />
-                    <a href={`tel:${office.phone.replace(/-/g, '')}`} className="text-ivory/90 hover:text-red-light">{office.phone}</a><br />
-                    <a href={`mailto:${office.email}`} className="text-ivory/90 hover:text-red-light">{office.email}</a>
-                  </address>
-                  <div className="border-t border-dark-blue-light pt-4">
-                    <h4 className="text-white font-medium mb-2">Business Hours:</h4>
-                    <ul className="text-ivory/80 space-y-1">
-                      {office.hours.map((hour, idx) => (
-                        <li key={idx}>{hour}</li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="bg-dark-blue rounded-xl p-6 border border-dark-blue-light hover:border-red transition-colors group border-l-4 border-l-red">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-red transition-colors">ProTech Heating & Cooling</h3>
+                <address className="not-italic mb-4 text-ivory/80">
+                  <a href="tel:8005554822" className="text-ivory/90 hover:text-red-light">800-555-HVAC (4822)</a><br />
+                  <a href="mailto:info@protechheatingandcooling.net" className="text-ivory/90 hover:text-red-light">info@protechheatingandcooling.net</a>
+                </address>
+                <div className="border-t border-dark-blue-light pt-4">
+                  <h4 className="text-white font-medium mb-2">Business Hours:</h4>
+                  <ul className="text-ivory/80 space-y-1">
+                    {businessHours.map((hour, idx) => (
+                      <li key={idx}>{hour}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
       
-      {/* Map Section */}
+      {/* Service Areas Section */}
       <section className="py-12 px-4 md:px-8 bg-navy">
         <div className="max-w-5xl mx-auto">
           <SectionHeader 
             accentText="Service Areas" 
-            title="Find Us" 
+            title="Areas We Serve" 
           />
-          <div className="bg-dark-blue h-[400px] rounded-xl flex items-center justify-center border border-dark-blue-light">
-            {/* This would be a proper map in a real implementation */}
-            <p className="text-ivory/80">Interactive Map Would Be Placed Here</p>
-          </div>
-          <div className="text-center mt-6">
-            <p className="text-ivory/80">
-              We proudly serve Akron, Cleveland, Canton, and surrounding areas in Northeast Ohio.
+          <div className="bg-dark-blue rounded-xl p-8 border border-dark-blue-light text-center">
+            <p className="text-xl text-ivory/90 mb-4">
+              We proudly provide HVAC services throughout Northeast Ohio
             </p>
+            <p className="text-ivory/80 mb-6">
+              Our service area includes the greater Cleveland, Akron, and Canton regions, along with all surrounding communities.
+            </p>
+            <div className="inline-flex items-center justify-center">
+              <a 
+                href="tel:8005554822" 
+                className="bg-red text-white hover:bg-red-dark px-6 py-3 rounded-lg font-medium transition-all text-center inline-flex items-center"
+              >
+                <span className="mr-2">📞</span> Call for Service Availability
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -258,7 +233,7 @@ export default function ContactPage() {
               href="tel:8005554822" 
               className="bg-red text-white hover:bg-red-dark transition-colors px-8 py-4 rounded-lg font-medium"
             >
-              Call: 800-555-HVAC
+              Call: 330-642-HVAC
             </a>
             <Link 
               href="#contact-form" 

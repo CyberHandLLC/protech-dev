@@ -9,6 +9,7 @@ interface OptimizedClientWrapperProps {
   id?: string;
   defer?: boolean;
   loadOnView?: boolean;
+  className?: string;
 }
 
 /**
@@ -25,7 +26,8 @@ export default memo(function OptimizedClientWrapper({
   priority = 'medium',
   id,
   defer = true,
-  loadOnView = true
+  loadOnView = true,
+  className
 }: OptimizedClientWrapperProps) {
   const [isPending, startTransition] = useTransition();
   const [shouldRender, setShouldRender] = useState(!defer);
@@ -143,7 +145,7 @@ export default memo(function OptimizedClientWrapper({
       id={componentId}
       data-priority={priority}
       data-hydration={shouldRender ? 'complete' : 'pending'}
-      className={isPending ? 'pending-hydration' : ''}
+      className={`${className || ''} ${isPending ? 'pending-hydration' : ''}`}
     >
       {shouldRender || !defer ? children : (
         <div className="min-h-[100px] bg-navy opacity-80 animate-pulse rounded" />

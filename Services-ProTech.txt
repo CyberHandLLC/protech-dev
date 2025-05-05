@@ -16,7 +16,7 @@ Services Overview:
     - Air Conditioning
       - Commercial Refrigeration Systems (e.g., restaurants, stores). Data Center Cooling, Rooftop Units, Central AC, Mini Splits, Heat Pumps
     - Heating Systems
-      - Furnaces, Boilers, Rooftop Units
+      - Furnaces, Boilers, Rooftop Units, Heat Pumps, Mini Splits
     - Indoor Air Quality Solutions 
   - Air Purifiers, Humidifiers, Dehumidifiers   
 

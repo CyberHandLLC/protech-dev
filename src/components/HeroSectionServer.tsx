@@ -21,7 +21,7 @@ type HeroSectionProps = {
 export default function HeroSectionServer({ 
   location,
   emergencyPhone = '8005554822',
-  emergencyPhoneDisplay = '800-555-HVAC'
+  emergencyPhoneDisplay = '330-642-HVAC'
 }: HeroSectionProps) {
   // We're guaranteed to have a valid location since it's coming from the server
   const displayLocation = location || 'Northeast Ohio';

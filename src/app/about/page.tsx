@@ -1,8 +1,9 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
-import { teamMembers, milestones, coreValues } from '@/data/aboutData';
+import { milestones, coreValues } from '@/data/aboutData';
 
 // Helper function for generating section headers with consistent styling
 const SectionHeader = ({ accentText, title, centered = true }: { accentText: string; title: string; centered?: boolean }) => (
@@ -19,9 +20,9 @@ const SectionHeader = ({ accentText, title, centered = true }: { accentText: str
  * About page metadata for SEO
  */
 export const metadata: Metadata = {
-  title: 'About ProTech HVAC | Our Story & Mission',
-  description: 'Learn about ProTech HVAC\'s journey to becoming a trusted provider of heating, cooling, and air quality services in Northeast Ohio.',
-  keywords: ['HVAC company', 'heating and cooling services', 'ProTech HVAC history', 'HVAC mission'],
+  title: 'About ProTech HVAC | Trusted HVAC Service in Northeast Ohio',
+  description: 'Family-owned HVAC service in Northeast Ohio. Professional technicians providing quality heating and cooling solutions with 24/7 emergency availability.',
+  keywords: ['ProTech HVAC', 'Northeast Ohio HVAC', 'family owned HVAC', 'Akron HVAC company', 'professional HVAC service', 'heating and cooling services'],
 };
 
 /**
@@ -32,162 +33,161 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <PageLayout>
-        {/* Hero section with dark navy background */}
-        <section className="bg-navy py-20 px-4">
-          <div className="max-w-7xl mx-auto text-center">
+      {/* Hero section with dark navy background */}
+      <section className="bg-navy py-20 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-block mb-4">
+            <div className="h-1 w-24 bg-red mx-auto mb-3"></div>
+            <span className="text-red-light uppercase text-sm tracking-wider font-medium">About Our Company</span>
+          </div>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">About ProTech Heating & Cooling</h1>
+          <p className="mt-4 text-lg text-ivory/80 max-w-2xl mx-auto">
+            Your trusted partner for comprehensive HVAC solutions in Northeast Ohio. Family-owned, professionally operated.
+          </p>
+        </div>
+      </section>
+
+      {/* Our Story Section */}
+      <section className="py-16 px-4 bg-navy-light">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="border-l-2 border-dark-blue-light pl-6 py-2 group">
+              <h2 className="text-3xl font-bold text-white mb-6 group-hover:text-red transition-colors">Our Story</h2>
+              <div className="space-y-4 text-ivory/80">
+                <p>
+                  Leon began his journey in the HVAC industry with a passion for providing top-notch services to close friends and family. Recognizing the broader community's need for quality heating and cooling solutions, he established 'Heating and Cooling'.
+                </p>
+                <p>
+                  With dedication and hard work, the business grew, becoming a trusted name in Orrville, OH and surrounding communities throughout Northeast Ohio.
+                </p>
+                <p>
+                  Today, under Leon's guidance and unwavering commitment to quality, ProTech stands proudly as a leading heating and air conditioning service provider in Wayne, Stark, Summit, Medina County and its surrounding areas.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center">
+              <div className="bg-dark-blue rounded-xl overflow-hidden w-full max-w-md aspect-video flex items-center justify-center border border-dark-blue-light relative">
+                <div className="w-full h-full overflow-hidden rounded-xl relative">
+                  <div className="absolute inset-0 bg-navy/20 z-10"></div>
+                  <Image
+                    src="/images/hvac-technician.jpg"
+                    alt="ProTech HVAC Service Team"
+                    width={600}
+                    height={400}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </div>
+              <p className="text-center text-xs text-ivory/50 absolute mt-[340px]">
+                The ProTech Heating & Cooling Family
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Section */}
+      <section className="py-16 px-4 bg-navy">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col items-center text-center mb-12">
             <div className="inline-block mb-4">
               <div className="h-1 w-24 bg-red mx-auto mb-3"></div>
-              <span className="text-red-light uppercase text-sm tracking-wider font-medium">About Our Company</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold text-white mb-6">Our Story</h1>
-            <p className="mt-4 text-lg text-ivory/80 max-w-2xl mx-auto">
-              From humble beginnings to becoming a trusted name in HVAC services throughout Northeast Ohio.
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Our Mission</h2>
+            <p className="text-xl text-ivory/80 max-w-3xl mx-auto mb-8 leading-relaxed">
+              To provide exceptional HVAC services that enhance the comfort, safety, and energy efficiency of every home and business we serve, while maintaining the highest standards of professionalism, integrity, and customer satisfaction.
             </p>
+            <a
+              href="tel:8005554822"
+              className="bg-red border-2 border-red text-white hover:bg-red-dark px-8 py-3 rounded-lg font-medium transition-all text-center"
+            >
+              Contact Us Today
+            </a>
           </div>
-        </section>
-        
-        {/* Our Story Section */}
-        <section className="py-16 px-4 bg-navy-light">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="border-l-2 border-dark-blue-light pl-6 py-2 group">
-                <h2 className="text-3xl font-bold text-white mb-6 group-hover:text-red transition-colors">The ProTech HVAC Story</h2>
-                <div className="space-y-4 text-ivory/80">
-                  <p>
-                    Founded in 2005 by John Williams, ProTech HVAC began as a small operation with just three technicians serving the Akron area. With a vision to provide exceptional heating and cooling services backed by integrity and technical expertise, our company quickly gained a reputation for reliability.
-                  </p>
-                  <p>
-                    As our customer base grew, so did our team of certified professionals. By 2010, we had expanded our service area to include Cleveland and Canton, bringing our quality HVAC solutions to more homes and businesses throughout Northeast Ohio.
-                  </p>
-                  <p>
-                    Today, ProTech HVAC is proud to employ over 25 certified technicians and staff members who share our commitment to excellence. We've maintained our founding principles while embracing new technologies and sustainable practices to better serve our growing customer base.
-                  </p>
+        </div>
+      </section>
+
+
+
+      {/* Company Highlights Section */}
+      <section className="py-16 px-4 bg-navy-light relative overflow-hidden">
+        {/* Background accent */}
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 rounded-full bg-navy opacity-50 z-0"></div>
+        <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-navy opacity-30 z-0"></div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
+          <SectionHeader
+            accentText="What Sets Us Apart"
+            title="Our Commitment to Excellence"
+            centered={true}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">🏆</span>
                 </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">Expert Technicians</h3>
               </div>
-              <div className="flex items-center justify-center">
-                <div className="bg-dark-blue rounded-xl overflow-hidden w-full max-w-md aspect-video flex items-center justify-center border border-dark-blue-light">
-                  <div className="text-ivory/70 text-center p-4">
-                    <p className="font-medium">Company Image</p>
-                    <p className="text-sm">In a real implementation, this would be an actual photo</p>
-                  </div>
+              <p className="text-ivory/70">Our team of experienced technicians brings professional expertise and dedication to every service call.</p>
+            </div>
+
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">👪</span>
                 </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">Family-Owned</h3>
               </div>
+              <p className="text-ivory/70">Proudly serving Northeast Ohio families with personalized care and attention to detail.</p>
             </div>
-          </div>
-        </section>
-        
-        {/* Mission & Vision Section */}
-        <section className="py-16 px-4 bg-navy">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="group border-l-2 border-dark-blue-light pl-6 py-2 hover:border-red transition-colors relative">
-                <div className="absolute -left-[5px] top-10 transform h-2 w-2 rounded-full bg-dark-blue-light group-hover:bg-red transition-colors"></div>
-                <h2 className="text-3xl font-bold text-white mb-4 group-hover:text-red transition-colors">Our Mission</h2>
-                <p className="text-ivory/80 mb-6">
-                  At ProTech HVAC, our mission is to enhance the comfort, safety, and efficiency of homes and businesses across Northeast Ohio through exceptional HVAC solutions. We are committed to delivering honest service, technical excellence, and sustainable practices in everything we do.
-                </p>
-                <p className="text-ivory/80">
-                  We believe in building lasting relationships with our customers by providing:
-                </p>
-                <ul className="list-inside space-y-2 mt-2 text-ivory/80">
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Transparent pricing with no hidden fees</span></li>
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Customized solutions tailored to each client's needs</span></li>
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>24/7 emergency service when you need us most</span></li>
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Energy-efficient recommendations that save money and reduce environmental impact</span></li>
-                </ul>
-              </div>
-              <div className="group border-l-2 border-dark-blue-light pl-6 py-2 hover:border-red transition-colors relative">
-                <div className="absolute -left-[5px] top-10 transform h-2 w-2 rounded-full bg-dark-blue-light group-hover:bg-red transition-colors"></div>
-                <h2 className="text-3xl font-bold text-white mb-4 group-hover:text-red transition-colors">Our Vision</h2>
-                <p className="text-ivory/80 mb-6">
-                  We aspire to be the most trusted HVAC service provider in Northeast Ohio, recognized for our technical expertise, exceptional customer service, and commitment to sustainable practices.
-                </p>
-                <p className="text-ivory/80 mb-2">
-                  Our long-term goals are centered around:
-                </p>
-                <ul className="list-inside space-y-2 text-ivory/80">
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Lead the industry in adopting energy-efficient technologies</span></li>
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Create lasting relationships with customers and communities</span></li>
-                  <li className="flex items-start gap-2"><span className="text-red">•</span> <span>Provide growth opportunities for team members</span></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        {/* Team Section */}
-        <section className="py-16 px-4 bg-navy-light">
-          <div className="max-w-6xl mx-auto">
-            <SectionHeader accentText="Our Team" title="Meet Our Leadership" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {teamMembers.map((member, index) => (
-                <div key={index} className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-colors group">
-                  <div className="mb-4 aspect-square rounded-full overflow-hidden bg-navy mx-auto w-40 h-40 flex items-center justify-center">
-                    <div className="text-ivory/50 text-2xl font-bold">{member.name.split(' ')[0][0]}{member.name.split(' ')[1][0]}</div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-white text-center group-hover:text-red transition-colors">{member.name}</h3>
-                  <p className="text-red-light text-center mb-3">{member.position}</p>
-                  <p className="text-ivory/80">{member.bio}</p>
+
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">⏰</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        
-        {/* Company Timeline */}
-        <section className="py-16 px-4 bg-navy">
-          <div className="max-w-5xl mx-auto">
-            <SectionHeader accentText="Our History" title="Our Journey" />
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-dark-blue-light z-0"></div>
-              
-              {/* Timeline items */}
-              <div className="relative z-10">
-                {milestones.map((milestone, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'} group`}
-                  >
-                    <div className="w-1/2 px-8">
-                      <div className={index % 2 === 0 ? 'text-right' : 'text-left'}>
-                        <h3 className="text-xl font-semibold text-white group-hover:text-red transition-colors">{milestone.title}</h3>
-                        <p className="text-red-light mb-2">{milestone.year}</p>
-                        <p className="text-ivory/80">{milestone.description}</p>
-                      </div>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-red flex items-center justify-center text-white font-bold z-10 group-hover:scale-110 transition-transform">
-                      {index + 1}
-                    </div>
-                    <div className="w-1/2"></div>
-                  </div>
-                ))}
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">24/7 Availability</h3>
               </div>
+              <p className="text-ivory/70">Emergency HVAC services available around the clock when you need us most.</p>
             </div>
-          </div>
-        </section>
-        
-        {/* Core Values Section */}
-        <section className="py-16 md:py-20 px-4 md:px-8 bg-gradient-to-br from-navy to-dark-blue text-white">
-          <div className="max-w-6xl mx-auto text-center">
-            <SectionHeader accentText="What Drives Us" title="Our Core Values" />
-            {/* Adding top margin to compensate for the removed mb-12 */}
-            <div className="mt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {coreValues.map((value, index) => (
-                  <div key={index} className="bg-dark-blue border border-dark-blue-light hover:border-red transition-colors rounded-xl p-6 group">
-                    <div className="text-3xl mb-4 text-red">{value.icon}</div>
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-red transition-colors">{value.title}</h3>
-                    <p className="text-ivory/80">{value.description}</p>
-                  </div>
-                ))}
+
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">🔧</span>
+                </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">Quality Equipment</h3>
               </div>
+              <p className="text-ivory/70">We use only premium, industry-leading brands and parts for lasting reliability.</p>
+            </div>
+
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">📅</span>
+                </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">Regular Maintenance</h3>
+              </div>
+              <p className="text-ivory/70">Comprehensive maintenance plans to keep your HVAC system running efficiently.</p>
+            </div>
+
+            <div className="bg-dark-blue p-6 rounded-lg border border-dark-blue-light hover:border-red transition-all hover:shadow-lg group">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-navy flex items-center justify-center mr-4 group-hover:bg-red transition-colors">
+                  <span className="text-2xl text-ivory">🤝</span>
+                </div>
+                <h3 className="text-xl font-bold text-white group-hover:text-red transition-colors">Personal Touch</h3>
+              </div>
+              <p className="text-ivory/70">As a family-owned business, we treat every customer like part of our extended family, providing personalized service.</p>
             </div>
           </div>
-        </section>
-        
-        {/* CTA Section */}
-        <CTASection location="Northeast Ohio" />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <CTASection location="Northeast Ohio" />
     </PageLayout>
   );
 }

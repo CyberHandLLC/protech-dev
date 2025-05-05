@@ -74,7 +74,7 @@ export default function SideNavigation() {
       {/* Contact Information */}
       <div className="p-6 bg-navy text-ivory mt-auto">
         <p className="font-bold">Need Help?</p>
-        <a href="tel:8005554822" className="text-lg text-white block mb-3">800-555-HVAC</a>
+        <a href="tel:8005554822" className="text-lg text-white block mb-3">330-642-HVAC</a>
         <Button variant="primary" className="w-full text-sm" href="/contact">
           Schedule Service
         </Button>

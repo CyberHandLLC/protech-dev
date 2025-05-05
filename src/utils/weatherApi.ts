@@ -125,7 +125,7 @@ export async function getWeatherData(locationParam: string): Promise<WeatherData
       condition,
       humidity,
       feelsLike: temp + Math.floor(Math.random() * 8),
-      icon: condition === 'Sunny' ? '☀️' : condition === 'Partly Cloudy' ? '⛅' : condition === 'Scattered Thunderstorms' ? '⛈️' : '🌧️',
+      icon: condition === 'Sunny' ? 'sunny' : condition === 'Partly Cloudy' ? 'partly-cloudy' : condition === 'Scattered Thunderstorms' ? 'thunderstorm' : 'rain',
       description: `${condition} with a temperature of ${temp}°F`,
       hvacTip: generateHvacTip(temp, condition, humidity)
     };
@@ -143,28 +143,28 @@ export async function getWeatherData(locationParam: string): Promise<WeatherData
       condition,
       humidity,
       feelsLike: temp,
-      icon: condition === 'Sunny' ? '☀️' : condition === 'Partly Cloudy' ? '⛅' : condition === 'Cloudy' ? '☁️' : '🌧️',
+      icon: condition === 'Sunny' ? 'sunny' : condition === 'Partly Cloudy' ? 'partly-cloudy' : condition === 'Cloudy' ? 'cloudy' : 'rain',
       description: `${condition} with a temperature of ${temp}°F`,
       hvacTip: generateHvacTip(temp, condition, humidity)
     };
   }
 }
 
-// Function to map weather conditions to emoji icons
+// Function to map weather conditions to SVG filenames for icons
 function getWeatherIcon(condition: string): string {
   const conditionLower = condition.toLowerCase();
   
-  if (conditionLower.includes('snow') || conditionLower.includes('sleet')) return '❄️';
-  if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) return '🌧️';
-  if (conditionLower.includes('thunderstorm')) return '⛈️';
-  if (conditionLower.includes('clear')) return '☀️';
+  if (conditionLower.includes('snow') || conditionLower.includes('sleet')) return 'snow';
+  if (conditionLower.includes('rain') || conditionLower.includes('drizzle')) return 'rain';
+  if (conditionLower.includes('thunderstorm')) return 'thunderstorm';
+  if (conditionLower.includes('clear')) return 'sunny';
   if (conditionLower.includes('cloud')) {
-    if (conditionLower.includes('few') || conditionLower.includes('scattered')) return '⛅';
-    return '☁️';
+    if (conditionLower.includes('few') || conditionLower.includes('scattered')) return 'partly-cloudy';
+    return 'cloudy';
   }
-  if (conditionLower.includes('mist') || conditionLower.includes('fog')) return '🌫️';
+  if (conditionLower.includes('mist') || conditionLower.includes('fog')) return 'fog';
   
-  return '🌡️'; // Default icon
+  return 'temperature'; // Default icon
 }
 
 // Function to generate HVAC advice based on weather forecast

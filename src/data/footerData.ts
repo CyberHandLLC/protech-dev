@@ -24,25 +24,20 @@ export const quickLinks: FooterLink[] = [
   { name: 'Home', path: '/' },
   { name: 'About Us', path: '/about' },
   { name: 'Services', path: '/services' },
-  { name: 'Financing', path: '/financing' },
-  { name: 'Careers', path: '/careers' },
-  { name: 'Emergency Service', path: '/emergency-service' },
   { name: 'Contact', path: '/contact' }
 ];
 
 // Legal links for bottom bar
 export const legalLinks: FooterLink[] = [
-  { name: 'Privacy Policy', path: '/privacy-policy' },
-  { name: 'Terms of Service', path: '/terms-of-service' },
-  { name: 'Sitemap', path: '/sitemap' }
+  { name: 'Copyright', path: '/' }
 ];
 
 // Social media platforms
 export const socialPlatforms: SocialPlatform[] = [
-  { name: 'Facebook', icon: 'F', url: '#' },
-  { name: 'Twitter', icon: 'T', url: '#' },
-  { name: 'Instagram', icon: 'I', url: '#' },
-  { name: 'LinkedIn', icon: 'L', url: '#' }
+  { name: 'Facebook', icon: '/logos/platforms/facebook.svg', url: '#' },
+  { name: 'Google', icon: '/logos/platforms/google.svg', url: '#' },
+  { name: 'Instagram', icon: '/logos/platforms/instagram.svg', url: '#' },
+  { name: 'Yelp', icon: '/logos/platforms/yelp.svg', url: '#' }
 ];
 
 // Service areas grouped by region

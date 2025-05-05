@@ -554,7 +554,7 @@ function ReviewPlatforms({ platforms }: ReviewPlatformsProps) {
               <img 
                 src={platform.logo} 
                 alt={`${platform.name} logo`} 
-                className="w-full h-full object-contain filter brightness-0 invert opacity-90 group-hover:opacity-100 transition-all" 
+                className="w-full h-full object-contain group-hover:scale-110 transition-all" 
               />
             </div>
             <span className="text-ivory/90 text-sm mt-2">{platform.name}</span>

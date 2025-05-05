@@ -7,6 +7,7 @@ import PageLayout from '@/components/PageLayout';
 import OptimizedClientWrapper from '@/components/OptimizedClientWrapper';
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
+import ZipCodeChecker from '@/components/ZipCodeChecker';
 
 // Next.js 15 optimized dynamic imports with enhanced TBT reduction
 // Use SSR with proper error boundaries and suspense boundaries
@@ -120,6 +121,13 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
           <HeroSection 
             location={combinedLocation.name}
           />
+        </Suspense>
+      </OptimizedClientWrapper>
+      
+      {/* ZIP Code Service Area Checker - high priority */}
+      <OptimizedClientWrapper priority="high" id="zip-code-checker" className="py-6 md:py-8">
+        <Suspense fallback={<div className="h-48 bg-navy/50 animate-pulse rounded-md" />}>
+          <ZipCodeChecker />
         </Suspense>
       </OptimizedClientWrapper>
       

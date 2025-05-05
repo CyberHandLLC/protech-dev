@@ -93,8 +93,8 @@ export default function WhyChooseUs() {
         
         {/* Stats Section */}
         <div className="mt-24 relative">
-          <div className="absolute left-0 right-0 top-0 h-px bg-gradient-to-r from-transparent via-red/30 to-transparent"></div>
-          <div className="pt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-red/50 to-transparent" style={{ maxWidth: '90%', margin: '0 auto', left: '5%', right: '5%' }}></div>
+          <div className="pt-16 pb-16 grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { number: '24/7', label: 'Emergency Service' },
               { number: '<60m', label: 'Average Response Time' },
@@ -112,7 +112,7 @@ export default function WhyChooseUs() {
               </div>
             ))}
           </div>
-          <div className="absolute left-0 right-0 bottom-0 h-px bg-gradient-to-r from-transparent via-red/30 to-transparent"></div>
+          <div className="absolute left-0 right-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-red/50 to-transparent" style={{ maxWidth: '90%', margin: '0 auto', left: '5%', right: '5%' }}></div>
         </div>
       </Container>
     </Section>
