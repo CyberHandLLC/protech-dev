@@ -133,23 +133,41 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
       // Set submitting state
       setFormStatus({ submitted: false, error: false, message: 'Submitting...' });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare data for the API call
+      const contactData = {
+        ...formData,
+        source: 'Hero Form - Quick Contact'
+      };
       
-      // Success state
-      setFormStatus({
-        submitted: true,
-        error: false,
-        message: 'Thank you! We\'ll contact you shortly to confirm your appointment.'
+      // Send the data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
       });
       
-      // Reset form
-      setFormData(INITIAL_FORM_STATE);
+      const result = await response.json();
       
-      // Auto-reset after delay
-      setTimeout(() => {
-        setFormStatus({ submitted: false, error: false, message: '' });
-      }, 5000);
+      if (response.ok && result.success) {
+        // Success state
+        setFormStatus({
+          submitted: true,
+          error: false,
+          message: 'Thank you! We\'ll contact you shortly to confirm your appointment.'
+        });
+        
+        // Reset form
+        setFormData(INITIAL_FORM_STATE);
+        
+        // Auto-reset after delay
+        setTimeout(() => {
+          setFormStatus({ submitted: false, error: false, message: '' });
+        }, 5000);
+      } else {
+        throw new Error(result.message || 'Failed to send message');
+      }
       
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -173,7 +191,7 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
             <div className="mt-2">
               <p className="text-xs">Need immediate assistance?</p>
               <a href="tel:8005554822" className="text-sm inline-flex items-center mt-1 text-red hover:underline">
-                <span className="mr-1">📞</span> Call 800-555-HVAC
+                <span className="mr-1">📞</span> Call 330-642-HVAC
               </a>
             </div>
           )}

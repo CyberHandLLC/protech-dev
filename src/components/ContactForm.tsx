@@ -170,23 +170,41 @@ export default function ContactForm() {
       // Show sending status
       setFormStatus({ submitted: true, error: false, message: 'Sending your message...' });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare data for the API call
+      const contactData = {
+        ...formData,
+        source: 'Contact Page'
+      };
       
-      // Success state
-      setFormStatus({
-        submitted: true,
-        error: false,
-        message: 'Thank you! Your message has been sent successfully. We\'ll get back to you shortly.'
+      // Send the data to our API endpoint
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactData),
       });
       
-      // Reset form
-      setFormData(INITIAL_FORM_STATE);
+      const result = await response.json();
       
-      // Auto-reset after delay
-      setTimeout(() => {
-        setFormStatus({ submitted: false, error: false, message: '' });
-      }, 5000);
+      if (response.ok && result.success) {
+        // Success state
+        setFormStatus({
+          submitted: true,
+          error: false,
+          message: 'Thank you! Your message has been sent successfully. We\'ll get back to you shortly.'
+        });
+        
+        // Reset form
+        setFormData(INITIAL_FORM_STATE);
+        
+        // Auto-reset after delay
+        setTimeout(() => {
+          setFormStatus({ submitted: false, error: false, message: '' });
+        }, 5000);
+      } else {
+        throw new Error(result.message || 'Failed to send message');
+      }
       
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -210,7 +228,7 @@ export default function ContactForm() {
             <div className="mt-4">
               <p>Need immediate assistance?</p>
               <a href="tel:8005554822" className="inline-flex items-center mt-2 text-red hover:underline">
-                <span className="mr-2">📞</span> Call us at 800-555-HVAC
+                <span className="mr-2">📞</span> Call us at 330-642-HVAC
               </a>
             </div>
           )}
