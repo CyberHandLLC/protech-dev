@@ -3,9 +3,14 @@ import { notFound } from 'next/navigation';
 import { serviceCategories } from '@/data/serviceDataNew';
 import ServicePageContentNew from '@/components/services/ServicePageContentNew';
 import { getWeatherData } from '@/utils/weatherApi';
+import { getLocationById } from '@/utils/locationUtils';
 import { getServiceRecommendation } from '@/utils/recommendations';
 import { generateServiceMetadata } from '@/utils/metadata';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
+import { generateCanonicalUrl } from '@/utils/canonical';
+
+// Import the client wrapper component
+import ServiceDetailClientWrapper from '../../../../../../../components/services/ServiceDetailClientWrapper';
 
 // Define the type for the page params
 interface ServiceDetailPageProps {
@@ -41,6 +46,9 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
     .replace(/Oh$/, 'OH');
+    
+  // Generate canonical URL for this service
+  const canonicalPath = `/services2/${category}/${system}/${serviceType}/${item}/${location}`;
   
   return generateServiceMetadata({
     title: `${itemData.name} ${serviceTypeData.name} in ${locationName} | ProTech HVAC`,
@@ -51,7 +59,9 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
       `${itemData.name} service ${locationName}`,
       `${category} HVAC`,
       'ProTech HVAC'
-    ]
+    ],
+    path: canonicalPath,
+    imageUrl: `/images/services/${category}.jpg`
   });
 }
 
@@ -81,15 +91,23 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
     .join(' ')
     .replace(/Oh$/, 'OH');
   
-  // Get weather data for this location to provide context-aware service recommendations
-  const weatherData = await getWeatherData(location);
+  // Get location data for weather and service contextualizing
+  const locationId = getUserLocationFromHeaders()?.id || 'ohio';
   
-  // Get service recommendations based on weather conditions
-  const weatherRecommendation = getServiceRecommendation(
-    weatherData,
-    system,
-    serviceType
-  );
+  // Get default coordinates for Akron, OH if location not found
+  const defaultCoords = { latitude: 41.0814, longitude: -81.5190 };
+  
+  // Get coordinates for the specific location
+  const locationData = getLocationById(locationId.toLowerCase());
+  const coordinates = locationData ? 
+    { latitude: locationData.coordinates.lat, longitude: locationData.coordinates.lng } : 
+    defaultCoords;
+
+  // Get weather data for this location - to personalize content
+  const weatherData = await getWeatherData(coordinates.latitude, coordinates.longitude);
+  
+  // Get personalized recommended services based on weather, season, etc.
+  const recommendedServices = getServiceRecommendation(weatherData, system, serviceType);
   
   // Create the service info object
   const serviceInfo = {
@@ -115,18 +133,52 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
     locationName
   };
   
+  // Service-specific FAQs - these will be shown in the UI and included in structured data
+  const serviceFAQs = [
+    {
+      question: `How much does ${itemData.name} ${serviceTypeData.name.toLowerCase()} cost in ${locationName}?`,
+      answer: `The cost of ${itemData.name} ${serviceTypeData.name.toLowerCase()} varies based on your specific system, the complexity of the job, and any parts required. We provide free estimates and transparent pricing before any work begins.`
+    },
+    {
+      question: `How long does ${itemData.name} ${serviceTypeData.name.toLowerCase()} take?`,
+      answer: `Most ${serviceTypeData.name.toLowerCase()} services can be completed within a few hours, but more complex jobs may take longer. Our technicians will provide you with a time estimate before starting work.`
+    },
+    {
+      question: `Do you offer emergency ${itemData.name} ${serviceTypeData.name.toLowerCase()} in ${locationName}?`,
+      answer: `Yes, we offer 24/7 emergency ${serviceTypeData.name.toLowerCase()} services throughout ${locationName} and surrounding areas. Our technicians are always on call to help with urgent issues.`
+    }
+  ];
+  
+  // Create service URL for structured data
+  const serviceUrl = `/services2/${category}/${system}/${serviceType}/${item}/${location}`;
+
+  const weatherRecommendation = getServiceRecommendation(weatherData, system, serviceType);
+  
   return (
-    <ServicePageContentNew
-      serviceInfo={serviceInfo}
-      category={category}
-      system={system}
-      serviceType={serviceType}
-      item={item}
-      locationParam={location}
-      userLocation={serverLocation}
-      isLocating={false}
-      weatherData={weatherData}
-      weatherRecommendation={weatherRecommendation}
-    />
+    <ServiceDetailClientWrapper
+      serviceName={`${itemData.name} ${serviceTypeData.name} in ${locationName}`}
+      serviceDescription={`Professional ${itemData.name} ${serviceTypeData.name.toLowerCase()} services in ${locationName}. Fast, reliable service from certified HVAC technicians at ProTech HVAC.`}
+      serviceUrl={serviceUrl}
+      serviceImageUrl={`/images/services/${category}.jpg`}
+      serviceArea={locationName}
+      faqs={serviceFAQs}
+      faqTitle={`Frequently Asked Questions About ${itemData.name} ${serviceTypeData.name}`}
+      faqSubtitle={`Get answers to common questions about ${itemData.name} ${serviceTypeData.name.toLowerCase()} in ${locationName}.`}
+      mainEntity={`${itemData.name} ${serviceTypeData.name}`}
+      showVisibleFAQs={false} // Disable visible FAQs but keep schema data for SEO
+    >
+      <ServicePageContentNew
+        serviceInfo={serviceInfo}
+        category={category}
+        system={system}
+        serviceType={serviceType}
+        item={item}
+        locationParam={location}
+        userLocation={serverLocation}
+        isLocating={false}
+        weatherData={weatherData}
+        weatherRecommendation={weatherRecommendation}
+      />
+    </ServiceDetailClientWrapper>
   );
 }

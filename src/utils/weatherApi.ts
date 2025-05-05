@@ -35,22 +35,12 @@ function generateHvacTip(temp: number, condition: string, humidity: number): str
 }
 
 // Function to get real-time weather data from OpenWeatherMap API
-export async function getWeatherData(locationParam: string): Promise<WeatherData> {
-  // Map location strings to approximate coordinates
-  const locationMap: {[key: string]: {lat: number, lng: number}} = {
-    'akron-oh': {lat: 41.0814, lng: -81.5190},
-    'cleveland-oh': {lat: 41.4993, lng: -81.6944},
-    'canton-oh': {lat: 40.7989, lng: -81.3784},
-    'northeast-ohio': {lat: 41.2033, lng: -81.5000},
-    'strongsville-oh': {lat: 41.3145, lng: -81.8365},
-    'twinsburg-oh': {lat: 41.3126, lng: -81.4401},
-  };
+export async function getWeatherData(latitude: number, longitude: number): Promise<WeatherData> {
+  // Use the provided coordinates directly for weather lookup
+  const lat = latitude;
+  const lng = longitude;
   
-  // Default to Akron, OH if location not found
-  const coords = locationMap[locationParam] || {lat: 41.0814, lng: -81.5190};
-  const {lat, lng} = coords;
-  
-  console.log(`Getting real weather data for ${locationParam} (${lat}, ${lng})`);
+  console.log(`Getting real weather data for coordinates (${lat}, ${lng})`);
   
   // Try to fetch real weather data if API key is available
   const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;

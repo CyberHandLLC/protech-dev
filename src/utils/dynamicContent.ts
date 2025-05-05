@@ -95,9 +95,9 @@ export function generateLocalBusinessSchema(
       "geoRadius": "72000" // 45 miles in meters
     },
     "sameAs": [
-      "https://www.facebook.com/protechhvac",
-      "https://twitter.com/protechhvac",
-      "https://www.instagram.com/protechhvac"
+      "https://www.facebook.com/protechohio",
+      "https://twitter.com/protechohio",
+      "https://www.instagram.com/protechohio"
     ],
     "openingHoursSpecification": [
       {
