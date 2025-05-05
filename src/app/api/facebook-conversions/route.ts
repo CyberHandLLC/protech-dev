@@ -74,10 +74,11 @@ async function hashData(input: string): Promise<string> {
  */
 async function sendToFacebook(event: ConversionEvent): Promise<any> {
   const accessToken = process.env.FACEBOOK_CONVERSIONS_API_TOKEN;
-  const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
+  // Using hardcoded pixel ID from the Meta Pixel implementation
+  const pixelId = '1201375401668813';
   
-  if (!accessToken || !pixelId) {
-    throw new Error('Facebook Conversions API token or Pixel ID not configured');
+  if (!accessToken) {
+    throw new Error('Facebook Conversions API token not configured');
   }
   
   const url = `https://graph.facebook.com/v17.0/${pixelId}/events`;

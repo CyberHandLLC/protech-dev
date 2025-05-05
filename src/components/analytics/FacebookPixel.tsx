@@ -3,24 +3,15 @@
 import { useEffect } from 'react';
 import Script from 'next/script';
 
-interface FacebookPixelProps {
-  pixelId?: string;
-}
-
 /**
  * Facebook Pixel Component
  * 
- * Adds Facebook Pixel tracking code to the site
- * Reads the pixel ID from environment variables when not explicitly provided
+ * Implements the Facebook Pixel directly in the site
+ * Uses the hardcoded pixel ID from Facebook Meta Pixel implementation
  */
-export default function FacebookPixel({ pixelId }: FacebookPixelProps) {
-  const fbPixelId = pixelId || process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
-  
-  // Don't render anything if no pixel ID is available
-  if (!fbPixelId) {
-    console.warn('Facebook Pixel ID not provided. Add NEXT_PUBLIC_FACEBOOK_PIXEL_ID to your environment variables.');
-    return null;
-  }
+export default function FacebookPixel() {
+  // Using the exact pixel ID from the Facebook code snippet
+  const fbPixelId = '1201375401668813';
 
   return (
     <>

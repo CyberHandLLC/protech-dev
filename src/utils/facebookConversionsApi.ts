@@ -59,19 +59,15 @@ export interface TrackEventOptions {
   debug?: boolean;
 }
 
+// Using hardcoded Pixel ID from the Meta Pixel implementation
+const PIXEL_ID = '1201375401668813';
+
 /**
  * Initialize the Facebook Pixel (client-side)
  * This should be called once when the application loads
  */
 export function initFacebookPixel(): void {
   if (typeof window === 'undefined') return;
-  
-  const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
-  
-  if (!pixelId) {
-    console.warn('Facebook Pixel ID not configured');
-    return;
-  }
   
   // Check if fbq is already defined
   if ((window as any).fbq) return;
@@ -89,7 +85,7 @@ export function initFacebookPixel(): void {
   (window as any).fbq.version = '2.0';
   (window as any).fbq.queue = [];
   
-  (window as any).fbq('init', pixelId);
+  (window as any).fbq('init', PIXEL_ID);
 }
 
 /**

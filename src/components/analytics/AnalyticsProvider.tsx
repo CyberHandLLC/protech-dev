@@ -7,7 +7,6 @@ import { ReactNode } from 'react';
 
 interface AnalyticsProviderProps {
   children: ReactNode;
-  facebookPixelId?: string;
   instagramPixelId?: string;
   gtmId?: string;
 }
@@ -16,18 +15,17 @@ interface AnalyticsProviderProps {
  * Analytics Provider Component
  * 
  * Single component to add all tracking scripts to the application
- * All IDs default to environment variables when not explicitly provided
+ * Facebook Pixel is directly implemented with the hardcoded ID
  */
 export default function AnalyticsProvider({
   children,
-  facebookPixelId,
   instagramPixelId,
   gtmId
 }: AnalyticsProviderProps) {
   return (
     <>
       {/* Include all tracking scripts */}
-      <FacebookPixel pixelId={facebookPixelId} />
+      <FacebookPixel />
       <InstagramPixel pixelId={instagramPixelId} />
       <GoogleTagManager containerId={gtmId} />
       
