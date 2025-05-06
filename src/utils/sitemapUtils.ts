@@ -1,4 +1,5 @@
 import { serviceCategories } from '@/data/serviceDataNew';
+import { serviceLocations as actualServiceLocations } from '@/utils/locationUtils';
 
 // Define types for sitemap entries
 export type SitemapEntry = {
@@ -58,48 +59,15 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     isCanonical: true,
   }));
 
-  // Service locations from ServiceArea-Location-ZipCodes-ProTech.txt - with strict validation
-  const rawServiceLocations = [
-    // Summit County
-    { name: 'Akron', slug: 'akron-oh' },
-    { name: 'Cuyahoga Falls', slug: 'cuyahoga-falls-oh' },
-    { name: 'Stow', slug: 'stow-oh' },
-    { name: 'Tallmadge', slug: 'tallmadge-oh' },
-    { name: 'Hudson', slug: 'hudson-oh' },
-    { name: 'Norton', slug: 'norton-oh' },
-    // Medina County
-    { name: 'Medina', slug: 'medina-oh' },
-    { name: 'Wadsworth', slug: 'wadsworth-oh' },
-    { name: 'Seville', slug: 'seville-oh' },
-    { name: 'Brunswick', slug: 'brunswick-oh' },
-    { name: 'Lodi', slug: 'lodi-oh' },
-    { name: 'Rittman', slug: 'rittman-oh' },
-    // Wayne County
-    { name: 'Wooster', slug: 'wooster-oh' },
-    { name: 'Orrville', slug: 'orrville-oh' },
-    { name: 'Smithville', slug: 'smithville-oh' },
-    { name: 'Fredericksburg', slug: 'fredericksburg-oh' },
-    { name: 'Doylestown', slug: 'doylestown-oh' },
-  ];
+  // IMPORTANT: Use ONLY the actual service locations from locationUtils.ts
+  // These are the only locations that have actual pages in the application
+  const serviceLocations = actualServiceLocations.map(location => ({
+    name: location.name,
+    slug: location.id
+  }));
   
-  // Validate each location slug to ensure it's well-formed
-  const serviceLocations = rawServiceLocations
-    .filter(location => {
-      // Ensure slug exists
-      if (!location.slug) return false;
-      
-      // Make sure slug ends with '-oh' suffix
-      if (!location.slug.endsWith('-oh')) return false;
-      
-      // Validate slug format - only allow lowercase letters, numbers, and hyphens
-      const validSlugPattern = /^[a-z0-9-]+$/;
-      if (!validSlugPattern.test(location.slug)) return false;
-      
-      // Make sure slug has reasonable length (not too short or too long)
-      if (location.slug.length < 4 || location.slug.length > 30) return false;
-      
-      return true;
-    });
+  // Log the actual valid locations for debugging
+  console.log('Valid service locations for sitemap:', serviceLocations.map(l => l.slug).join(', '));
   
   // Generate location pages with extra validation
   const locationPages: SitemapEntry[] = [];
