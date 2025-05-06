@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import PhoneLink from './PhoneLink';
 import { quickLinks, legalLinks, socialPlatforms, serviceCategories } from '@/data/footerData';
 
 export default function Footer() {
@@ -11,9 +12,9 @@ export default function Footer() {
       icon: '📞',
       title: 'Phone',
       content: (
-        <a href="tel:8005554822" className="text-ivory/90 hover:text-red-light transition-colors">
+        <PhoneLink className="text-ivory/90 hover:text-red-light transition-colors" source="Footer">
           330-642-HVAC (4822)
-        </a>
+        </PhoneLink>
       )
     },
     {

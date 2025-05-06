@@ -18,6 +18,9 @@ export function useFacebookEvents() {
   // Initialize Facebook Pixel on mount
   useEffect(() => {
     initFacebookPixel();
+    
+    // Track PageView for the current page on first load
+    trackEvent(FacebookEventName.PAGE_VIEW);
   }, []);
   
   /**
@@ -76,6 +79,35 @@ export function useFacebookEvents() {
     return trackEvent(eventName, options);
   };
   
+  /**
+   * Track when a user views a product or service detail page
+   */
+  const trackViewContent = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    return trackEvent(FacebookEventName.VIEW_CONTENT, options);
+  };
+  
+  /**
+   * Track when a user initiates a quote request or checkout-like process
+   */
+  const trackInitiateCheckout = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    return trackEvent(FacebookEventName.INITIATE_CHECKOUT, options);
+  };
+  
+  /**
+   * Track when a user clicks a phone number to call
+   */
+  const trackPhoneClick = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Using 'Contact' event for phone clicks as it's most appropriate
+    return trackEvent(FacebookEventName.CONTACT, {
+      ...options,
+      customData: {
+        ...options.customData,
+        contentCategory: 'Phone Call',
+        contentType: 'phone_click'
+      }
+    });
+  };
+
   return {
     trackLead,
     trackFormSubmission,
@@ -83,5 +115,8 @@ export function useFacebookEvents() {
     trackSchedule,
     trackServiceView,
     trackCustomEvent,
+    trackViewContent,
+    trackInitiateCheckout,
+    trackPhoneClick
   };
 }

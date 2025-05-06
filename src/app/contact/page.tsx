@@ -3,6 +3,12 @@ import Link from 'next/link';
 import ContactForm from '@/components/ContactForm';
 import PageLayout from '@/components/PageLayout';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for client-side tracking component
+const ContactPageWrapper = dynamic(() => import('@/components/contact/ContactPageWrapper'), {
+  ssr: false
+});
 
 // Helper function for generating section headers with consistent styling
 const SectionHeader = ({ accentText, title, subtitle, centered = true }: { accentText: string; title: string; subtitle?: string; centered?: boolean }) => (
@@ -31,9 +37,10 @@ export default function ContactPage() {
 
   return (
     <PageLayout>
-      {/* Hero section with dark navy background */}
-      <section className="bg-navy py-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
+      <ContactPageWrapper>
+        {/* Hero section with dark navy background */}
+        <section className="bg-navy py-20 px-4">
+          <div className="max-w-7xl mx-auto text-center">
           <div className="inline-block mb-4">
             <div className="h-1 w-24 bg-red mx-auto mb-3"></div>
             <span className="text-red-light uppercase text-sm tracking-wider font-medium">Get in Touch</span>
@@ -173,77 +180,8 @@ export default function ContactPage() {
               </a>
             </div>
           </div>
-        </div>
-      </section>
-      
-      {/* FAQ Section */}
-      <section className="py-16 px-4 md:px-8 bg-navy">
-        <div className="max-w-5xl mx-auto">
-          <SectionHeader 
-            accentText="Questions & Answers" 
-            title="Frequently Asked Questions" 
-          />
-          
-          <div className="space-y-4">
-            {[
-              {
-                question: 'How quickly can you respond to service requests?',
-                answer: 'For emergency service, we typically respond within 1-2 hours. For standard service requests, we can usually schedule an appointment within 24-48 hours, depending on the season and current demand.'
-              },
-              {
-                question: 'Do you provide free estimates?',
-                answer: 'Yes, we provide free estimates for new system installations and replacements. For repairs, there is a standard diagnostic fee that gets applied toward the cost of repairs if you choose to proceed.'
-              },
-              {
-                question: 'What areas do you service?',
-                answer: 'We provide service throughout Northeast Ohio, including Akron, Cleveland, Canton, and surrounding communities. Contact us to confirm if your location is within our service area.'
-              },
-              {
-                question: 'Do you offer financing options?',
-                answer: 'Yes, we offer flexible financing options for system replacements and major repairs. Our team can help you understand the available plans and find one that fits your budget.'
-              },
-            ].map((faq, index) => (
-              <div key={index} className="border border-dark-blue-light bg-dark-blue rounded-lg overflow-hidden group">
-                <details className="group/details">
-                  <summary className="flex justify-between items-center p-5 cursor-pointer font-medium text-white group-hover:text-red transition-colors">
-                    <span>{faq.question}</span>
-                    <span className="transition-transform group-open/details:rotate-180 text-red">▼</span>
-                  </summary>
-                  <div className="p-5 border-t border-dark-blue-light">
-                    <p className="text-ivory/80">{faq.answer}</p>
-                  </div>
-                </details>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      {/* CTA Section */}
-      <section className="py-12 px-4 md:px-8 bg-gradient-to-br from-navy to-dark-blue">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-ivory mb-4">
-            Ready to Experience ProTech Quality?
-          </h2>
-          <p className="text-ivory/90 mb-8 max-w-2xl mx-auto">
-            Our team of certified technicians is just a call or click away. Contact us today for all your heating and cooling needs.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a 
-              href="tel:8005554822" 
-              className="bg-red text-white hover:bg-red-dark transition-colors px-8 py-4 rounded-lg font-medium"
-            >
-              Call: 330-642-HVAC
-            </a>
-            <Link 
-              href="#contact-form" 
-              className="bg-white/20 text-ivory hover:bg-white/30 transition-colors px-8 py-4 rounded-lg font-medium border border-white/40"
-            >
-              Send a Message
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      </ContactPageWrapper>
     </PageLayout>
   );
 }

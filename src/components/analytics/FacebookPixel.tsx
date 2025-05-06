@@ -28,6 +28,16 @@ export default function FacebookPixel() {
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '${fbPixelId}');
           fbq('track', 'PageView');
+          
+          // Add test event code for Facebook's Test Events tool
+          if (typeof window !== 'undefined') {
+            window.fbq('set', 'autoConfig', false, '${fbPixelId}');
+            window.fbq('set', 'agent', 'tmgoogletagmanager', '${fbPixelId}');
+            window.fbq('set', 'experimentsConfig', {}, '${fbPixelId}');
+            
+            // This is the test event code from your Facebook Test Events tool
+            window.fbq('test', '${fbPixelId}', 'TEST69110');
+          }
         `}
       </Script>
       
