@@ -1,33 +1,48 @@
 'use client';
 
+import { ReactNode } from 'react';
+
+// Social Media Tracking
 import FacebookPixel from './FacebookPixel';
 import InstagramPixel from './InstagramPixel';
+
+// Google Tracking Suite
 import GoogleTagManager from './GoogleTagManager';
-import { ReactNode } from 'react';
+import GoogleAnalytics from './GoogleAnalytics';
+import GoogleAdsConversion from './GoogleAdsConversion';
 
 interface AnalyticsProviderProps {
   children: ReactNode;
   instagramPixelId?: string;
   gtmId?: string;
+  ga4Id?: string;
+  googleAdsId?: string;
 }
 
 /**
  * Analytics Provider Component
  * 
- * Single component to add all tracking scripts to the application
- * Facebook Pixel is directly implemented with the hardcoded ID
+ * Comprehensive tracking solution for ProTech HVAC website
+ * Includes Facebook Pixel, Google Tag Manager, Google Analytics 4, and Google Ads
+ * All IDs are hardcoded in their respective components for simplicity
  */
 export default function AnalyticsProvider({
   children,
   instagramPixelId,
-  gtmId
+  gtmId,
+  ga4Id,
+  googleAdsId
 }: AnalyticsProviderProps) {
   return (
     <>
-      {/* Include all tracking scripts */}
+      {/* Google Tracking Stack */}
+      <GoogleTagManager containerId={gtmId} />
+      <GoogleAnalytics measurementId={ga4Id} />
+      <GoogleAdsConversion conversionId={googleAdsId} />
+      
+      {/* Social Media Tracking */}
       <FacebookPixel />
       <InstagramPixel pixelId={instagramPixelId} />
-      <GoogleTagManager containerId={gtmId} />
       
       {/* Render the application */}
       {children}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Script from 'next/script';
 
 interface GoogleTagManagerProps {
@@ -10,16 +11,31 @@ interface GoogleTagManagerProps {
  * Google Tag Manager Component
  * 
  * Adds Google Tag Manager tracking code to the site
- * Reads the GTM container ID from environment variables when not explicitly provided
+ * Uses hardcoded GTM ID: GTM-WX73MVDZ for ProTech HVAC
  */
 export default function GoogleTagManager({ containerId }: GoogleTagManagerProps) {
-  const gtmId = containerId || process.env.NEXT_PUBLIC_GTM_ID;
+  // Hardcoded GTM ID for ProTech HVAC
+  const gtmId = containerId || 'GTM-WX73MVDZ';
   
-  // Don't render anything if no container ID is available
-  if (!gtmId) {
-    console.warn('Google Tag Manager ID not provided. Add NEXT_PUBLIC_GTM_ID to your environment variables.');
-    return null;
-  }
+  // Initialize dataLayer
+  useEffect(() => {
+    // Create dataLayer if it doesn't exist
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || [];
+      
+      // Push initial pageview to dataLayer
+      window.dataLayer.push({
+        'event': 'pageview',
+        'page': {
+          'title': document.title,
+          'location': window.location.href,
+          'path': window.location.pathname
+        }
+      });
+      
+      console.log('Google Tag Manager initialized with ID:', gtmId);
+    }
+  }, [gtmId]);
 
   return (
     <>
