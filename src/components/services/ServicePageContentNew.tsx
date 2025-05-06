@@ -109,8 +109,8 @@ export default function ServicePageContentNew({
                   <p className="text-ivory/90 mb-2 text-sm">
                     Our certified technicians are ready to assist with your {serviceInfo.item.name.toLowerCase()} {serviceInfo.serviceType.name.toLowerCase()}.
                   </p>
-                  <a href="tel:330-555-1234" className="block w-full bg-red hover:bg-red-dark text-white font-bold py-3 px-4 rounded text-center transition-colors">
-                    Call (330) 555-1234
+                  <a href="tel:330-642-4822" className="block w-full bg-red hover:bg-red-dark text-white font-bold py-3 px-4 rounded text-center transition-colors">
+                    Call (330) 642-HVAC (4822)
                   </a>
                 </div>
               </div>
@@ -350,7 +350,7 @@ export default function ServicePageContentNew({
                           type="tel"
                           id="phone"
                           className="w-full px-4 py-2 rounded bg-dark-blue border border-dark-blue-light text-white focus:outline-none focus:ring-2 focus:ring-red"
-                          placeholder="(330) 555-1234"
+                          placeholder="(330) 000-0000"
                         />
                       </div>
                       

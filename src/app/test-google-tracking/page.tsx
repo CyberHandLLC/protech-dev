@@ -27,8 +27,8 @@ export default function TestGoogleTrackingPage() {
             This implementation includes a complete Google tracking stack:
           </p>
           <ul className="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>Google Tag Manager (GTM)</strong> - Container ID: GTM-WX73MVDZ</li>
-            <li><strong>Google Analytics 4 (GA4)</strong> - Measurement ID: G-2HMFW5B93T</li>
+            <li><strong>Google Tag Manager (GTM)</strong> - Container ID: GTM-T6QSRR5H</li>
+            <li><strong>Google Analytics 4 (GA4)</strong> - Measurement ID: G-7H1V0PZ9YV</li>
             <li><strong>Google Ads Conversion Tracking</strong> - Conversion ID: AW-11287044712</li>
           </ul>
           <p className="mb-4">

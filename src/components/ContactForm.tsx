@@ -291,7 +291,7 @@ export default function ContactForm() {
           {isSuccess && (
             <div className="mt-4">
               <p>Need immediate assistance?</p>
-              <a href="tel:8005554822" className="inline-flex items-center mt-2 text-red hover:underline">
+              <a href="tel:3306424822" className="inline-flex items-center mt-2 text-red hover:underline">
                 <span className="mr-2">📞</span> Call us at 330-642-HVAC
               </a>
             </div>

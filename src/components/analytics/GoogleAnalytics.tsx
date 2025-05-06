@@ -8,7 +8,7 @@ interface GoogleAnalyticsProps {
   measurementId?: string;
 }
 
-/**
+/**                                                                                                                                                                                                                                                                                                                                                                                                                                     
  * Google Analytics 4 Component
  * 
  * Implements Google Analytics 4 with direct GA4 tag and through Tag Manager
