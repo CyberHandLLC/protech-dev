@@ -1,13 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import PageLayout from '@/components/PageLayout';
-import dynamic from 'next/dynamic';
-
-// Dynamically import the client-side component
-const GoogleTrackingTesterClient = dynamic(
-  () => import('./GoogleTrackingTesterClient'),
-  { ssr: false }
-);
+import GoogleTrackingTesterClient from './GoogleTrackingTesterClient';
 
 export const metadata: Metadata = {
   title: 'Google Tracking Tester | ProTech HVAC',
