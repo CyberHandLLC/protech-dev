@@ -14,12 +14,21 @@ export default function FacebookPixel() {
   // Using the exact pixel ID from the Facebook code snippet
   const fbPixelId = '1201375401668813';
 
-  // Add inline initialization to ensure pixel loads even if the Script component fails
+  // Single source of truth for pixel initialization to prevent duplication
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return;
     
+    // Flag to prevent duplicate initialization
+    let hasFiredPageView = false;
+    
     try {
+      // Track if we've already fired our PageView event
+      if ((window as any)._fbPixelFired) {
+        console.log('Facebook Pixel already initialized, skipping duplicate init');
+        return;
+      }
+      
       // Force initialization and PageView tracking
       const initPixel = () => {
         // Initialize fbq if needed
@@ -38,14 +47,20 @@ export default function FacebookPixel() {
           (window as any).fbq.queue = [];
         }
         
-        // Initialize with your Pixel ID (even if already done, this is safe)
-        (window as any).fbq('init', fbPixelId);
+        // Initialize with your Pixel ID - do this only once
+        if (!hasFiredPageView) {
+          (window as any).fbq('init', fbPixelId);
+          
+          // Set global flag to prevent duplicate firing
+          (window as any)._fbPixelFired = true;
+          hasFiredPageView = true;
+          
+          // Explicitly track PageView with debug info
+          console.log('Manually firing PageView event');
+          (window as any).fbq('track', 'PageView', {}, {eventID: `pv_${Date.now()}`});
+        }
         
-        // Explicitly track PageView with debug info
-        console.log('Manually firing PageView event');
-        (window as any).fbq('track', 'PageView', {}, {eventID: `pv_${Date.now()}`});
-        
-        // Add test event code
+        // Add test event code - this must come after initialization
         (window as any).fbq('set', 'autoConfig', false, fbPixelId);
         (window as any).fbq('test', fbPixelId, 'TEST69110');
       };
@@ -59,6 +74,14 @@ export default function FacebookPixel() {
         script.onload = () => {
           console.log('Facebook Pixel script loaded');
           initPixel();
+          
+          // Force test event to fire after script is loaded
+          setTimeout(() => {
+            if ((window as any).fbq) {
+              (window as any).fbq('test', fbPixelId, 'TEST69110');
+              console.log('Test event fired after script load: TEST69110');
+            }
+          }, 500);
         };
         document.head.appendChild(script);
       } else {
@@ -66,13 +89,7 @@ export default function FacebookPixel() {
         initPixel();
       }
       
-      // Ensure PageView is fired, even if delayed
-      setTimeout(() => {
-        if ((window as any).fbq) {
-          (window as any).fbq('track', 'PageView', {}, {eventID: `pv_delayed_${Date.now()}`});
-          console.log('Delayed PageView fired as backup');
-        }
-      }, 1500);
+      // DO NOT fire a second PageView to prevent duplicates
     } catch (error) {
       console.error('Error initializing Facebook Pixel:', error);
     }
