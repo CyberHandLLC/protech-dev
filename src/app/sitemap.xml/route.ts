@@ -1,40 +1,39 @@
-import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 import { serviceCategories } from '@/data/serviceDataNew';
 
 /**
- * Generates a sitemap for the website with XSL styling
- * This helps search engines discover and crawl all your pages
- * Updated for 2025 SEO best practices with added stylesheet
+ * Custom XML sitemap route handler
+ * Generates a sitemap with XSL stylesheet reference for better user experience
+ * Built specifically for ProTech HVAC website according to 2025 SEO best practices
  */
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://protech-ohio.com'; // Correct domain name with no email or address
-  const currentDate = new Date();
+export async function GET(request: NextRequest) {
+  const baseUrl = 'https://protech-ohio.com'; // Domain name
+  const currentDate = new Date().toISOString();
   
   // Core pages
   const staticPages = [
     {
       url: `${baseUrl}`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,
-      changeFrequency: 'monthly' as const,
+      changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/services2`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${baseUrl}/contact`,
       lastModified: currentDate,
-      changeFrequency: 'monthly' as const,
+      changeFrequency: 'monthly',
       priority: 0.8,
     },
   ];
@@ -43,12 +42,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const serviceCategoryPages = serviceCategories.map(category => ({
     url: `${baseUrl}/services2?category=${category.id}`,
     lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
+    changeFrequency: 'weekly',
     priority: 0.7,
   }));
 
   // Service locations from ServiceArea-Location-ZipCodes-ProTech.txt
-  // Use our comprehensive service area information
   const serviceLocations = [
     // Summit County
     { name: 'Akron', slug: 'akron-oh' },
@@ -72,18 +70,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { name: 'Doylestown', slug: 'doylestown-oh' },
   ];
   
-  // Location specific pages (higher priority for SEO)
+  // Location specific pages
   const locationPages = serviceLocations.map(location => ({
     url: `${baseUrl}/services2?location=${location.slug}`,
     lastModified: currentDate,
-    changeFrequency: 'weekly' as const,
+    changeFrequency: 'weekly',
     priority: 0.8,
   }));
   
-  // Generate service detail pages - the most important for SEO and lead generation
-  const serviceDetailPages: MetadataRoute.Sitemap = [];
+  // Generate service detail pages
+  const serviceDetailPages = [];
   
-  // Loop through all possible service combinations to create detailed pages
+  // Loop through all possible service combinations
   serviceCategories.forEach(category => {
     category.systems.forEach(system => {
       system.serviceTypes.forEach(serviceType => {
@@ -93,8 +91,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
             serviceDetailPages.push({
               url: `${baseUrl}/services2/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
               lastModified: currentDate,
-              changeFrequency: 'weekly' as const,
-              priority: 0.9, // High priority for service detail pages
+              changeFrequency: 'weekly',
+              priority: 0.9,
             });
           });
         });
@@ -103,11 +101,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
   });
 
   // Combine all pages
-  return [
-    // Most important pages first (for crawler efficiency)
+  const allPages = [
     ...serviceDetailPages,
     ...staticPages, 
     ...serviceCategoryPages,
     ...locationPages,
   ];
+
+  // Generate XML with stylesheet reference
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ';
+  xml += 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
+  xml += 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n';
+  
+  // Add each URL to the sitemap
+  allPages.forEach(page => {
+    xml += '  <url>\n';
+    xml += `    <loc>${page.url}</loc>\n`;
+    xml += `    <lastmod>${page.lastModified}</lastmod>\n`;
+    xml += `    <changefreq>${page.changeFrequency}</changefreq>\n`;
+    xml += `    <priority>${page.priority}</priority>\n`;
+    xml += '  </url>\n';
+  });
+  
+  xml += '</urlset>';
+
+  // Return the XML sitemap with proper headers
+  return new NextResponse(xml, {
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=86400, s-maxage=86400'
+    }
+  });
 }

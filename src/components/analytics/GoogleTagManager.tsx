@@ -1,45 +1,126 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import Script from 'next/script';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface GoogleTagManagerProps {
   containerId?: string;
 }
 
+// Define HVAC business specific event types
+type HVACConversionEvent = 
+  | 'appointment_scheduled'
+  | 'service_call_requested' 
+  | 'quote_requested'
+  | 'phone_call'
+  | 'form_submitted'
+  | 'emergency_service';
+
+// Define window interface for TypeScript
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 /**
- * Google Tag Manager Component
+ * Enhanced Google Tag Manager Component for HVAC Business
  * 
- * Adds Google Tag Manager tracking code to the site
+ * Implements optimized conversion tracking for HVAC services
  * Uses hardcoded GTM ID: GTM-T6QSRR5H for ProTech HVAC
+ * Updated for 2025 best practices with Next.js App Router
  */
 export default function GoogleTagManager({ containerId }: GoogleTagManagerProps) {
   // Hardcoded GTM ID for ProTech HVAC
   const gtmId = containerId || 'GTM-T6QSRR5H';
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   
-  // Initialize dataLayer
+  // Page view event handler with route change detection
   useEffect(() => {
-    // Create dataLayer if it doesn't exist
-    if (typeof window !== 'undefined') {
-      window.dataLayer = window.dataLayer || [];
-      
-      // Push initial pageview to dataLayer
-      window.dataLayer.push({
-        'event': 'pageview',
-        'page': {
-          'title': document.title,
-          'location': window.location.href,
-          'path': window.location.pathname
-        }
-      });
-      
-      console.log('Google Tag Manager initialized with ID:', gtmId);
+    if (typeof window === 'undefined') return;
+    
+    // Initialize dataLayer if it doesn't exist
+    window.dataLayer = window.dataLayer || [];
+    
+    // Push initial pageview to dataLayer with enhanced data
+    window.dataLayer.push({
+      'event': 'page_view',
+      'page': {
+        'title': document.title,
+        'location': window.location.href,
+        'path': pathname,
+        'referrer': document.referrer,
+        'query_params': Object.fromEntries(searchParams.entries())
+      },
+      'user': {
+        'client_id': getClientId()
+      },
+      'timestamp': new Date().toISOString()
+    });
+    
+    console.log('Google Tag Manager initialized with ID:', gtmId);
+  }, [gtmId, pathname, searchParams]);
+  
+  // Helper function to get Google Analytics client ID
+  const getClientId = () => {
+    try {
+      const gaCookie = document.cookie.split(';').find(c => c.trim().startsWith('_ga='));
+      if (gaCookie) {
+        return gaCookie.split('.').slice(-2).join('.');
+      }
+      return 'unknown';
+    } catch (e) {
+      return 'unknown';
     }
-  }, [gtmId]);
+  };
+  
+  // HVAC-specific conversion event tracking function
+  const trackHVACConversion = useCallback((
+    eventName: HVACConversionEvent, 
+    eventData: Record<string, any> = {}
+  ) => {
+    if (typeof window === 'undefined') return;
+    
+    // Standard data for all HVAC conversion events
+    const baseEventData = {
+      timestamp: new Date().toISOString(),
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: pathname
+    };
+    
+    // Push enhanced conversion event to dataLayer
+    window.dataLayer.push({
+      event: eventName,
+      hvac_data: {
+        ...baseEventData,
+        ...eventData,
+        service_area: eventData.service_area || 'Ohio',
+        service_type: eventData.service_type || 'general'
+      }
+    });
+    
+    console.log(`HVAC Conversion tracked: ${eventName}`, eventData);
+  }, [pathname]);
+  
+  // Add trackHVACConversion function to window for global access
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).trackHVACConversion = trackHVACConversion;
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).trackHVACConversion;
+      }
+    };
+  }, [trackHVACConversion]);
 
   return (
     <>
-      {/* Google Tag Manager script */}
+      {/* Google Tag Manager script - optimized for 2025 */}
       <Script id="google-tag-manager" strategy="afterInteractive">
         {`
           (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
