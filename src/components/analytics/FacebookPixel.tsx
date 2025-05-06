@@ -20,40 +20,59 @@ export default function FacebookPixel() {
     if (typeof window === 'undefined') return;
     
     try {
-      // Initialize Facebook Pixel if it hasn't been initialized yet
-      if (!(window as any).fbq) {
-        console.log('Initializing Facebook Pixel directly from useEffect');
-        // Initialize fbq
-        (window as any).fbq = function() {
-          (window as any).fbq.callMethod ? 
-            (window as any).fbq.callMethod.apply((window as any).fbq, arguments) : 
-            (window as any).fbq.queue.push(arguments);
-        };
+      // Force initialization and PageView tracking
+      const initPixel = () => {
+        // Initialize fbq if needed
+        if (!(window as any).fbq) {
+          console.log('Initializing Facebook Pixel directly from useEffect');
+          (window as any).fbq = function() {
+            (window as any).fbq.callMethod ? 
+              (window as any).fbq.callMethod.apply((window as any).fbq, arguments) : 
+              (window as any).fbq.queue.push(arguments);
+          };
+          
+          if (!(window as any)._fbq) (window as any)._fbq = (window as any).fbq;
+          (window as any).fbq.push = (window as any).fbq;
+          (window as any).fbq.loaded = true;
+          (window as any).fbq.version = '2.0';
+          (window as any).fbq.queue = [];
+        }
         
-        if (!(window as any)._fbq) (window as any)._fbq = (window as any).fbq;
-        (window as any).fbq.push = (window as any).fbq;
-        (window as any).fbq.loaded = true;
-        (window as any).fbq.version = '2.0';
-        (window as any).fbq.queue = [];
-        
-        // Load the Facebook Pixel script
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-        document.head.appendChild(script);
-        
-        // Initialize with your Pixel ID
+        // Initialize with your Pixel ID (even if already done, this is safe)
         (window as any).fbq('init', fbPixelId);
-        // Track PageView event on each page load
-        (window as any).fbq('track', 'PageView');
+        
+        // Explicitly track PageView with debug info
+        console.log('Manually firing PageView event');
+        (window as any).fbq('track', 'PageView', {}, {eventID: `pv_${Date.now()}`});
         
         // Add test event code
         (window as any).fbq('set', 'autoConfig', false, fbPixelId);
-        (window as any).fbq('set', 'agent', 'tmgoogletagmanager', fbPixelId);
         (window as any).fbq('test', fbPixelId, 'TEST69110');
-        
-        console.log('Facebook Pixel initialized successfully');
+      };
+      
+      // Load the Facebook Pixel script if not already loaded
+      if (!document.getElementById('fb-pixel-script')) {
+        const script = document.createElement('script');
+        script.id = 'fb-pixel-script';
+        script.async = true;
+        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
+        script.onload = () => {
+          console.log('Facebook Pixel script loaded');
+          initPixel();
+        };
+        document.head.appendChild(script);
+      } else {
+        // Script already loaded, just initialize
+        initPixel();
       }
+      
+      // Ensure PageView is fired, even if delayed
+      setTimeout(() => {
+        if ((window as any).fbq) {
+          (window as any).fbq('track', 'PageView', {}, {eventID: `pv_delayed_${Date.now()}`});
+          console.log('Delayed PageView fired as backup');
+        }
+      }, 1500);
     } catch (error) {
       console.error('Error initializing Facebook Pixel:', error);
     }
@@ -89,17 +108,16 @@ export default function FacebookPixel() {
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '${fbPixelId}');
-          fbq('track', 'PageView');
+          fbq('track', 'PageView', {}, {eventID: 'pv_init_script'});
           
           // Add test event code for Facebook's Test Events tool
           if (typeof window !== 'undefined') {
             window.fbq('set', 'autoConfig', false, '${fbPixelId}');
             window.fbq('set', 'agent', 'tmgoogletagmanager', '${fbPixelId}');
-            window.fbq('set', 'experimentsConfig', {}, '${fbPixelId}');
             
             // This is the test event code from your Facebook Test Events tool
             window.fbq('test', '${fbPixelId}', 'TEST69110');
-            console.log('Facebook Pixel script loaded and initialized');
+            console.log('Facebook Pixel script loaded with explicit PageView event');
           }
         `}
       </Script>

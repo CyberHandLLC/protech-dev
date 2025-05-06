@@ -68,6 +68,12 @@ export const TrackingProvider: React.FC<{ children: ReactNode }> = ({ children }
       return false;
     }
 
+    // Special case: Always allow standard page_view events to prevent Facebook Pixel issues
+    // This ensures basic PageView events are never blocked, while still preventing duplicates of custom events
+    if (eventType === 'page_view' && (!contentName || contentName === 'PageView')) {
+      return true;
+    }
+
     const eventId = generateEventId(eventType, contentName, uniqueId);
     const now = Date.now();
     

@@ -124,12 +124,25 @@ function trackWithPixel(
 ): void {
   if (typeof window === 'undefined') return;
   
-  const fbq = (window as any).fbq;
-  
-  if (!fbq) {
-    console.warn('Facebook Pixel not initialized');
-    return;
+  // Make sure Facebook Pixel is initialized
+  if (!(window as any).fbq) {
+    // Initialize fbq if it doesn't exist
+    (window as any).fbq = function() {
+      (window as any).fbq.callMethod 
+        ? (window as any).fbq.callMethod.apply((window as any).fbq, arguments) 
+        : (window as any).fbq.queue.push(arguments);
+    };
+    
+    if (!(window as any)._fbq) (window as any)._fbq = (window as any).fbq;
+    (window as any).fbq.push = (window as any).fbq;
+    (window as any).fbq.loaded = true;
+    (window as any).fbq.version = '2.0';
+    (window as any).fbq.queue = [];
+    
+    console.log('Facebook Pixel initialized on demand');
   }
+  
+  const fbq = (window as any).fbq;
   
   // Convert customData to format expected by fbq
   const pixelCustomData: Record<string, any> = {};
