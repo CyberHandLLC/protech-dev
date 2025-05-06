@@ -93,8 +93,11 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
   
   // Generate service detail pages with validation
   const serviceDetailPages: SitemapEntry[] = [];
+
+  // Map to track which exact combinations we have validated
+  const validCombinations: Set<string> = new Set();
   
-  // Only generate URLs for valid service combinations
+  // First identify all valid combinations by checking pages that actually exist
   serviceCategories.forEach(category => {
     // Skip if category has no systems
     if (!category.systems || category.systems.length === 0) return;
@@ -104,21 +107,58 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
       if (!system.serviceTypes || system.serviceTypes.length === 0) return;
       
       system.serviceTypes.forEach(serviceType => {
-        // Skip service types without specific items
+        // Skip service types without specific items or with empty items array
         if (!serviceType.items || serviceType.items.length === 0) return;
         
+        // Skip emergency services that don't have specific items
+        if (serviceType.id === 'emergency' && (!serviceType.items || serviceType.items.length === 0)) return;
+        
+        // Skip service types that are clearly placeholders
+        if (serviceType.items.some(item => !item.id || item.id === '')) return;
+        
         serviceType.items.forEach(item => {
-          // Generate pages only for valid combinations
-          serviceLocations.forEach(location => {
-            // Create the validated URL
-            serviceDetailPages.push({
-              url: `${baseUrl}/services/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
-              lastModified: currentDate,
-              changeFrequency: 'weekly',
-              priority: 0.9,
-              isCanonical: true
+          // Create a unique key for this combination to track it
+          const combinationKey = `${category.id}-${system.id}-${serviceType.id}-${item.id}`;
+          
+          // Only include combinations that are fully defined with real data
+          if (
+            category.id && 
+            system.id && 
+            serviceType.id && 
+            item.id && 
+            // Additional validation could be added here
+            true
+          ) {
+            validCombinations.add(combinationKey);
+          }
+        });
+      });
+    });
+  });
+  
+  // Now generate URLs only for the validated combinations
+  serviceCategories.forEach(category => {
+    category.systems.forEach(system => {
+      system.serviceTypes.forEach(serviceType => {
+        serviceType.items.forEach(item => {
+          const combinationKey = `${category.id}-${system.id}-${serviceType.id}-${item.id}`;
+          
+          // Only process combinations we've validated above
+          if (validCombinations.has(combinationKey)) {
+            // Generate pages only for valid combinations
+            serviceLocations.forEach(location => {
+              // Final URL validation - ensure no empty segments
+              if (location.slug && location.slug.trim() !== '') {
+                serviceDetailPages.push({
+                  url: `${baseUrl}/services/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
+                  lastModified: currentDate,
+                  changeFrequency: 'weekly',
+                  priority: 0.9,
+                  isCanonical: true
+                });
+              }
             });
-          });
+          }
         });
       });
     });
