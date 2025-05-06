@@ -13,6 +13,7 @@ import {
   expandedServiceLocations 
 } from '@/utils/expandedLocationUtils';
 import { getWeatherData, type WeatherData } from '@/utils/weatherUtils';
+import { getLocationSpecificData } from '@/data/locationSpecificData';
 import { generateLocationMetadata } from '@/utils/metadata';
 import { generateCanonicalUrl } from '@/utils/canonical';
 import { serviceCategories } from '@/data/serviceDataNew';
@@ -82,6 +83,9 @@ export default async function LocationServicesPage({ params }: LocationPageProps
   // Get real-time weather data - makes each page unique
   const weatherData = await getWeatherData(coordinates.lat, coordinates.lng);
   
+  // Get location-specific building and regulatory data
+  const locationSpecificData = getLocationSpecificData(location);
+  
   // Determine season-specific HVAC concerns
   const seasonalConcerns = isSummer ? [
     'AC efficiency in high humidity',
@@ -99,7 +103,7 @@ export default async function LocationServicesPage({ params }: LocationPageProps
   const weatherTips = weatherData ? generateWeatherSpecificTips(weatherData, locationName) : [];
   
   // Get county info - important for local relevance
-  const countyName = locationInfo?.county || getCountyFromSlug(location) || 'Northeast Ohio';
+  const countyName = locationInfo?.county || locationSpecificData.county || getCountyFromSlug(location) || 'Northeast Ohio';
   
   // Generate unique, location-specific FAQs incorporating local weather
   const locationFAQs = [
@@ -149,7 +153,7 @@ export default async function LocationServicesPage({ params }: LocationPageProps
     } else if (conditions.includes('snow')) {
       tips.push(`With snow in ${locationName}, ensure your outdoor heating unit is clear of snow and ice for safe, efficient operation.`);
     } else if (conditions.includes('clear') && temp > 75) {
-      tips.push(`Clear, sunny days in ${locationName} can heat up your home quickly. Ensure your AC is tuned up for peak efficiency.`);
+      tips.push(`Clear skies and warm temperatures in ${locationName} today mean your AC might be working overtime. Ensure your system is properly maintained.`);
     }
     
     return tips;
@@ -220,18 +224,106 @@ export default async function LocationServicesPage({ params }: LocationPageProps
               )}
               
               {/* Seasonal-specific content */}
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold text-red mb-3">
-                  {isSummer ? 'Summer' : 'Winter'} HVAC Priorities for {locationName} Residents
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-red mb-3">
+                  Common HVAC Concerns for {locationName} Homes {isSummer ? 'This Summer' : 'This Winter'}
                 </h3>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {seasonalConcerns.map((concern, index) => (
                     <li key={index} className="flex items-start">
-                      <span className="text-red mr-2 mt-1">✓</span>
+                      <div className="flex-shrink-0 text-red text-xl mr-2">✔</div>
                       <span className="text-ivory">{concern}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
+              
+              {/* Location-specific building challenges - unique to each location */}
+              <div className="mt-8 border-t border-navy-darker pt-6">
+                <h3 className="text-lg font-semibold text-red mb-3">
+                  HVAC Challenges Specific to {locationName} Buildings
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 text-ivory">
+                  <div>
+                    <h4 className="font-medium text-red-light mb-2">Local Building Types</h4>
+                    <p className="mb-2">
+                      {locationName} is characterized by its {locationSpecificData.building.commonArchitectures.slice(0, 3).join(', ')} architecture, 
+                      with {locationSpecificData.building.typicalAge.toLowerCase()}.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-red-light mb-2">Climate Factors</h4>
+                    <p className="mb-2">
+                      With temperatures ranging from {locationSpecificData.climate.annualTemperatureRange} and 
+                      {locationSpecificData.climate.avgHumidity} average humidity, {locationName} homes require 
+                      specialized HVAC approaches.
+                    </p>
+                  </div>
+                </div>
+                
+                <h4 className="font-medium text-red-light mb-2">Top HVAC Challenges in {locationName}</h4>
+                <ul className="mb-4">
+                  {locationSpecificData.building.commonIssues.map((issue, index) => (
+                    <li key={index} className="flex items-start mb-2">
+                      <div className="flex-shrink-0 text-red-light mr-2">•</div>
+                      <span className="text-ivory">{issue}</span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <h4 className="font-medium text-red-light mb-2">Weather Considerations</h4>
+                <ul className="mb-4">
+                  {locationSpecificData.climate.weatherChallenges.map((challenge, index) => (
+                    <li key={index} className="flex items-start mb-2">
+                      <div className="flex-shrink-0 text-red-light mr-2">•</div>
+                      <span className="text-ivory">{challenge}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Location-specific regulations and rebates - unique to each location */}
+              <div className="mt-8 border-t border-navy-darker pt-6">
+                <h3 className="text-lg font-semibold text-red mb-3">
+                  {locationName} HVAC Regulations & Incentives
+                </h3>
+                
+                <div className="mb-6 text-ivory">
+                  <h4 className="font-medium text-red-light mb-2">Local Building Permits</h4>
+                  <p className="mb-4">{locationSpecificData.regulatory.permitRequirements}</p>
+                  
+                  <h4 className="font-medium text-red-light mb-2">Building Code Requirements</h4>
+                  <ul className="mb-5">
+                    {locationSpecificData.regulatory.localCodes.map((code, index) => (
+                      <li key={index} className="flex items-start mb-2">
+                        <div className="flex-shrink-0 text-red-light mr-2">•</div>
+                        <span className="text-ivory">{code}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="bg-navy-darker p-5 rounded-lg border border-navy">
+                  <h4 className="font-medium text-red-light mb-3">Available Rebates in {locationName}</h4>
+                  <ul className="mb-4">
+                    {locationSpecificData.regulatory.energyRebates.map((rebate, index) => (
+                      <li key={index} className="flex items-start mb-2">
+                        <div className="flex-shrink-0 text-green-400 mr-2">✓</div>
+                        <span className="text-ivory">{rebate}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <h4 className="font-medium text-red-light mb-3">Local Utility Programs</h4>
+                  <ul>
+                    {locationSpecificData.regulatory.utilityPrograms.map((program, index) => (
+                      <li key={index} className="flex items-start mb-2">
+                        <div className="flex-shrink-0 text-green-400 mr-2">✓</div>
+                        <span className="text-ivory">{program}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">

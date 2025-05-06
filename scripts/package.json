@@ -1,0 +1,20 @@
+{
+  "name": "protech-sitemap-analyzer",
+  "version": "1.0.0",
+  "description": "Tool to analyze sitemap for uniqueness and SEO issues",
+  "main": "uniqueness-checker.js",
+  "scripts": {
+    "analyze": "node uniqueness-checker.js",
+    "analyze:locations": "node uniqueness-checker.js --locations",
+    "analyze:sample": "node uniqueness-checker.js --sample=10",
+    "analyze:detailed": "node uniqueness-checker.js --detailed"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cli-progress": "^3.12.0",
+    "colors": "^1.4.0",
+    "fast-xml-parser": "^4.3.2",
+    "jsdom": "^22.1.0",
+    "string-similarity": "^4.0.4"
+  }
+}
