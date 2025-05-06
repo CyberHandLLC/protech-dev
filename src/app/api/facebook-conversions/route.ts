@@ -73,15 +73,13 @@ async function hashData(input: string): Promise<string> {
  * Send event to Facebook Conversions API
  */
 async function sendToFacebook(event: ConversionEvent): Promise<any> {
-  const accessToken = process.env.FACEBOOK_CONVERSIONS_API_TOKEN;
+  // Hardcoded access token from Facebook
+  const accessToken = 'EAAXiuUbOb9wBO3XOp9m6aetBCZAuyaSLvlzTJKwHNcwbKy6tVKMmgg74ygJD1Qm9Y5T6pSyipGgZABpEZBqzeZACUuu7P1d3pgKPlgHkZA6qNZCvjBmH5y9DJCZCLzWSqTpD7MVsQOUYRlxZAZB2KSpoMCdu8mWFxTwsU63dG4S1tRrSAp7dAZBKjEDjqSC5NifoCTTQZDZD';
   // Using hardcoded pixel ID from the Meta Pixel implementation
   const pixelId = '1201375401668813';
   
-  if (!accessToken) {
-    throw new Error('Facebook Conversions API token not configured');
-  }
-  
-  const url = `https://graph.facebook.com/v17.0/${pixelId}/events`;
+  // Using latest API version v18.0
+  const url = `https://graph.facebook.com/v18.0/${pixelId}/events`;
   
   const response = await fetch(url, {
     method: 'POST',
