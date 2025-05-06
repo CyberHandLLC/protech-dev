@@ -28,6 +28,7 @@ export type ServiceLocation = {
   coordinates: Coordinates;
   serviceArea: boolean;    // Whether this is an active service area
   primaryArea: boolean;    // Whether this is a primary/main service area
+  county?: string;         // County name (e.g., 'Summit County')
 };
 
 /**

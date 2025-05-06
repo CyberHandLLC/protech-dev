@@ -1,5 +1,9 @@
 import { serviceCategories } from '@/data/serviceDataNew';
 import { serviceLocations as actualServiceLocations } from '@/utils/locationUtils';
+import { expandedServiceLocations } from '@/utils/expandedLocationUtils';
+
+// Combine standard and expanded locations for comprehensive coverage
+const allServiceLocations = [...actualServiceLocations, ...expandedServiceLocations];
 
 // Define types for sitemap entries
 export type SitemapEntry = {
@@ -59,25 +63,29 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     isCanonical: true,
   }));
 
-  // IMPORTANT: Use ONLY the actual service locations from locationUtils.ts
-  // These are the only locations that have actual pages in the application
-  const serviceLocations = actualServiceLocations.map(location => ({
+  // Use BOTH standard and expanded service locations for comprehensive coverage
+  // All these locations have actual pages in the application thanks to our dynamic page implementation
+  const serviceLocations = allServiceLocations.map(location => ({
     name: location.name,
     slug: location.id
   }));
   
-  // Log the actual valid locations for debugging
-  console.log('Valid service locations for sitemap:', serviceLocations.map(l => l.slug).join(', '));
+  // Log the number of locations for debugging
+  console.log(`Total service locations for sitemap: ${serviceLocations.length} locations`);
+  console.log(`Standard locations: ${actualServiceLocations.length}, Expanded locations: ${expandedServiceLocations.length}`);
   
   // Generate location pages with extra validation
   const locationPages: SitemapEntry[] = [];
   
-  // Only include locations that have our validated slugs
+  // Process ALL locations (standard + expanded) that have our validated slugs
   serviceLocations.forEach(location => {
     // Double check the page URL pattern matches what we have implemented
     if (location.slug && location.slug.endsWith('-oh')) {
+      // Ensure the slug format is consistent (lowercase with hyphens)
+      const formattedSlug = location.slug.toLowerCase().trim();
+      
       locationPages.push({
-        url: `${baseUrl}/services/locations/${location.slug}`,
+        url: `${baseUrl}/services/locations/${formattedSlug}`,
         lastModified: currentDate,
         changeFrequency: 'weekly',
         priority: 0.8,
@@ -85,6 +93,9 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
       });
     }
   });
+  
+  // Log the final count of location pages
+  console.log(`Generated ${locationPages.length} valid location pages for sitemap`);
   
   // Generate service detail pages with validation
   const serviceDetailPages: SitemapEntry[] = [];
@@ -174,6 +185,14 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
         ...serviceCategoryPages,
         ...locationPages,
       ];
+    },
+    // Additional statistics for logging
+    stats: {
+      totalLocations: serviceLocations.length,
+      standardLocations: actualServiceLocations.length,
+      expandedLocations: expandedServiceLocations.length,
+      totalDetailPages: serviceDetailPages.length,
+      totalPages: serviceDetailPages.length + staticPages.length + serviceCategoryPages.length + locationPages.length
     }
   };
 }
