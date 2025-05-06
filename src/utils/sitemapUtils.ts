@@ -58,8 +58,8 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     isCanonical: true,
   }));
 
-  // Service locations from ServiceArea-Location-ZipCodes-ProTech.txt
-  const serviceLocations = [
+  // Service locations from ServiceArea-Location-ZipCodes-ProTech.txt - with strict validation
+  const rawServiceLocations = [
     // Summit County
     { name: 'Akron', slug: 'akron-oh' },
     { name: 'Cuyahoga Falls', slug: 'cuyahoga-falls-oh' },
@@ -82,14 +82,41 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     { name: 'Doylestown', slug: 'doylestown-oh' },
   ];
   
-  // Location specific pages - using path-based structure
-  const locationPages: SitemapEntry[] = serviceLocations.map(location => ({
-    url: `${baseUrl}/services/locations/${location.slug}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly',
-    priority: 0.8,
-    isCanonical: true,
-  }));
+  // Validate each location slug to ensure it's well-formed
+  const serviceLocations = rawServiceLocations
+    .filter(location => {
+      // Ensure slug exists
+      if (!location.slug) return false;
+      
+      // Make sure slug ends with '-oh' suffix
+      if (!location.slug.endsWith('-oh')) return false;
+      
+      // Validate slug format - only allow lowercase letters, numbers, and hyphens
+      const validSlugPattern = /^[a-z0-9-]+$/;
+      if (!validSlugPattern.test(location.slug)) return false;
+      
+      // Make sure slug has reasonable length (not too short or too long)
+      if (location.slug.length < 4 || location.slug.length > 30) return false;
+      
+      return true;
+    });
+  
+  // Generate location pages with extra validation
+  const locationPages: SitemapEntry[] = [];
+  
+  // Only include locations that have our validated slugs
+  serviceLocations.forEach(location => {
+    // Double check the page URL pattern matches what we have implemented
+    if (location.slug && location.slug.endsWith('-oh')) {
+      locationPages.push({
+        url: `${baseUrl}/services/locations/${location.slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+        isCanonical: true,
+      });
+    }
+  });
   
   // Generate service detail pages with validation
   const serviceDetailPages: SitemapEntry[] = [];
