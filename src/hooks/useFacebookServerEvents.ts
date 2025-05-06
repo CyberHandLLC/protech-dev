@@ -56,6 +56,12 @@ interface ScheduleEventParams extends BaseEventParams {
   value?: number;
 }
 
+interface PageViewEventParams extends BaseEventParams {
+  pageUrl?: string;
+  pageTitle?: string;
+  pageCategory?: string;
+}
+
 /**
  * Custom hook for sending events to Facebook Conversions API via our server endpoint
  */
@@ -234,6 +240,19 @@ export default function useFacebookServerEvents() {
     });
   };
 
+  /**
+   * Track a PageView event (automatically called on page navigation)
+   */
+  const trackPageView = (params: PageViewEventParams) => {
+    return sendServerEvent('PageView', {
+      ...params,
+      content_name: params.pageTitle || document.title,
+      content_category: params.pageCategory || 'Page',
+      content_type: 'website',
+      event_source_url: params.pageUrl || window.location.href
+    });
+  };
+
   return {
     isLoading,
     error,
@@ -243,5 +262,6 @@ export default function useFacebookServerEvents() {
     trackSubscribe,
     trackFindLocation,
     trackSchedule,
+    trackPageView,
   };
 }

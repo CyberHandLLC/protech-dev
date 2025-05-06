@@ -7,10 +7,13 @@ import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the contact form to avoid server/client mismatch
-const HeroContactForm = dynamic(() => import('./HeroContactForm'), {
+const HeroContactForm = dynamic(() => import('./HeroContactForm').then(mod => mod), {
   ssr: false,
   loading: () => <div className="h-[350px] w-full bg-navy/50 animate-pulse rounded-lg" />
 });
+
+// This explicit .then() handles the type issue with dynamic imports
+// ensuring TypeScript understands we're returning the component
 
 type HeroSectionProps = {
   location: string;
@@ -20,7 +23,7 @@ type HeroSectionProps = {
 
 export default function HeroSectionServer({ 
   location,
-  emergencyPhone = '8005554822',
+  emergencyPhone = '3306424822',
   emergencyPhoneDisplay = '330-642-HVAC'
 }: HeroSectionProps) {
   // We're guaranteed to have a valid location since it's coming from the server

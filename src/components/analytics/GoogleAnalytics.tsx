@@ -12,11 +12,11 @@ interface GoogleAnalyticsProps {
  * Google Analytics 4 Component
  * 
  * Implements Google Analytics 4 with direct GA4 tag and through Tag Manager
- * Uses hardcoded GA4 Measurement ID: G-2HMFW5B93T for ProTech HVAC
+ * Uses hardcoded GA4 Measurement ID: G-7H1V0PZ9YV for ProTech HVAC
  */
 export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
   // Hardcoded GA4 Measurement ID for ProTech HVAC
-  const ga4Id = measurementId || 'G-2HMFW5B93T';
+  const ga4Id = measurementId || 'G-7H1V0PZ9YV';
   
   const pathname = usePathname();
   const searchParams = useSearchParams();

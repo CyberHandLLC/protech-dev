@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Section from './ui/Section';
 import Container from './ui/Container';
 import Button from './ui/Button';
+import ContentViewTracker from './analytics/ContentViewTracker';
+import PhoneCallTracker from './analytics/PhoneCallTracker';
 
 type CTASectionProps = {
   location?: string;
@@ -14,7 +16,7 @@ type CTASectionProps = {
 export default function CTASection({ 
   location = 'Northeast Ohio',
   phoneDisplay = '330-642-HVAC',
-  phoneNumber = '8005554822'
+  phoneNumber = '3306424822'
 }: CTASectionProps) {
   // Validate the provided location
   if (!location || location === '') {
@@ -37,6 +39,16 @@ export default function CTASection({
 
   return (
     <Section className="relative overflow-hidden py-16 md:py-20">
+      {/* Track CTA section engagement */}
+      <ContentViewTracker
+        contentName={`CTA Section - ${displayLocation}`}
+        contentType="conversion_opportunity"
+        contentCategory="Lead Generation"
+        additionalData={{
+          location: displayLocation,
+          section: 'cta'
+        }}
+      />
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/cta-bg-placeholder.jpg')] bg-cover bg-center">
         <div className="absolute inset-0 bg-navy opacity-95"></div>
@@ -59,13 +71,14 @@ export default function CTASection({
         <div className="bg-red bg-opacity-95 p-4 sm:p-6 rounded-xl max-w-md mx-auto mb-6 sm:mb-10 shadow-lg">
           <div className="flex flex-col items-center">
             <p className="text-white mb-1 sm:mb-2 text-sm sm:text-base">Call us now at</p>
-            <a 
-              href={`tel:${phoneNumber}`}
+            <PhoneCallTracker
+              phoneNumber={phoneNumber}
+              displayNumber={phoneDisplay}
+              source={`CTA Section - ${displayLocation}`}
               className="text-2xl sm:text-3xl md:text-4xl font-bold text-white hover:text-ivory transition-colors"
-              aria-label={`Call us at ${phoneDisplay}`}
             >
               {phoneDisplay}
-            </a>
+            </PhoneCallTracker>
             <p className="text-white/80 text-xs sm:text-sm mt-1 sm:mt-2">Available 24/7 for emergency service</p>
           </div>
         </div>

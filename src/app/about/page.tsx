@@ -4,6 +4,7 @@ import Image from 'next/image';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
 import { milestones, coreValues } from '@/data/aboutData';
+import AboutPageTracker from '@/components/analytics/AboutPageTracker';
 
 // Helper function for generating section headers with consistent styling
 const SectionHeader = ({ accentText, title, centered = true }: { accentText: string; title: string; centered?: boolean }) => (
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <PageLayout>
+      <AboutPageTracker>
       {/* Hero section with dark navy background */}
       <section className="bg-navy py-20 px-4">
         <div className="max-w-7xl mx-auto text-center">
@@ -98,7 +100,7 @@ export default function AboutPage() {
               To provide exceptional HVAC services that enhance the comfort, safety, and energy efficiency of every home and business we serve, while maintaining the highest standards of professionalism, integrity, and customer satisfaction.
             </p>
             <a
-              href="tel:8005554822"
+              href="tel:3306424822"
               className="bg-red border-2 border-red text-white hover:bg-red-dark px-8 py-3 rounded-lg font-medium transition-all text-center"
             >
               Contact Us Today
@@ -188,6 +190,7 @@ export default function AboutPage() {
 
       {/* CTA Section */}
       <CTASection location="Northeast Ohio" />
+      </AboutPageTracker>
     </PageLayout>
   );
 }

@@ -11,11 +11,11 @@ interface GoogleTagManagerProps {
  * Google Tag Manager Component
  * 
  * Adds Google Tag Manager tracking code to the site
- * Uses hardcoded GTM ID: GTM-WX73MVDZ for ProTech HVAC
+ * Uses hardcoded GTM ID: GTM-T6QSRR5H for ProTech HVAC
  */
 export default function GoogleTagManager({ containerId }: GoogleTagManagerProps) {
   // Hardcoded GTM ID for ProTech HVAC
-  const gtmId = containerId || 'GTM-WX73MVDZ';
+  const gtmId = containerId || 'GTM-T6QSRR5H';
   
   // Initialize dataLayer
   useEffect(() => {

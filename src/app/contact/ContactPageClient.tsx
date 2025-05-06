@@ -3,6 +3,7 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 import PageLayout from '@/components/PageLayout';
+import ContactPageTracker from '@/components/analytics/ContactPageTracker';
 
 // Now it's safe to use dynamic imports with ssr: false in this client component
 const ContactPageWrapper = dynamic(() => import('@/components/contact/ContactPageWrapper'), {
@@ -20,9 +21,11 @@ interface ContactPageClientProps {
 export default function ContactPageClient({ children }: ContactPageClientProps) {
   return (
     <PageLayout className="bg-navy">
-      <ContactPageWrapper>
-        {children}
-      </ContactPageWrapper>
+      <ContactPageTracker>
+        <ContactPageWrapper>
+          {children}
+        </ContactPageWrapper>
+      </ContactPageTracker>
     </PageLayout>
   );
 }

@@ -3,12 +3,18 @@
 import { useState, Suspense, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import PhoneLink from './PhoneLink';
+import { memo } from 'react';
+import ContentViewTracker from './analytics/ContentViewTracker';
 
 // Dynamically import the contact form
-const HeroContactForm = dynamic(() => import('./HeroContactForm'), {
+const HeroContactForm = dynamic(() => import('./HeroContactForm').then(mod => mod), {
   ssr: false,
   loading: () => <div className="h-[350px] w-full bg-navy/50 animate-pulse rounded-lg" />
 });
+
+// This dynamic import explicitly tells TypeScript that we're returning the default export
+// which resolves the '({ className }: HeroContactFormProps) => void' error
 
 type HeroSectionProps = {
   location: string | null;
@@ -19,7 +25,7 @@ type HeroSectionProps = {
 // Memoize the HeroSection component to prevent unnecessary re-renders
 export default function HeroSection({ 
   location, 
-  emergencyPhone = '8005554822',
+  emergencyPhone = '3306424822',
   emergencyPhoneDisplay = '330-642-HVAC'
 }: HeroSectionProps) {
   // Ensure we have a valid location and decode any URL-encoded characters
@@ -52,6 +58,16 @@ export default function HeroSection({
 
   return (
     <section className="relative py-12 md:py-16 overflow-hidden bg-navy" aria-label="Hero Section">
+      {/* Track hero section engagement */}
+      <ContentViewTracker
+        contentName={`Hero Section - ${displayLocation}`}
+        contentType="homepage_section"
+        contentCategory="Homepage Engagement"
+        additionalData={{
+          location: displayLocation,
+          section: 'hero'
+        }}
+      />
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
           className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-500 ${isImageVisible ? 'opacity-100' : 'opacity-0'}`}

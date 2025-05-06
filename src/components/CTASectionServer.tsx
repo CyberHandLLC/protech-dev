@@ -16,7 +16,7 @@ type CTASectionProps = {
 export default function CTASectionServer({ 
   location = 'Northeast Ohio',
   phoneDisplay = '330-642-HVAC',
-  phoneNumber = '8005554822'
+  phoneNumber = '3306424822'
 }: CTASectionProps) {
   // Format location for display
   let displayLocation = location || 'Northeast Ohio';

@@ -11,6 +11,9 @@ import GoogleTagManager from './GoogleTagManager';
 import GoogleAnalytics from './GoogleAnalytics';
 import GoogleAdsConversion from './GoogleAdsConversion';
 
+// Page Tracking
+import PageViewTracker from './PageViewTracker';
+
 interface AnalyticsProviderProps {
   children: ReactNode;
   instagramPixelId?: string;
@@ -43,6 +46,9 @@ export default function AnalyticsProvider({
       {/* Social Media Tracking */}
       <FacebookPixel />
       <InstagramPixel pixelId={instagramPixelId} />
+      
+      {/* Automatic Page View Tracking */}
+      <PageViewTracker />
       
       {/* Render the application */}
       {children}

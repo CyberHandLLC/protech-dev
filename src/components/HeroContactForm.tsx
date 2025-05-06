@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Button from './ui/Button';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
+import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
+import ContactFormTracker from './analytics/ContactFormTracker';
 
 type FormField = 'name' | 'phone' | 'service' | 'location';
 type FormData = Record<FormField, string>;
@@ -122,8 +124,15 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
     message: ''
   });
   
-  // Initialize Facebook conversion tracking
+  // State to track form submission for analytics
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Initialize Facebook conversion tracking (both client-side and server-side)
   const { trackSchedule, trackLead } = useFacebookEvents();
+  const { 
+    trackSchedule: trackServerSchedule, 
+    trackLead: trackServerLead 
+  } = useFacebookServerEvents();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -136,6 +145,7 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
     try {
       // Set submitting state
       setFormStatus({ submitted: false, error: false, message: 'Submitting...' });
+      setIsSubmitted(false);
       
       // Prepare data for the API call
       const contactData = {
@@ -155,17 +165,18 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
       const result = await response.json();
       
       if (response.ok && result.success) {
-        // Track form submission events with Facebook
+        // Track form submission events
         try {
-          // Track as a scheduling event
+          // Client-side tracking
+          // Track as a schedule event
           await trackSchedule({
             userData: {
-              phone: formData.phone,
               firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' ')
+              lastName: formData.name.split(' ').slice(1).join(' '),
+              phone: formData.phone
             },
             customData: {
-              contentCategory: 'Quick Schedule',
+              contentCategory: 'Service Scheduling',
               contentName: formData.service || 'General Service',
               status: 'scheduled'
             }
@@ -183,22 +194,50 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
             }
           });
           
-          console.log('Facebook conversion events tracked successfully');
+          // Server-side tracking (Conversions API)
+          // This will work even if client-side tracking is blocked
+          await trackServerSchedule({
+            appointmentType: formData.service || 'General HVAC Service',
+            userData: {
+              firstName: formData.name.split(' ')[0],
+              lastName: formData.name.split(' ').slice(1).join(' '),
+              phone: formData.phone,
+              city: formData.location || ''
+            },
+            value: 149 // Estimated value of scheduled service
+          });
+          
+          // Also track as a lead through server-side tracking
+          await trackServerLead({
+            formName: 'Hero Contact Form',
+            userData: {
+              phone: formData.phone,
+              firstName: formData.name.split(' ')[0],
+              lastName: formData.name.split(' ').slice(1).join(' '),
+              city: formData.location || ''
+            },
+            value: 75 // Estimated lead value
+          });
+          
+          console.log('Facebook conversion events tracked via client and server successfully');
         } catch (trackingError) {
           // Don't let tracking errors affect the user experience
           console.error('Error tracking Facebook conversion event:', trackingError);
         }
         
-        // Success state
-        setFormStatus({
-          submitted: true,
-          error: false,
-          message: 'Thank you! We\'ll contact you shortly to confirm your appointment.'
+        // Finish by setting the success state
+        setFormStatus({ 
+          submitted: true, 
+          error: false, 
+          message: 'Thank you! We\'ll be in touch shortly.'
         });
         
-        // Reset form
-        setFormData(INITIAL_FORM_STATE);
+        // Set submitted state for analytics tracking
+        setIsSubmitted(true);
         
+        // Reset form to initial state
+        setFormData(INITIAL_FORM_STATE);
+          
         // Auto-reset after delay
         setTimeout(() => {
           setFormStatus({ submitted: false, error: false, message: '' });
@@ -206,7 +245,6 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
       } else {
         throw new Error(result.message || 'Failed to send message');
       }
-      
     } catch (error) {
       console.error('Error submitting form:', error);
       setFormStatus({
@@ -221,80 +259,96 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
   if (formStatus.submitted) {
     const isSuccess = !formStatus.error;
     return (
-      <div className={`bg-navy/50 backdrop-blur-sm rounded-lg p-4 border border-navy-light shadow-lg ${className}`}>
-        <div className={`p-3 rounded-lg ${isSuccess ? 'bg-green-800/20 text-green-300' : 'bg-red-dark/20 text-red-300'}`}>
-          <p className="font-medium text-sm">{formStatus.message}</p>
-          
-          {isSuccess && (
-            <div className="mt-2">
-              <p className="text-xs">Need immediate assistance?</p>
-              <a href="tel:8005554822" className="text-sm inline-flex items-center mt-1 text-red hover:underline">
-                <span className="mr-1">📞</span> Call 330-642-HVAC
-              </a>
-            </div>
-          )}
+      <ContactFormTracker
+        formLocation="Hero Section"
+        formType="quick_contact"
+        isSubmission={isSubmitted}
+        formData={formData}
+        serviceName={formData.service}
+      >
+        <div className={`bg-navy/50 backdrop-blur-sm rounded-lg p-4 border border-navy-light shadow-lg ${className}`}>
+          <div className={`p-3 rounded-lg ${isSuccess ? 'bg-green-800/20 text-green-300' : 'bg-red-dark/20 text-red-300'}`}>
+            <p className="font-medium text-sm">{formStatus.message}</p>
+            
+            {isSuccess && (
+              <div className="mt-2">
+                <p className="text-xs">Need immediate assistance?</p>
+                <a href="tel:3306424822" className="text-sm inline-flex items-center mt-1 text-red hover:underline">
+                  <span className="mr-1">📞</span> Call 330-642-HVAC
+                </a>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </ContactFormTracker>
     );
   }
 
   return (
-    <div className={`bg-navy/50 backdrop-blur-sm rounded-lg p-4 border border-navy-light shadow-lg ${className}`}>
-      <h3 className="text-white font-semibold text-lg mb-3">Schedule Service</h3>
-      <form onSubmit={handleSubmit} className="space-y-0">
-        {/* Name Field */}
-        <FormInput
-          id="hero-name"
-          name="name"
-          label="Name"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Your name"
-          required
-        />
-        
-        {/* Phone Field */}
-        <FormInput
-          id="hero-phone"
-          name="phone"
-          label="Phone"
-          type="tel"
-          value={formData.phone}
-          onChange={handleChange}
-          placeholder="(123) 456-7890"
-          required
-        />
-        
-        {/* Service Dropdown */}
-        <FormSelect
-          id="hero-service"
-          name="service"
-          label="Service Needed"
-          value={formData.service}
-          onChange={handleChange}
-          options={SERVICES}
-          required
-        />
-        
-        {/* Location Dropdown */}
-        <FormSelect
-          id="hero-location"
-          name="location"
-          label="Your Location"
-          value={formData.location}
-          onChange={handleChange}
-          options={LOCATIONS}
-          required
-        />
-        
-        {/* Submit Button */}
-        <Button variant="primary" className="w-full mt-4" type="submit">
-          Schedule Now
-        </Button>
-        <p className="text-xs text-ivory/60 mt-1 text-center">
-          Quick response guaranteed
-        </p>
-      </form>
-    </div>
+    <ContactFormTracker
+      formLocation="Hero Section"
+      formType="quick_contact"
+      isSubmission={isSubmitted}
+      formData={formData}
+      serviceName={formData.service}
+    >
+      <div className={`bg-navy/50 backdrop-blur-sm rounded-lg p-4 border border-navy-light shadow-lg ${className}`}>
+        <h3 className="text-white font-semibold text-lg mb-3">Schedule Service</h3>
+        <form onSubmit={handleSubmit} className="space-y-0">
+          {/* Name Field */}
+          <FormInput
+            id="hero-name"
+            name="name"
+            label="Name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Your name"
+            required
+          />
+          
+          {/* Phone Field */}
+          <FormInput
+            id="hero-phone"
+            name="phone"
+            label="Phone"
+            type="tel"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="(123) 456-7890"
+            required
+          />
+          
+          {/* Service Dropdown */}
+          <FormSelect
+            id="hero-service"
+            name="service"
+            label="Service Needed"
+            value={formData.service}
+            onChange={handleChange}
+            options={SERVICES}
+            required
+          />
+          
+          {/* Location Dropdown */}
+          <FormSelect
+            id="hero-location"
+            name="location"
+            label="Your Location"
+            value={formData.location}
+            onChange={handleChange}
+            options={LOCATIONS}
+            required
+          />
+          
+          {/* Submit Button */}
+          <Button variant="primary" className="w-full mt-4" type="submit">
+            Schedule Now
+          </Button>
+          <p className="text-xs text-ivory/60 mt-1 text-center">
+            Quick response guaranteed
+          </p>
+        </form>
+      </div>
+    </ContactFormTracker>
   );
 }

@@ -108,6 +108,13 @@ export function useFacebookEvents() {
     });
   };
 
+  /**
+   * Track a page view
+   */
+  const trackPageView = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    return trackEvent(FacebookEventName.PAGE_VIEW, options);
+  };
+
   return {
     trackLead,
     trackFormSubmission,
@@ -117,6 +124,7 @@ export function useFacebookEvents() {
     trackCustomEvent,
     trackViewContent,
     trackInitiateCheckout,
-    trackPhoneClick
+    trackPhoneClick,
+    trackPageView
   };
 }

@@ -62,15 +62,7 @@ export function generateLocalBusinessSchema(
     "name": "ProTech Heating & Cooling",
     "description": `Professional ${serviceName} in ${locationName}`,
     "url": serviceUrl,
-    "telephone": "+1-330-555-1234",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "123 Main Street",
-      "addressLocality": "Wadsworth",
-      "addressRegion": "OH",
-      "postalCode": "44281",
-      "addressCountry": "US"
-    },
+    "telephone": "+1-330-642-4822",
     "geo": {
       "@type": "GeoCoordinates",
       "latitude": 41.15744,

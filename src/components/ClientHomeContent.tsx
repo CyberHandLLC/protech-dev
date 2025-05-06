@@ -8,6 +8,7 @@ import OptimizedClientWrapper from '@/components/OptimizedClientWrapper';
 import { ServiceLocation } from '@/utils/locationUtils';
 import { convertToLocationSlug } from '@/utils/location';
 import ZipCodeChecker from '@/components/ZipCodeChecker';
+import ContentViewTracker from '@/components/analytics/ContentViewTracker';
 
 // Next.js 15 optimized dynamic imports with enhanced TBT reduction
 // Use SSR with proper error boundaries and suspense boundaries
@@ -115,6 +116,16 @@ function HomeContent({ defaultLocation }: HomeContentProps) {
 
   return (
     <PageLayout>
+      {/* Track homepage view with enhanced data */}
+      <ContentViewTracker
+        contentName="ProTech HVAC Homepage"
+        contentType="homepage"
+        contentCategory="Primary Pages"
+        additionalData={{
+          location: combinedLocation.name,
+          page_section: 'full_page'
+        }}
+      />
       {/* Hero section - critical for LCP, highest priority with minimal deferring */}
       <OptimizedClientWrapper priority="critical" defer={false} id="hero-section">
         <Suspense fallback={<div className="h-[600px] bg-navy/50 animate-pulse rounded-md" />}>

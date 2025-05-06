@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Button from './ui/Button';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
+import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 
 type FormField = 'name' | 'email' | 'phone' | 'service' | 'location' | 'message';
 type FormData = Record<FormField, string>;
@@ -159,8 +160,12 @@ export default function ContactForm() {
     message: '',
   });
   
-  // Initialize Facebook conversion tracking
+  // Initialize Facebook conversion tracking (both client-side and server-side)
   const { trackLead, trackContact } = useFacebookEvents();
+  const { 
+    trackLead: trackServerLead, 
+    trackContact: trackServerContact 
+  } = useFacebookServerEvents();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -191,9 +196,13 @@ export default function ContactForm() {
       
       const result = await response.json();
       
-      if (response.ok && result.success) {
-        // Track form submission events with Facebook
+      if (response.ok) {
+        // Reset form to initial state
+        setFormData(INITIAL_FORM_STATE);
+        
+        // Facebook conversion tracking
         try {
+          // Client-side tracking
           // Track as a contact event
           await trackContact({
             userData: {
@@ -209,19 +218,35 @@ export default function ContactForm() {
             }
           });
           
-          // Also track as a lead event for conversion tracking
-          await trackLead({
+          // Server-side tracking (Conversions API)
+          // This will work even if client-side tracking is blocked
+          await trackServerContact({
+            source: 'Contact Form',
             userData: {
               email: formData.email,
-              phone: formData.phone
-            },
-            customData: {
-              contentCategory: 'Contact Form Lead',
-              contentName: formData.service || 'General Contact'
+              phone: formData.phone,
+              firstName: formData.name.split(' ')[0],
+              lastName: formData.name.split(' ').slice(1).join(' '),
+              city: formData.location || '',
+              state: 'OH', // Default state (Ohio)
+              zipCode: '' // We don't collect zip code in this form
             }
           });
           
-          console.log('Facebook conversion events tracked successfully');
+          // Also track as a lead via server-side events
+          await trackServerLead({
+            formName: 'Main Contact Form',
+            userData: {
+              email: formData.email,
+              phone: formData.phone,
+              firstName: formData.name.split(' ')[0],
+              lastName: formData.name.split(' ').slice(1).join(' '),
+              city: formData.location || ''
+            },
+            value: 100 // Estimated lead value
+          });
+          
+          console.log('Facebook conversion events tracked via client and server successfully');
         } catch (trackingError) {
           // Don't let tracking errors affect the user experience
           console.error('Error tracking Facebook conversion event:', trackingError);
