@@ -44,14 +44,7 @@ export default function ServiceDetailClientWrapper({
 }: ServiceDetailClientWrapperProps) {
   return (
     <>
-      {/* If we don't want the SEOServicePageWrapper to handle the FAQs (to prevent visual FAQs),
-          we need to add the schema separately */}
-      {!showVisibleFAQs && faqs.length > 0 && (
-        <FAQSchemaOnly 
-          faqs={faqs} 
-          mainEntity={mainEntity || serviceName}
-        />
-      )}
+      {/* Always handle FAQ schema in ONE place - through our wrapper */}
       
       {/* Wrap with SEO service wrapper for structured data */}
       <SEOServicePageWrapper
@@ -60,19 +53,37 @@ export default function ServiceDetailClientWrapper({
         serviceUrl={serviceUrl}
         serviceImageUrl={serviceImageUrl}
         serviceArea={serviceArea}
-        faqs={showVisibleFAQs ? faqs : []} // Only pass FAQs to the wrapper if we want visible FAQs
+        faqs={faqs} // Always pass FAQs to the wrapper for schema
       >
         {/* Render the original service page content */}
         {children}
         
-        {/* Add FAQ section at the bottom of service pages only when requested */}
+        {/* Add FAQ section VISUALLY at the bottom of service pages only when requested */}
         {showVisibleFAQs && faqs.length > 0 && (
-          <FAQSection 
-            faqs={faqs}
-            title={faqTitle || `Frequently Asked Questions About ${serviceName}`}
-            subtitle={faqSubtitle || `Get answers to common questions about ${serviceName.toLowerCase()}.`}
-            mainEntity={mainEntity || serviceName}
-          />
+          <div className="py-12">
+            <div className="container mx-auto px-4">
+              {/* Section heading */}
+              <div className="text-center mb-10">
+                <div className="inline-block mb-4">
+                  <div className="h-1 w-24 bg-red mx-auto mb-3"></div>
+                </div>
+                <h2 className="text-3xl font-bold mb-2">
+                  {faqTitle || `Frequently Asked Questions About ${serviceName}`}
+                </h2>
+                {faqSubtitle && <p className="text-gray-600">{faqSubtitle}</p>}
+              </div>
+              
+              {/* FAQ accordion - We're not using FAQSection to avoid duplicate schema */}
+              <div className="max-w-3xl mx-auto">
+                {faqs.map((faq, index) => (
+                  <div key={index} className="mb-4 border-b border-gray-200 pb-4">
+                    <h3 className="text-xl font-semibold mb-2">{faq.question}</h3>
+                    <div className="text-gray-600" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </SEOServicePageWrapper>
     </>
