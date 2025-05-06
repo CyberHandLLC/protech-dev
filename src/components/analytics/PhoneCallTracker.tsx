@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
@@ -35,7 +35,19 @@ export default function PhoneCallTracker({
   const { trackContact: trackServerContact } = useFacebookServerEvents();
   const { trackPhoneCall } = useGoogleTracking();
   
+  // Track last click time to prevent duplicate firings
+  const lastClickTimeRef = useRef(0);
+  
   const handlePhoneClick = () => {
+    // Implement time-based throttling to prevent duplicate events
+    const now = Date.now();
+    if (now - lastClickTimeRef.current < 1000) {
+      console.log('Ignoring duplicate phone click event');
+      return;
+    }
+    
+    // Update last click time
+    lastClickTimeRef.current = now;
     try {
       // Track with client-side Facebook
       trackPhoneClick({
@@ -49,7 +61,8 @@ export default function PhoneCallTracker({
       
       // Track with server-side Facebook
       trackServerContact({
-        source: `Phone Click - ${source}`
+        contactMethod: 'phone',
+        contactSource: `Phone Click - ${source}`
       });
       
       // Track with Google

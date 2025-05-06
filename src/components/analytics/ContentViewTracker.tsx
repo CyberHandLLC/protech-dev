@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
+import { useTracking } from '@/context/TrackingContext';
 
 interface ContentViewTrackerProps {
   contentName: string;
@@ -27,9 +28,29 @@ export default function ContentViewTracker({
   // Initialize tracking hooks
   const { trackViewContent: trackFacebookViewContent } = useFacebookEvents();
   const { trackViewContent: trackServerViewContent } = useFacebookServerEvents();
-  const { trackContent } = useGoogleTracking();
+  const { trackPageView: trackGAContent } = useGoogleTracking();
+  
+  // Get global tracking context for centralized deduplication
+  const { trackEvent, isTrackingEnabled } = useTracking();
+  
+  // Keep the local ref as a backup prevention measure
+  const hasTrackedRef = useRef(false);
   
   useEffect(() => {
+    // Skip if already tracked or tracking is disabled
+    if (hasTrackedRef.current || !isTrackingEnabled) return;
+    
+    // Mark as tracked locally to prevent future fires
+    hasTrackedRef.current = true;
+    
+    // Create a unique ID for this content view
+    const uniqueId = `content_view:${contentType}:${contentName}`;
+    
+    // Use global tracking context to prevent duplicate tracking
+    if (!trackEvent('content_view', contentName, uniqueId)) {
+      console.log(`Content view throttled by global context: ${contentName}`);
+      return;
+    }
     // Track the content view with enhanced data
     try {
       // Client-side Facebook tracking
@@ -44,21 +65,16 @@ export default function ContentViewTracker({
       
       // Server-side Facebook tracking
       trackServerViewContent({
-        contentName: contentName,
-        contentCategory: contentCategory,
-        contentType: contentType,
-        ...additionalData
+        contentName,
+        contentCategory,
+        contentType
       });
       
       // Google Analytics tracking
-      trackContent(
-        contentType,
-        {
-          item_name: contentName,
-          item_category: contentCategory,
-          ...additionalData
-        }
-      );
+      trackGAContent(contentType, contentName, {
+        content_category: contentCategory,
+        ...additionalData
+      });
       
       console.log(`Content view tracked: ${contentName} (${contentType})`);
     } catch (error) {
@@ -71,7 +87,7 @@ export default function ContentViewTracker({
     additionalData,
     trackFacebookViewContent,
     trackServerViewContent,
-    trackContent
+    trackGAContent
   ]);
   
   // This component doesn't render anything

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { trackGoogleAnalyticsEvent } from '@/components/analytics/GoogleAnalytics';
 import { trackGoogleAdsConversion } from '@/components/analytics/GoogleAdsConversion';
+import { useTracking } from '@/context/TrackingContext';
 
 /**
  * Custom hook for tracking conversions and events across Google's tracking systems
@@ -11,6 +12,7 @@ import { trackGoogleAdsConversion } from '@/components/analytics/GoogleAdsConver
 export default function useGoogleTracking() {
   const [isTracking, setIsTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { trackEvent: trackGlobalEvent, isTrackingEnabled } = useTracking();
 
   /**
    * Track a conversion with both Google Analytics and Google Ads
@@ -21,8 +23,20 @@ export default function useGoogleTracking() {
     params?: Record<string, any>
   ) => {
     try {
+      // Don't track if tracking is disabled
+      if (!isTrackingEnabled) return false;
+      
       setIsTracking(true);
       setError(null);
+      
+      // Create a content name from the event details
+      const contentName = params?.content_name || params?.form_type || eventName;
+      
+      // Check if this event should be throttled
+      if (!trackGlobalEvent('conversion', contentName)) {
+        console.log(`Conversion event throttled: ${eventName} - ${contentName}`);
+        return false;
+      }
       
       // Common parameters
       const value = params?.value || 0;
@@ -66,6 +80,18 @@ export default function useGoogleTracking() {
     additionalParams?: Record<string, any>
   ) => {
     try {
+      // Don't track if tracking is disabled
+      if (!isTrackingEnabled) return false;
+      
+      // Create a unique ID for this page view event
+      const uniqueId = `page_view:${contentType}:${contentName}`.toLowerCase().replace(/\s+/g, '-');
+      
+      // Check if this event should be throttled
+      if (!trackGlobalEvent('page_view', contentName, uniqueId)) {
+        console.log(`Page view event throttled: ${contentType} - ${contentName}`);
+        return false;
+      }
+      
       trackGoogleAnalyticsEvent('page_view', {
         content_type: contentType,
         content_name: contentName,
@@ -87,14 +113,22 @@ export default function useGoogleTracking() {
     source: string,
     value: number = 50
   ) => {
+    // Create a unique identifier for this phone call event
+    const contentName = `Phone Call - ${source}`;
+    
+    // Check if this event should be throttled through the global context
+    if (!trackGlobalEvent('phone_call', contentName)) {
+      console.log(`Phone call event throttled: ${contentName}`);
+      return false;
+    }
+    
     return trackConversion(
       'phone_call',     // GA4 event name
-      'BQbMCNLn85sYEM_Eq6Qp', // Google Ads conversion label for phone calls
-      {
+      'phone_call',     // Google Ads conversion label 
+      { 
         source: source,
         value: value,
-        content_type: 'contact',
-        method: 'phone'
+        content_name: contentName
       }
     );
   };

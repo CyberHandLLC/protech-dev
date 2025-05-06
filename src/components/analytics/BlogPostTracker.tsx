@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
@@ -29,9 +29,17 @@ export default function BlogPostTracker({
   // Initialize tracking hooks
   const { trackViewContent: trackFacebookViewContent } = useFacebookEvents();
   const { trackViewContent: trackServerViewContent } = useFacebookServerEvents();
-  const { trackContent } = useGoogleTracking();
+  const { trackPageView: trackGAContent } = useGoogleTracking();
+  
+  // Use ref to track if this content view has already been tracked
+  const hasTrackedRef = useRef(false);
   
   useEffect(() => {
+    // Prevent duplicate tracking
+    if (hasTrackedRef.current) return;
+    
+    // Mark as tracked to prevent future fires
+    hasTrackedRef.current = true;
     // Track the blog post view with enhanced data
     try {
       // Client-side Facebook tracking
@@ -51,17 +59,12 @@ export default function BlogPostTracker({
       });
       
       // Google Analytics tracking
-      trackContent(
-        'blog_post_view',
-        {
-          item_name: postTitle,
-          item_category: postCategory,
-          item_variant: postAuthor,
-          item_id: postDate,
-          item_list_name: 'Blog Posts',
-          item_list_id: postTags.join(',')
-        }
-      );
+      trackGAContent('blog_post_view', postTitle, {
+        content_category: postCategory,
+        author: postAuthor,
+        published_date: postDate,
+        tags: postTags.join(',')
+      });
       
       console.log(`Blog post view tracked: ${postTitle}`);
     } catch (error) {
@@ -75,7 +78,7 @@ export default function BlogPostTracker({
     postTags,
     trackFacebookViewContent,
     trackServerViewContent,
-    trackContent
+    trackGAContent
   ]);
   
   // This component doesn't render anything

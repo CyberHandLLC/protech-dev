@@ -7,6 +7,7 @@ import {
   FacebookEventName,
   type TrackEventOptions 
 } from '@/utils/facebookConversionsApi';
+import { useTracking } from '@/context/TrackingContext';
 
 /**
  * Hook for tracking Facebook Conversion events
@@ -15,18 +16,35 @@ import {
  * through both Facebook Pixel and Conversions API simultaneously
  */
 export function useFacebookEvents() {
+  const { trackEvent: trackGlobalEvent, isTrackingEnabled, pageViewTracked, setPageViewTracked } = useTracking();
+
   // Initialize Facebook Pixel on mount
   useEffect(() => {
+    if (!isTrackingEnabled) return;
+    
+    // Initialize the Facebook Pixel
     initFacebookPixel();
     
-    // Track PageView for the current page on first load
-    trackEvent(FacebookEventName.PAGE_VIEW);
-  }, []);
+    // Only track page view if it hasn't been tracked already
+    if (!pageViewTracked) {
+      trackEvent(FacebookEventName.PAGE_VIEW);
+      setPageViewTracked(true);
+    }
+  }, [isTrackingEnabled, pageViewTracked, setPageViewTracked]);
   
   /**
    * Track a lead submission (form fill, quote request, etc.)
    */
   const trackLead = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Get content name from options or use a default
+    const contentName = options?.customData?.contentName || 'Lead';
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('lead', contentName)) {
+      console.log(`Lead event throttled: ${contentName}`); 
+      return false;
+    }
+    
     return trackEvent(FacebookEventName.LEAD, options);
   };
   
@@ -34,6 +52,15 @@ export function useFacebookEvents() {
    * Track a form submission
    */
   const trackFormSubmission = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Get content name from options or use a default
+    const contentName = options?.customData?.contentName || 'Form Submission';
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('form_submission', contentName)) {
+      console.log(`Form submission event throttled: ${contentName}`); 
+      return false;
+    }
+    
     return trackEvent(FacebookEventName.COMPLETE_REGISTRATION, options);
   };
   
@@ -41,6 +68,15 @@ export function useFacebookEvents() {
    * Track a contact request
    */
   const trackContact = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Get content name from options or use a default
+    const contentName = options?.customData?.contentName || 'Contact Request';
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('contact', contentName)) {
+      console.log(`Contact event throttled: ${contentName}`); 
+      return false;
+    }
+    
     return trackEvent(FacebookEventName.CONTACT, options);
   };
   
@@ -48,6 +84,15 @@ export function useFacebookEvents() {
    * Track a service scheduling
    */
   const trackSchedule = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Get content name from options or use a default
+    const contentName = options?.customData?.contentName || 'Service Scheduling';
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('schedule', contentName)) {
+      console.log(`Schedule event throttled: ${contentName}`); 
+      return false;
+    }
+    
     return trackEvent(FacebookEventName.SCHEDULE, options);
   };
   
@@ -83,6 +128,19 @@ export function useFacebookEvents() {
    * Track when a user views a product or service detail page
    */
   const trackViewContent = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Get content name from options or use a default
+    const contentName = options?.customData?.contentName || 'Content View';
+    const contentType = options?.customData?.contentType || 'content';
+    
+    // Create a unique ID combining type and name
+    const uniqueId = `view_content:${contentType}:${contentName}`.toLowerCase().replace(/\s+/g, '-');
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('view_content', contentName, uniqueId)) {
+      console.log(`View content event throttled: ${contentName}`); 
+      return false;
+    }
+    
     return trackEvent(FacebookEventName.VIEW_CONTENT, options);
   };
   
@@ -97,14 +155,23 @@ export function useFacebookEvents() {
    * Track when a user clicks a phone number to call
    */
   const trackPhoneClick = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    // Extract content info from options or use defaults
+    const sourceInfo = options?.customData?.contentName || 'Website';
+    const contentName = `Phone Click: ${sourceInfo}`;
+    
+    // Check if this event should be throttled
+    if (!trackGlobalEvent('phone_call', contentName)) {
+      console.log(`Phone call event throttled: ${contentName}`); 
+      return false;
+    }
+    
     // Using 'Contact' event for phone clicks as it's most appropriate
     return trackEvent(FacebookEventName.CONTACT, {
       ...options,
       customData: {
         ...options.customData,
-        contentCategory: 'Phone Call',
-        contentType: 'phone_click'
-      }
+        contentType: 'phone_call',
+      },
     });
   };
 

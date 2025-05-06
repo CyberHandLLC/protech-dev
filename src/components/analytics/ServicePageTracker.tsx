@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
@@ -27,11 +27,17 @@ export default function ServicePageTracker({
   // Initialize tracking hooks
   const { trackViewContent: trackFacebookViewContent } = useFacebookEvents();
   const { trackViewContent: trackServerViewContent } = useFacebookServerEvents();
-  const { trackContent } = useGoogleTracking();
+  const { trackPageView: trackGAContent } = useGoogleTracking();
+  
+  // Use ref to track if this service page view has already been tracked
+  const hasTrackedRef = useRef(false);
   
   useEffect(() => {
-    // Don't track during development/preview
-    if (process.env.NODE_ENV === 'development') return;
+    // Don't track during development/preview or if already tracked
+    if (process.env.NODE_ENV === 'development' || hasTrackedRef.current) return;
+    
+    // Mark as tracked to prevent duplicate events
+    hasTrackedRef.current = true;
     
     // Track the service page view with enhanced data
     try {
@@ -54,15 +60,12 @@ export default function ServicePageTracker({
       });
       
       // Google Analytics tracking
-      trackContent(
-        'service_view',
-        {
-          item_name: serviceName,
-          item_category: serviceCategory,
-          item_variant: serviceDescription ? serviceDescription.substring(0, 20) : '',
-          value: estimatedValue
-        }
-      );
+      trackGAContent('service_page_view', serviceName, {
+        service_category: serviceCategory,
+        service_description: serviceDescription,
+        estimated_value: estimatedValue,
+        content_type: 'service'
+      });
       
       console.log(`Service page view tracked: ${serviceName}`);
     } catch (error) {
@@ -75,7 +78,7 @@ export default function ServicePageTracker({
     estimatedValue,
     trackFacebookViewContent,
     trackServerViewContent,
-    trackContent
+    trackGAContent
   ]);
   
   // This component doesn't render anything

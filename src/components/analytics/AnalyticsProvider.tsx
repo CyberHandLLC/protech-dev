@@ -14,6 +14,9 @@ import GoogleAdsConversion from './GoogleAdsConversion';
 // Page Tracking
 import PageViewTracker from './PageViewTracker';
 
+// Global Tracking Context
+import { TrackingProvider } from '@/context/TrackingContext';
+
 interface AnalyticsProviderProps {
   children: ReactNode;
   instagramPixelId?: string;
@@ -37,7 +40,7 @@ export default function AnalyticsProvider({
   googleAdsId
 }: AnalyticsProviderProps) {
   return (
-    <>
+    <TrackingProvider>
       {/* Google Tracking Stack */}
       <GoogleTagManager containerId={gtmId} />
       <GoogleAnalytics measurementId={ga4Id} />
@@ -52,6 +55,6 @@ export default function AnalyticsProvider({
       
       {/* Render the application */}
       {children}
-    </>
+    </TrackingProvider>
   );
 }

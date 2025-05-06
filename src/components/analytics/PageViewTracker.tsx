@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
+import { useTracking } from '@/context/TrackingContext';
 
 /**
  * PageViewTracker Component
@@ -27,15 +28,28 @@ export default function PageViewTracker() {
   const { trackPageView: trackServerPageView } = useFacebookServerEvents();
   const { trackPageView: trackGooglePageView } = useGoogleTracking();
   
+  // Get global tracking context
+  const { isTrackingEnabled, pageViewTracked, setPageViewTracked, trackEvent } = useTracking();
+  
   useEffect(() => {
+    // Skip if tracking is disabled
+    if (!isTrackingEnabled) return;
+    
     // Get the full URL
     const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
     
-    // Don't track the same page view twice in a row
+    // Prevent duplicate page views - don't track the same URL twice in a row
     if (url === previousPathRef.current) return;
     
-    // Update the previous path for future comparisons
+    // Update tracking reference for future comparisons
     previousPathRef.current = url;
+    
+    // Use global tracking context to prevent duplicate tracking
+    const uniqueId = `page_view:${url}`;
+    if (!trackEvent('page_view', url, uniqueId)) {
+      console.log('Page view event throttled by global context');
+      return;
+    }
     
     // Track page view with all tracking systems
     try {
