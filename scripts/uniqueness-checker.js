@@ -5,10 +5,12 @@
  * each page is compared to others. It helps identify potential duplicate 
  * content issues that search engines might flag.
  * 
- * Usage: node uniqueness-checker.js [--detailed] [--sample=10]
+ * Usage: node uniqueness-checker.js [--detailed] [--sample=10] [--locations | --service-details]
  * Options:
  *   --detailed: Show detailed similarity scores between each page pair
  *   --sample=10: Only analyze a random sample of 10 pages (for quicker testing)
+ *   --locations: Only analyze location pages (/services/locations/[location])
+ *   --service-details: Only analyze service detail pages (/services/[category]/[system]/[type]/[item]/[location])
  */
 
 const axios = require('axios');
@@ -31,7 +33,11 @@ const config = {
   minWordCount: 100, // Minimum word count for a valid page
   similarityThreshold: 0.8, // Pages with similarity above this are flagged
   locationPagesOnly: false, // Set to true to only check location pages
+  serviceDetailPagesOnly: false, // Set to true to only check service detail pages
   excludePatterns: ['/blog/', '/category/'], // URL patterns to exclude
+  // Service detail pages follow this URL pattern: /services/[category]/[system]/[serviceType]/[item]/[location]
+  serviceDetailPattern: /\/services\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/,
+  locationPattern: /\/services\/locations\/[^/]+$/,
 };
 
 // Parse command line arguments
@@ -39,9 +45,25 @@ const args = process.argv.slice(2);
 const showDetailed = args.includes('--detailed');
 const sampleMatch = args.find(arg => arg.startsWith('--sample='));
 const sampleSize = sampleMatch ? parseInt(sampleMatch.split('=')[1]) : 0;
+
+// Check for specific page type filters
 const locationOnly = args.includes('--locations');
+const serviceDetailOnly = args.includes('--service-details');
+
+// Validation to ensure we don't have conflicting filters
+if (locationOnly && serviceDetailOnly) {
+  console.error(colors.red('Error: Cannot use both --locations and --service-details flags together'));
+  process.exit(1);
+}
+
 if (locationOnly) {
   config.locationPagesOnly = true;
+  console.log(colors.cyan('Filtering to only check location pages (e.g., /services/locations/akron-oh)'));
+}
+
+if (serviceDetailOnly) {
+  config.serviceDetailPagesOnly = true;
+  console.log(colors.cyan('Filtering to only check service detail pages (e.g., /services/commercial/heating/maintenance/tune-ups/cleveland-oh)'));
 }
 
 // Create output directory if it doesn't exist
@@ -78,16 +100,18 @@ async function fetchSitemap() {
       }
     }
     
-    // Filter URLs based on configuration
+    // Filter URLs based on configuration and exclude patterns
     if (config.locationPagesOnly) {
-      urls = urls.filter(url => url.includes('/locations/'));
+      urls = urls.filter(url => config.locationPattern.test(url));
+      console.log(`Found ${urls.length} location pages to analyze`);
+    } else if (config.serviceDetailPagesOnly) {
+      urls = urls.filter(url => config.serviceDetailPattern.test(url));
+      console.log(`Found ${urls.length} service detail pages to analyze`);
+    } else {
+      urls = urls.filter(url => {
+        return !config.excludePatterns.some(pattern => url.includes(pattern));
+      });
     }
-    
-    // Filter out excluded patterns
-    config.excludePatterns.forEach(pattern => {
-      urls = urls.filter(url => !url.includes(pattern));
-    });
-    
     // Take a random sample if requested
     if (sampleSize > 0 && sampleSize < urls.length) {
       urls = getRandomSample(urls, sampleSize);
@@ -291,7 +315,89 @@ function calculateSimilarities(pages) {
 
 // Generate a summary report
 function generateSummary(results) {
-  const { pageAnalysis, similarities } = results;
+  const { pages, similarities } = results;
+  
+  // Calculate average uniqueness for each page
+  const pageAnalysis = pages.map(page => {
+    const pageSimilarities = similarities.filter(s => 
+      s.page1 === page.url || s.page2 === page.url
+    );
+    
+    const similarityScores = pageSimilarities.map(s => s.similarity);
+    const avgSimilarity = similarityScores.length > 0 ?
+      similarityScores.reduce((a, b) => a + b, 0) / similarityScores.length :
+      0;
+    
+    // Calculate how many pages this is too similar to
+    const tooSimilarCount = pageSimilarities.filter(s => 
+      s.similarity > config.similarityThreshold
+    ).length;
+    
+    // Parse URL components for service detail pages
+    let urlComponents = {};
+    if (config.serviceDetailPagesOnly && config.serviceDetailPattern.test(page.url)) {
+      // Extract components from URL pattern: /services/[category]/[system]/[serviceType]/[item]/[location]
+      const urlParts = page.url.split('/');
+      if (urlParts.length >= 7) {
+        urlComponents = {
+          category: urlParts[urlParts.length - 6], 
+          system: urlParts[urlParts.length - 5],
+          serviceType: urlParts[urlParts.length - 4],
+          item: urlParts[urlParts.length - 3],
+          location: urlParts[urlParts.length - 2]
+        };
+      }
+    } else if (config.locationPagesOnly && config.locationPattern.test(page.url)) {
+      const urlParts = page.url.split('/');
+      if (urlParts.length >= 4) {
+        urlComponents = {
+          location: urlParts[urlParts.length - 1]
+        };
+      }
+    }
+    
+    return {
+      url: page.url,
+      urlComponents,
+      wordCount: page.content.split(/\s+/).length,
+      avgSimilarity: avgSimilarity,
+      uniquenessScore: (1 - avgSimilarity) * 100,
+      tooSimilarCount
+    };
+  });
+  
+  // Helper function to get comparison description
+  function getComparisonDescription(url1, url2, pageAnalysis) {
+    const page1 = pageAnalysis.find(p => p.url === url1);
+    const page2 = pageAnalysis.find(p => p.url === url2);
+    
+    if (!page1 || !page2) {
+      return 'General page comparison';
+    }
+    
+    if (!page1.urlComponents || !page2.urlComponents) {
+      return 'General page comparison';
+    }
+    
+    // For service detail pages
+    if (config.serviceDetailPagesOnly) {
+      const sameLocation = page1.urlComponents.location === page2.urlComponents.location;
+      const sameService = page1.urlComponents.item === page2.urlComponents.item;
+      
+      if (sameLocation && sameService) {
+        return 'Same service in same location (should be unique!)'; 
+      } else if (sameLocation) {
+        return 'Different services in same location'; 
+      } else if (sameService) {
+        return 'Same service in different locations';
+      } else {
+        return 'Different services in different locations';
+      }
+    }
+    
+    // For location pages
+    return 'Location comparison';
+  }
   
   // Sort pages by uniqueness (least unique first)
   const sortedPages = [...pageAnalysis].sort((a, b) => 
@@ -300,25 +406,55 @@ function generateSummary(results) {
   
   // Find potentially problematic pages
   const problemPages = sortedPages.filter(
-    page => page.uniquenessScore < (1 - config.similarityThreshold)
+    page => page.uniquenessScore < (1 - config.similarityThreshold) * 100
   );
   
   // Find suspicious pairs (most similar first)
   const suspiciousPairs = similarities
     .filter(pair => pair.isSuspicious)
-    .sort((a, b) => b.similarity - a.similarity);
+    .sort((a, b) => b.similarity - a.similarity)
+    .map(pair => ({ ...pair, comparison: getComparisonDescription(pair.page1, pair.page2, pageAnalysis) }));
+  
+  // Category and location analysis for service detail pages
+  let categoryAnalysis = {};
+  let locationAnalysis = {};
+  if (config.serviceDetailPagesOnly) {
+    pageAnalysis.forEach(page => {
+      if (page.urlComponents && page.urlComponents.category) {
+        if (!categoryAnalysis[page.urlComponents.category]) {
+          categoryAnalysis[page.urlComponents.category] = { count: 0, uniquenessScores: [] };
+        }
+        categoryAnalysis[page.urlComponents.category].count++;
+        categoryAnalysis[page.urlComponents.category].uniquenessScores.push(page.uniquenessScore);
+      }
+      if (page.urlComponents && page.urlComponents.location) {
+        if (!locationAnalysis[page.urlComponents.location]) {
+          locationAnalysis[page.urlComponents.location] = { count: 0, uniquenessScores: [] };
+        }
+        locationAnalysis[page.urlComponents.location].count++;
+        locationAnalysis[page.urlComponents.location].uniquenessScores.push(page.uniquenessScore);
+      }
+    });
+    Object.keys(categoryAnalysis).forEach(category => {
+      categoryAnalysis[category].avgUniqueness = categoryAnalysis[category].uniquenessScores.reduce((a, b) => a + b, 0) / categoryAnalysis[category].uniquenessScores.length;
+    });
+    Object.keys(locationAnalysis).forEach(location => {
+      locationAnalysis[location].avgUniqueness = locationAnalysis[location].uniquenessScores.reduce((a, b) => a + b, 0) / locationAnalysis[location].uniquenessScores.length;
+    });
+  }
   
   return {
     summary: {
-      totalPagesAnalyzed: pageAnalysis.length,
-      averageUniqueness: pageAnalysis.reduce((sum, page) => sum + page.uniquenessScore, 0) / pageAnalysis.length,
-      potentialDuplicateCount: problemPages.length,
-      highestSimilarityScore: similarities.length > 0 ? 
-        Math.max(...similarities.map(s => s.similarity)) : 0,
-      analysisDate: new Date().toISOString()
+      totalPages: pages.length,
+      averageUniqueness: parseFloat((pageAnalysis.reduce((sum, p) => sum + p.uniquenessScore, 0) / pageAnalysis.length).toFixed(2)) + '%',
+      potentialDuplicateCount: problemPages.length
     },
     potentialDuplicates: problemPages.slice(0, 10), // Top 10 least unique pages
     mostSimilarPairs: suspiciousPairs.slice(0, 10), // Top 10 most similar pairs
+    ...(config.serviceDetailPagesOnly && { 
+      categoryAnalysis,
+      locationAnalysis 
+    }),
     pageAnalysis: sortedPages
   };
 }
@@ -363,33 +499,56 @@ async function main() {
   
   // Step 6: Print summary to console
   console.log(colors.yellow('\nRESULTS SUMMARY:'));
-  console.log(colors.cyan('Total pages analyzed:'), summary.summary.totalPagesAnalyzed);
-  console.log(colors.cyan('Average uniqueness score:'), (summary.summary.averageUniqueness * 100).toFixed(2) + '%');
+  console.log(colors.cyan('Total pages analyzed:'), summary.summary.totalPages);
+  console.log(colors.cyan('Average uniqueness score:'), summary.summary.averageUniqueness);
   console.log(colors.cyan('Potential duplicate pages:'), summary.summary.potentialDuplicateCount);
   
-  if (summary.potentialDuplicates.length > 0) {
-    console.log(colors.yellow('\nPOTENTIAL DUPLICATE PAGES:'));
-    summary.potentialDuplicates.forEach((page, index) => {
-      console.log(colors.red(`${index + 1}. ${page.url}`));
-      console.log(`   Uniqueness Score: ${(page.uniquenessScore * 100).toFixed(2)}%`);
-      console.log(`   Similar to ${page.similarPagesCount} other pages`);
+  console.log(colors.yellow('\nMOST SIMILAR PAGE PAIRS:'));
+  summary.mostSimilarPairs.forEach((pair, index) => {
+    console.log(`${index + 1}. Similarity: ${pair.similarity}`);
+    console.log(`   - ${pair.pageA}`);
+    console.log(`   - ${pair.pageB}`);
+    if (pair.comparison) {
+      console.log(`   - ${colors.yellow(pair.comparison)}`);
+    }
+  });
+  
+  // For service detail pages, show category and location analysis
+  if (config.serviceDetailPagesOnly && summary.categoryAnalysis) {
+    console.log('\nCATEGORY ANALYSIS:');
+    Object.keys(summary.categoryAnalysis).forEach(category => {
+      console.log(`${category}: ${summary.categoryAnalysis[category].count} pages, ` +
+        `Avg. Uniqueness: ${(summary.categoryAnalysis[category].avgUniqueness).toFixed(2)}%`);
+    });
+    
+    console.log('\nLOCATION ANALYSIS:');
+    Object.keys(summary.locationAnalysis).forEach(location => {
+      console.log(`${location}: ${summary.locationAnalysis[location].count} pages, ` + 
+        `Avg. Uniqueness: ${(summary.locationAnalysis[location].avgUniqueness).toFixed(2)}%`);
     });
   }
-  
-  if (summary.mostSimilarPairs.length > 0) {
-    console.log(colors.yellow('\nMOST SIMILAR PAGE PAIRS:'));
-    summary.mostSimilarPairs.forEach((pair, index) => {
-      console.log(colors.red(`${index + 1}. Similarity: ${(pair.similarity * 100).toFixed(2)}%`));
-      console.log(`   - ${pair.pageA}`);
-      console.log(`   - ${pair.pageB}`);
-    });
+
+  // Recommendations based on the results
+  console.log('\nRECOMMENDATIONS:');
+  if (summary.potentialDuplicates.length === 0) {
+    console.log('• Your pages appear to have good uniqueness scores. Continue monitoring as you add more content.');
+  } else if (summary.potentialDuplicates.length < 5) {
+    console.log('• A few pages show high similarity. Consider reviewing these pages to increase their uniqueness.');
+  } else {
+    console.log('• Several pages have high similarity scores. Review your content strategy to ensure each page offers unique value.');
   }
   
-  console.log(colors.yellow('\nRECOMMENDATIONS:'));
-  if (summary.summary.potentialDuplicateCount > 0) {
-    console.log(colors.red('• Review the potential duplicate pages listed above and ensure they contain unique content.'));
-    console.log(colors.red('• Consider adding more location-specific details, images, testimonials, or other unique elements.'));
-    console.log(colors.red('• Ensure proper use of canonical URLs for all pages.'));
+  // Special recommendations for service detail pages
+  if (config.serviceDetailPagesOnly) {
+    if (summary.mostSimilarPairs.some(pair => pair.comparison?.includes('Same service in same location'))) {
+      console.log('• CRITICAL: Found identical service pages for the same location. These should be completely unique.');
+    }
+    if (summary.summary.averageUniqueness < 50) {
+      console.log('• Service detail pages have low uniqueness. Consider adding more location-specific content such as:');
+      console.log('  - Local customer testimonials specific to each service');
+      console.log('  - Case studies from the specific location');
+      console.log('  - Local regulatory information related to each service type');
+    }
   } else {
     console.log(colors.green('• Your pages appear to have good uniqueness scores. Continue monitoring as you add more content.'));
   }
