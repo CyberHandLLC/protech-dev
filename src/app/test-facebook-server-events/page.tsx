@@ -1,13 +1,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import PageLayout from '@/components/PageLayout';
-import dynamic from 'next/dynamic';
-
-// Dynamically import the client-side component
-const FacebookServerEventTester = dynamic(
-  () => import('@/components/FacebookServerEventTester'),
-  { ssr: false }
-);
+import ServerEventTestClient from './ServerEventTestClient';
 
 export const metadata: Metadata = {
   title: 'Facebook Server Events Tester | ProTech HVAC',
@@ -25,7 +19,7 @@ export default function TestFacebookServerEventsPage() {
           Use this page to test different events using the Facebook Conversions API
         </p>
         
-        <FacebookServerEventTester />
+        <ServerEventTestClient />
         
         <div className="mt-10 bg-navy-light rounded-lg p-6 text-ivory max-w-3xl mx-auto">
           <h2 className="text-xl font-bold mb-4">About Facebook Server Events</h2>
