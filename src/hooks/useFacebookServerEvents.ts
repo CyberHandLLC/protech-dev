@@ -116,17 +116,21 @@ export default function useFacebookServerEvents() {
           // Include Facebook cookies if available
           fbp,
           fbc,
-          // Include user data if provided
+          // Include user data if provided - all of these will be hashed server-side
+          // PII fields: email, phone, name, city, state, zip, etc.
           em: userData?.email,
           ph: userData?.phone,
           fn: userData?.firstName,
           ln: userData?.lastName,
           ge: userData?.gender,
           db: userData?.dateOfBirth,
-          ct: userData?.city,
-          st: userData?.state,
-          zp: userData?.zipCode,
+          // These are the fields that were causing the error - make sure to use proper parameter names
+          ct: userData?.city,        // City must use 'ct' parameter
+          st: userData?.state,       // State must use 'st' parameter
+          zp: userData?.zipCode,     // Zip code must use 'zp' parameter
           external_id: userData?.externalId,
+          // Non-PII fields - don't need hashing
+          client_user_agent: navigator?.userAgent,
         },
         custom_data: customData
       };

@@ -18,10 +18,17 @@ interface UserData {
   ph?: string; // Hashed phone
   fn?: string; // Hashed first name
   ln?: string; // Hashed last name
+  ct?: string; // Hashed city
+  st?: string; // Hashed state
+  zp?: string; // Hashed zip code
   external_id?: string;
   subscription_id?: string;
   fb_login_id?: string;
   lead_id?: string;
+  // Facebook's browser ID cookie parameter - should not be hashed
+  fbp?: string;
+  // Facebook's click ID cookie parameter - should not be hashed
+  fbc?: string;
   // Can include other fields as needed
 }
 
@@ -116,6 +123,7 @@ export async function POST(req: NextRequest) {
     const { event } = body;
     
     // Hash any PII data if not already hashed
+    // Facebook requires ALL user data to be hashed except for client_user_agent, fbc, and fbp
     if (event.user_data.em && !event.user_data.em.includes('$')) {
       event.user_data.em = await hashData(event.user_data.em);
     }
@@ -130,6 +138,26 @@ export async function POST(req: NextRequest) {
     
     if (event.user_data.ln && !event.user_data.ln.includes('$')) {
       event.user_data.ln = await hashData(event.user_data.ln);
+    }
+    
+    // Hash city (ct) if present and not already hashed
+    if (event.user_data.ct && !event.user_data.ct.includes('$')) {
+      event.user_data.ct = await hashData(event.user_data.ct);
+    }
+    
+    // Hash state (st) if present and not already hashed
+    if (event.user_data.st && !event.user_data.st.includes('$')) {
+      event.user_data.st = await hashData(event.user_data.st);
+    }
+    
+    // Hash zip code (zp) if present and not already hashed
+    if (event.user_data.zp && !event.user_data.zp.includes('$')) {
+      event.user_data.zp = await hashData(event.user_data.zp);
+    }
+    
+    // Hash external_id if present and not already hashed
+    if (event.user_data.external_id && !event.user_data.external_id.includes('$')) {
+      event.user_data.external_id = await hashData(event.user_data.external_id);
     }
     
     // Add client info to user_data if not provided
