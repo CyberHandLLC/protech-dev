@@ -62,10 +62,10 @@ export default function ServicePageContentNew({
   
   // Create breadcrumb items
   const breadcrumbItems = [
-    { label: 'Services', href: '/services2' },
-    { label: serviceInfo.categoryName, href: `/services2?category=${category}` },
-    { label: serviceInfo.system.name, href: `/services2?category=${category}#${system}` },
-    { label: serviceInfo.serviceType.name, href: `/services2?category=${category}#${system}-${serviceType}` },
+    { label: 'Services', href: '/services' },
+    { label: serviceInfo.categoryName, href: `/services?category=${category}` },
+    { label: serviceInfo.system.name, href: `/services?category=${category}#${system}` },
+    { label: serviceInfo.serviceType.name, href: `/services?category=${category}#${system}-${serviceType}` },
     { label: serviceInfo.item.name, isCurrentPage: true }
   ];
   
@@ -406,7 +406,7 @@ export default function ServicePageContentNew({
                     {serviceType !== 'repairs' && (
                       <li>
                         <Link 
-                          href={`/services2/${category}/${system}/repairs/${item}/${locationParam}`}
+                          href={`/services/${category}/${system}/repairs/${item}/${locationParam}`}
                           className="flex items-center text-ivory hover:text-red transition-colors"
                         >
                           <span className="text-red mr-2">🔧</span>
@@ -418,7 +418,7 @@ export default function ServicePageContentNew({
                     {serviceType !== 'maintenance' && (
                       <li>
                         <Link 
-                          href={`/services2/${category}/${system}/maintenance/${item}/${locationParam}`}
+                          href={`/services/${category}/${system}/maintenance/${item}/${locationParam}`}
                           className="flex items-center text-ivory hover:text-red transition-colors"
                         >
                           <span className="text-red mr-2">🛠️</span>
@@ -430,7 +430,7 @@ export default function ServicePageContentNew({
                     {serviceType !== 'installations' && (
                       <li>
                         <Link 
-                          href={`/services2/${category}/${system}/installations/${item}/${locationParam}`}
+                          href={`/services/${category}/${system}/installations/${item}/${locationParam}`}
                           className="flex items-center text-ivory hover:text-red transition-colors"
                         >
                           <span className="text-red mr-2">🏠</span>
@@ -442,7 +442,7 @@ export default function ServicePageContentNew({
                     {serviceType !== 'inspections' && (
                       <li>
                         <Link 
-                          href={`/services2/${category}/${system}/inspections/${item}/${locationParam}`}
+                          href={`/services/${category}/${system}/inspections/${item}/${locationParam}`}
                           className="flex items-center text-ivory hover:text-red transition-colors"
                         >
                           <span className="text-red mr-2">🔍</span>

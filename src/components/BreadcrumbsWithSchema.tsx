@@ -96,9 +96,9 @@ function generateBreadcrumbs(pathname: string, customItems?: BreadcrumbItem[]): 
     return breadcrumbs;
   }
   
-  // Handle special case for services2
-  if (pathname.startsWith('/services2')) {
-    breadcrumbs.push({ label: 'Services', href: '/services2' });
+  // Handle special case for services
+  if (pathname.startsWith('/services')) {
+    breadcrumbs.push({ label: 'Services', href: '/services' });
   }
   
   // If custom items are provided, add them after the standard home + services
@@ -112,8 +112,8 @@ function generateBreadcrumbs(pathname: string, customItems?: BreadcrumbItem[]): 
   let currentPath = '';
   
   pathSegments.forEach((segment, index) => {
-    // Skip services2 as we've already added it
-    if (segment === 'services2') return;
+    // Skip services as we've already added it
+    if (segment === 'services') return;
     
     currentPath += `/${segment}`;
     

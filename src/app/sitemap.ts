@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/services2`,
+      url: `${baseUrl}/services`,
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.9,
@@ -41,7 +41,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Service category pages
   const serviceCategoryPages = serviceCategories.map(category => ({
-    url: `${baseUrl}/services2?category=${category.id}`,
+    url: `${baseUrl}/services?category=${category.id}`,
     lastModified: currentDate,
     changeFrequency: 'weekly' as const,
     priority: 0.7,
@@ -74,7 +74,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   
   // Location specific pages (higher priority for SEO)
   const locationPages = serviceLocations.map(location => ({
-    url: `${baseUrl}/services2?location=${location.slug}`,
+    url: `${baseUrl}/services/locations/${location.slug}`,
     lastModified: currentDate,
     changeFrequency: 'weekly' as const,
     priority: 0.8,
@@ -91,7 +91,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           // Generate service detail pages for each location
           serviceLocations.forEach(location => {
             serviceDetailPages.push({
-              url: `${baseUrl}/services2/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
+              url: `${baseUrl}/services/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
               lastModified: currentDate,
               changeFrequency: 'weekly' as const,
               priority: 0.9, // High priority for service detail pages

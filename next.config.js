@@ -52,6 +52,22 @@ const nextConfig = {
   // Enable compression for better performance
   compress: true,
   
+  // Set up redirects from old services2 URLs to new services URLs
+  async redirects() {
+    return [
+      {
+        source: '/services2',
+        destination: '/services',
+        permanent: true,
+      },
+      {
+        source: '/services2/:path*',
+        destination: '/services/:path*',
+        permanent: true,
+      },
+    ];
+  },
+  
   // Optimized webpack configuration
   webpack: (config) => {
     return config;

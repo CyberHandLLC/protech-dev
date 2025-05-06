@@ -109,6 +109,6 @@ export function generateLocationMetadata(location: string): Metadata {
       `heating repair ${formattedLocation}`,
       `furnace repair ${formattedLocation}`
     ],
-    path: `/services2/location/${location}`,
+    path: `/services/locations/${location}`,
   });
 }

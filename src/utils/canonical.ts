@@ -24,5 +24,5 @@ export function generateServiceCanonicalUrl(
   serviceId: string, 
   location: string = 'northeast-ohio'
 ): string {
-  return generateCanonicalUrl(`/services2/${categoryId}/${serviceId}/${location}`);
+  return generateCanonicalUrl(`/services/${categoryId}/${serviceId}/${location}`);
 }

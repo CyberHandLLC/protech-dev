@@ -356,7 +356,7 @@ export default function ServicesListMobile({
                       {activeServiceTypeData.items.map((item) => (
                         <li key={item.id}>
                           <Link 
-                            href={`/services2/${category.id}/${activeSystemData.id}/${activeServiceTypeData.id}/${item.id}/${combinedLocation.slug}`}
+                            href={`/services/${category.id}/${activeSystemData.id}/${activeServiceTypeData.id}/${item.id}/${combinedLocation.slug}`}
                             className="flex items-center p-3 sm:p-4 rounded-md bg-navy-light/30 hover:bg-red/10 border border-ivory/5 hover:border-red/30 group transition-all"
                           >
                             <span className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center bg-navy rounded-full mr-3 sm:mr-4 text-xl sm:text-2xl group-hover:scale-110 transition-transform">
@@ -385,7 +385,7 @@ export default function ServicesListMobile({
                   ) : (
                     <div className="py-4 px-6 text-center">
                       <Link
-                        href={`/services2/${category.id}/${activeSystemData.id}/${activeServiceTypeData.id}/general/${combinedLocation.slug}`}
+                        href={`/services/${category.id}/${activeSystemData.id}/${activeServiceTypeData.id}/general/${combinedLocation.slug}`}
                         className="inline-flex items-center bg-red hover:bg-red-dark text-white px-6 py-3 rounded-lg transition-colors"
                       >
                         <span>Schedule {activeSystemData.name} {activeServiceTypeData.name}</span>
