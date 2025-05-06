@@ -54,14 +54,25 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     },
   ];
 
-  // Service category pages - using clean URLs instead of query parameters
-  const serviceCategoryPages: SitemapEntry[] = serviceCategories.map(category => ({
-    url: `${baseUrl}/services/${category.id}`,
-    lastModified: currentDate,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-    isCanonical: true,
-  }));
+  // Validate category pages to ensure they exist before including in sitemap
+  // For now, we're only including 'residential' until we have valid pages for other categories
+  const validCategories = new Set(['residential']);
+  
+  // Service category pages - using clean URLs instead of query parameters (only valid ones)
+  const serviceCategoryPages: SitemapEntry[] = serviceCategories
+    .filter(category => validCategories.has(category.id))
+    .map(category => ({
+      url: `${baseUrl}/services/${category.id}`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+      isCanonical: true,
+    }));
+    
+  // Log which categories are included/excluded for debugging
+  console.log(`Including category pages: ${validCategories.size} of ${serviceCategories.length}`);
+  console.log(`Excluded categories: ${serviceCategories.filter(c => !validCategories.has(c.id)).map(c => c.id).join(', ')}`);
+  
 
   // Use BOTH standard and expanded service locations for comprehensive coverage
   // All these locations have actual pages in the application thanks to our dynamic page implementation
