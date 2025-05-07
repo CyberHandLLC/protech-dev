@@ -44,7 +44,15 @@ export default function ServiceDetailClientWrapper({
 }: ServiceDetailClientWrapperProps) {
   return (
     <>
-      {/* Always handle FAQ schema in ONE place - through our wrapper */}
+      {/* For service detail pages, we want the FAQs in the schema but not necessarily visible */}
+      
+      {/* If FAQs shouldn't be visible but should be in schema, add FAQSchemaOnly first */}
+      {!showVisibleFAQs && faqs.length > 0 && (
+        <FAQSchemaOnly 
+          faqs={faqs} 
+          mainEntity={mainEntity || serviceName}
+        />
+      )}
       
       {/* Wrap with SEO service wrapper for structured data */}
       <SEOServicePageWrapper
@@ -53,7 +61,9 @@ export default function ServiceDetailClientWrapper({
         serviceUrl={serviceUrl}
         serviceImageUrl={serviceImageUrl}
         serviceArea={serviceArea}
-        faqs={faqs} // Always pass FAQs to the wrapper for schema
+        // Only include FAQs in the wrapper if they should be visible
+        // This prevents duplicate schema when using FAQSchemaOnly above
+        faqs={showVisibleFAQs ? faqs : []} 
       >
         {/* Render the original service page content */}
         {children}

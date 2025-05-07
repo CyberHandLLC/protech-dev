@@ -163,7 +163,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
       faqTitle={`Frequently Asked Questions About ${itemData.name} ${serviceTypeData.name}`}
       faqSubtitle={`Get answers to common questions about ${itemData.name} ${serviceTypeData.name.toLowerCase()} in ${locationName}.`}
       mainEntity={`${itemData.name} ${serviceTypeData.name}`}
-      showVisibleFAQs={true} // Enable visible FAQs with proper schema handling
+      showVisibleFAQs={false} // Keep FAQs in schema but not visible on the page
     >
       <ServicePageContentNew
         serviceInfo={serviceInfo}
