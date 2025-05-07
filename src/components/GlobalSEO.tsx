@@ -53,8 +53,16 @@ export default function GlobalSEO({
   pageFAQs = [], 
   includeFAQs = true 
 }: GlobalSEOProps) {
-  // Combine common FAQs with page-specific FAQs
-  const allFAQs = includeFAQs 
+  // Check if we're on a service detail page by looking at the URL
+  const isServiceDetailPage = typeof window !== 'undefined' && 
+    (window.location.pathname.match(/\/services\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/) ||
+     window.location.pathname.match(/\/services2\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/));
+
+  // Only include FAQs if we're NOT on a service detail page (those pages handle their own FAQs)
+  const shouldIncludeFAQs = includeFAQs && !isServiceDetailPage;
+  
+  // Combine common FAQs with page-specific FAQs only if we should include FAQs
+  const allFAQs = shouldIncludeFAQs 
     ? [...pageFAQs, ...commonFAQs] 
     : pageFAQs;
 
@@ -63,8 +71,8 @@ export default function GlobalSEO({
       {/* Business information schema - appears on all pages */}
       <LocalBusinessSchema />
       
-      {/* FAQ schema - only include if we have FAQs */}
-      {allFAQs.length > 0 && (
+      {/* FAQ schema - only include if we have FAQs AND we're not on a service detail page */}
+      {allFAQs.length > 0 && shouldIncludeFAQs && (
         <FAQSchemaOnly faqs={allFAQs} />
       )}
 
