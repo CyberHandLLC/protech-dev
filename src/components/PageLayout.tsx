@@ -34,7 +34,7 @@ export default function PageLayout({
   return (
     <>
       {showNavigation && <MainNavigation />}
-      <div className={`min-h-screen flex flex-col bg-navy text-ivory ${showNavigation ? 'pt-20' : ''} ${className}`}>
+      <div className={`min-h-screen flex flex-col bg-navy text-ivory ${showNavigation ? 'pt-24' : ''} ${className}`}>
         <div className="flex-grow">
           {showBreadcrumbs && (
             <div className="container mx-auto px-4 py-2">

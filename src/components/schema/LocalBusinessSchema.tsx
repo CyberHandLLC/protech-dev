@@ -150,9 +150,10 @@ export default function LocalBusinessSchema() {
       }))
     },
     "sameAs": [
-      "https://www.facebook.com/protechohio",
-      "https://www.instagram.com/protechohio",
-      "https://www.yelp.com/biz/protech-hvac"
+      "https://www.facebook.com/people/Pro-Tech-Heating-Cooling-LLC/61555139044123/",
+      "https://www.instagram.com/protechohio/",
+      "https://www.yelp.com/biz/protech-heating-and-cooling-orrville",
+      "https://g.co/kgs/NRw5p2E"
     ]
   };
 

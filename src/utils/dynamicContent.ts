@@ -87,9 +87,10 @@ export function generateLocalBusinessSchema(
       "geoRadius": "72000" // 45 miles in meters
     },
     "sameAs": [
-      "https://www.facebook.com/protechohio",
-      "https://twitter.com/protechohio",
-      "https://www.instagram.com/protechohio"
+      "https://www.facebook.com/people/Pro-Tech-Heating-Cooling-LLC/61555139044123/",
+      "https://www.instagram.com/protechohio/",
+      "https://www.yelp.com/biz/protech-heating-and-cooling-orrville",
+      "https://g.co/kgs/NRw5p2E"
     ],
     "openingHoursSpecification": [
       {

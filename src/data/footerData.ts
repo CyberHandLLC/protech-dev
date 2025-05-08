@@ -34,10 +34,10 @@ export const legalLinks: FooterLink[] = [
 
 // Social media platforms
 export const socialPlatforms: SocialPlatform[] = [
-  { name: 'Facebook', icon: '/logos/platforms/facebook.svg', url: '#' },
-  { name: 'Google', icon: '/logos/platforms/google.svg', url: '#' },
-  { name: 'Instagram', icon: '/logos/platforms/instagram.svg', url: '#' },
-  { name: 'Yelp', icon: '/logos/platforms/yelp.svg', url: '#' }
+  { name: 'Facebook', icon: '/logos/platforms/facebook.svg', url: 'https://www.facebook.com/people/Pro-Tech-Heating-Cooling-LLC/61555139044123/' },
+  { name: 'Google', icon: '/logos/platforms/google.svg', url: 'https://g.co/kgs/NRw5p2E' },
+  { name: 'Instagram', icon: '/logos/platforms/instagram.svg', url: 'https://www.instagram.com/protechohio/' },
+  { name: 'Yelp', icon: '/logos/platforms/yelp.svg', url: 'https://www.yelp.com/biz/protech-heating-and-cooling-orrville' }
 ];
 
 // Service areas grouped by region

@@ -117,10 +117,10 @@ const allTestimonials: Record<string, Testimonial[]> = {
  * Review platforms for the company
  */
 const reviewPlatforms = [
-  { name: 'Google', url: 'https://google.com/maps', logo: '/logos/platforms/google.svg' },
-  { name: 'Yelp', url: 'https://yelp.com', logo: '/logos/platforms/yelp.svg' },
-  { name: 'Facebook', url: 'https://facebook.com', logo: '/logos/platforms/facebook.svg' },
-  { name: 'Instagram', url: 'https://instagram.com', logo: '/logos/platforms/instagram.svg' }
+  { name: 'Google', url: 'https://g.co/kgs/NRw5p2E', logo: '/logos/platforms/google.svg' },
+  { name: 'Yelp', url: 'https://www.yelp.com/biz/protech-heating-and-cooling-orrville', logo: '/logos/platforms/yelp.svg' },
+  { name: 'Facebook', url: 'https://www.facebook.com/people/Pro-Tech-Heating-Cooling-LLC/61555139044123/', logo: '/logos/platforms/facebook.svg' },
+  { name: 'Instagram', url: 'https://www.instagram.com/protechohio/', logo: '/logos/platforms/instagram.svg' }
 ];
 
 /**
