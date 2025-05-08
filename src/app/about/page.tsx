@@ -72,8 +72,8 @@ export default function AboutPage() {
                 <div className="w-full h-full overflow-hidden rounded-xl relative">
                   <div className="absolute inset-0 bg-navy/20 z-10"></div>
                   <Image
-                    src="/images/hvac-technician.jpg"
-                    alt="ProTech HVAC Service Team"
+                    src="/images/protech-family.jpg"
+                    alt="The ProTech HVAC Family"
                     width={600}
                     height={400}
                     className="object-cover w-full h-full"

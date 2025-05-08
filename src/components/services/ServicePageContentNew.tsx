@@ -60,24 +60,19 @@ export default function ServicePageContentNew({
   const faqs = generateFAQs(serviceInfo.system.name, serviceInfo.serviceType.name, 
                            serviceInfo.item.name, serviceInfo.locationName);
   
-  // Create breadcrumb items
+  // Create breadcrumb items - ensure structure is compatible with BreadcrumbsWithSchema
   const breadcrumbItems = [
     { label: 'Services', href: '/services' },
     { label: serviceInfo.categoryName, href: `/services?category=${category}` },
     { label: serviceInfo.system.name, href: `/services?category=${category}#${system}` },
     { label: serviceInfo.serviceType.name, href: `/services?category=${category}#${system}-${serviceType}` },
-    { label: serviceInfo.item.name, isCurrentPage: true }
+    { label: serviceInfo.item.name, href: '#' } // Use '#' for current page instead of isCurrentPage property
   ];
   
+  // Pass breadcrumb items to PageLayout for use with BreadcrumbsWithSchema
   return (
-    <PageLayout>
+    <PageLayout customBreadcrumbs={breadcrumbItems}>
       <main>
-        {/* Breadcrumb navigation bar */}
-        <div className="bg-dark-blue border-b border-dark-blue-light w-full">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <BreadcrumbNav items={breadcrumbItems} className="py-3" />
-          </div>
-        </div>
         
         {/* Hero section with service details */}
         <section className="bg-navy py-12 pb-16 text-white">
