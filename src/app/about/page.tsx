@@ -72,7 +72,7 @@ export default function AboutPage() {
                 <div className="w-full h-full overflow-hidden rounded-xl relative">
                   <div className="absolute inset-0 bg-navy/20 z-10"></div>
                   <Image
-                    src="/images/protech-family.jpg"
+                    src="/images/protech-reliable.jpeg"
                     alt="The ProTech HVAC Family"
                     width={600}
                     height={400}
