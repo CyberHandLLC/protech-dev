@@ -21,8 +21,8 @@ export default function Footer() {
       icon: '✉️',
       title: 'Email',
       content: (
-        <a href="mailto:info@protechheatingandcooling.net" className="text-ivory/90 hover:text-red-light transition-colors">
-          info@protechheatingandcooling.net
+        <a href="mailto:info@protech-ohio.com" className="text-ivory/90 hover:text-red-light transition-colors">
+          info@protech-ohio.com
         </a>
       )
     },

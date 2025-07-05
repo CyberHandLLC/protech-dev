@@ -1,24 +1,55 @@
-# ProTech HVAC Website Robots.txt
-# Allow all bots to crawl the entire website
-User-agent: *
-Allow: /
+import { MetadataRoute } from 'next'
 
-# Explicitly allow Facebook bots and ad-related crawlers
-User-agent: facebookexternalhit
-Allow: /
-User-agent: FacebookBot
-Allow: /
-User-agent: Facebot
-Allow: /
+/**
+ * Combined robots.txt for ProTech HVAC
+ * - Allows all bots to crawl main site
+ * - Blocks sensitive/internal paths
+ * - Explicitly allows Facebook, AdSense, Google Images bots
+ * - Provides sitemap & host
+ */
 
-# Allow Google AdSense and ad-related bots
-User-agent: Mediapartners-Google
-Allow: /
-User-agent: Googlebot-Image
-Allow: /
-
-# Allow all tracking scripts
-Disallow: 
-
-# Sitemap location
-Sitemap: https://www.protech-ohio.com/sitemap.xml
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      // Default rule: all bots
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/*.json$',
+          '/404',
+          '/500',
+          '/thank-you',
+          '/*?preview=*',
+          '/*?draft=*',
+        ],
+      },
+      // Explicit allow for Facebook bots
+      {
+        userAgent: 'facebookexternalhit',
+        allow: '/',
+      },
+      {
+        userAgent: 'FacebookBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'Facebot',
+        allow: '/',
+      },
+      // Explicit allow for AdSense & image bots
+      {
+        userAgent: 'Mediapartners-Google',
+        allow: '/',
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: '/',
+      },
+    ],
+    sitemap: 'https://protech-ohio.com/sitemap.xml',
+    host: 'https://protech-ohio.com',
+  }
+}

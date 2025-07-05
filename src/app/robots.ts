@@ -1,34 +1,55 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next'
 
 /**
- * Generates robots.txt for the website
- * This helps search engines understand which pages to crawl and which to ignore
- * Updated with comprehensive crawl directives and correct domain name
+ * Combined robots.txt for ProTech HVAC
+ * - Allows all bots to crawl main site
+ * - Blocks sensitive/internal paths
+ * - Explicitly allows Facebook, AdSense, Google Images bots
+ * - Provides sitemap & host
  */
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
+      // Default rule: all bots
       {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/api/',          // Hide API routes
-          '/admin/',        // Hide admin paths
-          '/*.json$',       // Hide JSON data files
-          '/404',           // Hide error pages
-          '/500',           // Hide error pages
-          '/thank-you',     // Hide thank you pages (post-form submission)
-          '/*?preview=*',   // Hide preview pages
-          '/*?draft=*',     // Hide draft pages
+          '/api/',
+          '/admin/',
+          '/*.json$',
+          '/404',
+          '/500',
+          '/thank-you',
+          '/*?preview=*',
+          '/*?draft=*',
         ],
       },
+      // Explicit allow for Facebook bots
       {
-        // Additional rules for specific bots if needed
-        userAgent: 'GPTBot',
-        disallow: ['/']
+        userAgent: 'facebookexternalhit',
+        allow: '/',
+      },
+      {
+        userAgent: 'FacebookBot',
+        allow: '/',
+      },
+      {
+        userAgent: 'Facebot',
+        allow: '/',
+      },
+      // Explicit allow for AdSense & image bots
+      {
+        userAgent: 'Mediapartners-Google',
+        allow: '/',
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: '/',
       },
     ],
-    sitemap: 'https://protech-ohio.com/sitemap.xml',  // Updated domain name
-    host: 'https://protech-ohio.com',                 // Added host directive
-  };
+    sitemap: 'https://protech-ohio.com/sitemap.xml',
+    host: 'https://protech-ohio.com',
+  }
 }

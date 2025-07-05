@@ -135,7 +135,7 @@ export default function ContactPage() {
                   <h3 className="text-lg font-bold text-white mb-2 group-hover:text-red transition-colors">ProTech Heating & Cooling</h3>
                   <address className="not-italic mb-4 text-ivory/80">
                     <PhoneLink className="text-ivory/90 hover:text-red-light" source="Contact Info Section">330-642-HVAC (4822)</PhoneLink><br />
-                    <a href="mailto:info@protechheatingandcooling.net" className="text-ivory/90 hover:text-red-light">info@protechheatingandcooling.net</a>
+                    <a href="mailto:info@protech-ohio.com" className="text-ivory/90 hover:text-red-light">info@protech-ohio.com</a>
                   </address>
                   <div className="border-t border-dark-blue-light pt-4">
                     <h4 className="text-white font-medium mb-2">Business Hours:</h4>
