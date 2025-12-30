@@ -7,18 +7,23 @@ export function middleware(request: NextRequest) {
   const hostHeader = request.headers.get('host') || '';
   const hostname = hostHeader.split(':')[0]?.toLowerCase() || '';
   const forwardedProto = (request.headers.get('x-forwarded-proto') || '').toLowerCase();
-  const url = request.nextUrl.clone();
 
+  // Handle www to non-www redirect
   if (hostname === 'www.protech-ohio.com') {
-    url.hostname = 'protech-ohio.com';
-    url.protocol = 'https:';
-    return NextResponse.redirect(url, 308);
+    const redirectUrl = new URL(request.url);
+    redirectUrl.hostname = 'protech-ohio.com';
+    redirectUrl.protocol = 'https:';
+    return NextResponse.redirect(redirectUrl, 308);
   }
 
+  // Handle http to https redirect (only for non-www)
   if (hostname === 'protech-ohio.com' && forwardedProto === 'http') {
-    url.protocol = 'https:';
-    return NextResponse.redirect(url, 308);
+    const redirectUrl = new URL(request.url);
+    redirectUrl.protocol = 'https:';
+    return NextResponse.redirect(redirectUrl, 308);
   }
+
+  const url = request.nextUrl.clone();
 
   // For development environment, simulate location detection
   if (process.env.NODE_ENV === 'development') {
