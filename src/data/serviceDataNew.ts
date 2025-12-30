@@ -172,6 +172,50 @@ export const serviceCategories: ServiceCategory[] = [
         description: 'Improve indoor air quality in your home',
         serviceTypes: [
           {
+            id: 'maintenance',
+            name: 'Maintenance/Tune-ups',
+            icon: '🛠️',
+            description: 'Regular maintenance for indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'repairs',
+            name: 'Repairs',
+            icon: '🔧',
+            description: 'Expert repairs for indoor air quality equipment',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'installations',
+            name: 'Installations',
+            icon: '🔨',
+            description: 'Professional installation of indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'inspections',
+            name: 'Inspections',
+            icon: '🔍',
+            description: 'Thorough inspections of indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
             id: 'solutions',
             name: 'Air Quality Solutions',
             icon: '💧',
@@ -335,6 +379,50 @@ export const serviceCategories: ServiceCategory[] = [
         icon: '💨',
         description: 'Improve indoor air quality in commercial spaces',
         serviceTypes: [
+          {
+            id: 'maintenance',
+            name: 'Maintenance/Tune-ups',
+            icon: '🛠️',
+            description: 'Regular maintenance for commercial indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'repairs',
+            name: 'Repairs',
+            icon: '🔧',
+            description: 'Expert repairs for commercial indoor air quality equipment',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'installations',
+            name: 'Installations',
+            icon: '🔨',
+            description: 'Professional installation of commercial indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
+          {
+            id: 'inspections',
+            name: 'Inspections',
+            icon: '🔍',
+            description: 'Thorough inspections of commercial indoor air quality systems',
+            items: [
+              { id: 'air-purifiers', name: 'Air Purifiers', icon: '🌬️' },
+              { id: 'humidifiers', name: 'Humidifiers', icon: '💦' },
+              { id: 'dehumidifiers', name: 'Dehumidifiers', icon: '🌡️' }
+            ]
+          },
           {
             id: 'solutions',
             name: 'Air Quality Solutions',
