@@ -59,8 +59,8 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
   ];
 
   // Validate category pages to ensure they exist before including in sitemap
-  // For now, we're only including 'residential' until we have valid pages for other categories
-  const validCategories = new Set(['residential']);
+  // Include both residential and commercial services
+  const validCategories = new Set(['residential', 'commercial']);
   
   // Service category pages - using clean URLs instead of query parameters (only valid ones)
   const serviceCategoryPages: SitemapEntry[] = serviceCategories
