@@ -51,30 +51,21 @@ interface GlobalSEOProps {
 export default function GlobalSEO({ 
   children, 
   pageFAQs = [], 
-  includeFAQs = true 
+  includeFAQs = false // Default to false to prevent duplicate FAQ schemas on service pages
 }: GlobalSEOProps) {
-  // Check if we're on a service detail page by looking at the URL
-  const isServiceDetailPage = typeof window !== 'undefined' && 
-    (window.location.pathname.match(/\/services\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/) ||
-     window.location.pathname.match(/\/services2\/[^/]+\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/));
-
-  // Only include FAQs if we're NOT on a service detail page (those pages handle their own FAQs)
-  const shouldIncludeFAQs = includeFAQs && !isServiceDetailPage;
+  // CRITICAL FIX: Disable global FAQ schema entirely
+  // Service detail pages handle their own FAQ schemas via ServiceDetailClientWrapper
+  // Having both creates duplicate FAQPage schema which Google flags as invalid
+  const shouldIncludeFAQs = false; // Always false - service pages manage their own FAQs
   
-  // Combine common FAQs with page-specific FAQs only if we should include FAQs
-  const allFAQs = shouldIncludeFAQs 
-    ? [...pageFAQs, ...commonFAQs] 
-    : pageFAQs;
-
   return (
     <>
       {/* Business information schema - appears on all pages */}
       <LocalBusinessSchema />
       
-      {/* FAQ schema - only include if we have FAQs AND we're not on a service detail page */}
-      {allFAQs.length > 0 && shouldIncludeFAQs && (
-        <FAQSchemaOnly faqs={allFAQs} />
-      )}
+      {/* FAQ schema - DISABLED globally to prevent duplicates */}
+      {/* Service detail pages include their own FAQ schema via ServiceDetailClientWrapper */}
+      {/* Other pages can pass includeFAQs={true} explicitly if needed */}
 
       {/* Review schema with real Google reviews */}
       <ReviewSchemaAggregated businessName="ProTech HVAC" />
