@@ -158,7 +158,13 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
   });
   
   // Now generate URLs only for the validated combinations
-  serviceCategories.forEach(category => {
+  // Process commercial services first, then residential
+  const orderedCategories = [
+    ...serviceCategories.filter(cat => cat.id === 'commercial'),
+    ...serviceCategories.filter(cat => cat.id === 'residential')
+  ];
+  
+  orderedCategories.forEach(category => {
     category.systems.forEach(system => {
       system.serviceTypes.forEach(serviceType => {
         serviceType.items.forEach(item => {
