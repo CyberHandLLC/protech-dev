@@ -78,35 +78,68 @@ export async function GET() {
       return NextResponse.json(mockReviews);
     }
 
-    // Fetch place details including reviews
+    // Fetch place details including reviews with timeout
     const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&reviews_sort=newest&key=${apiKey}`;
     
-    const response = await fetch(url, { next: { revalidate: CACHE_DURATION / 1000 } });
-    const data = await response.json();
-
-    if (data.status !== 'OK') {
-      throw new Error(`Google Places API error: ${data.status}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    try {
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        next: { revalidate: CACHE_DURATION / 1000 } 
+      });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.status !== 'OK') {
+        throw new Error(`Google Places API error: ${data.status}`);
+      }
+      
+      const reviews = data.result.reviews || [];
+      
+      // Format reviews and filter out those without text
+      const formattedReviews = reviews
+        .filter((review: any) => review.text && review.text.trim().length > 0)
+        .map((review: any, index: number) => ({
+          id: index + 1,
+          name: review.author_name || 'Anonymous',
+          location: '',  // Google doesn't provide reviewer location
+          rating: review.rating || 5,
+          text: review.text || '',
+          avatar: review.profile_photo_url,
+          service: 'Residential',
+          date: review.time ? new Date(review.time * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+        }));
+      
+      // If we got valid reviews, cache them
+      if (formattedReviews.length > 0) {
+        cachedReviews = formattedReviews;
+        lastFetchTime = now;
+        return NextResponse.json(formattedReviews);
+      }
+      
+      // If no valid reviews, fall through to mock data
+      throw new Error('No valid reviews with text found');
+      
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      
+      // If we have cached data, return it instead of failing
+      if (cachedReviews) {
+        console.warn('Using cached reviews due to API error:', fetchError.message);
+        return NextResponse.json(cachedReviews);
+      }
+      
+      // Otherwise throw to use mock data
+      throw fetchError;
     }
 
-    const reviews = data.result.reviews || [];
-    
-    // Format reviews to match our Testimonial interface
-    const formattedReviews = reviews.map((review: any, index: number) => ({
-      id: index + 1,
-      name: review.author_name,
-      location: '',  // Google doesn't provide reviewer location
-      rating: review.rating,
-      text: review.text,
-      avatar: review.profile_photo_url,
-      service: 'Residential', // Default as per requirements
-      date: new Date(review.time * 1000).toISOString().split('T')[0]
-    }));
-
-    // Cache the results
-    cachedReviews = formattedReviews;
-    lastFetchTime = now;
-
-    return NextResponse.json(formattedReviews);
   } catch (error: any) {
     console.error('Error fetching Google reviews:', error.message);
     
