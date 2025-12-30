@@ -9,15 +9,18 @@ interface InstagramPixelProps {
 /**
  * Instagram Pixel Component
  * 
- * Adds Instagram Pixel tracking code to the site
- * Reads the pixel ID from environment variables when not explicitly provided
+ * NOTE: Instagram ads use the same Meta Pixel infrastructure as Facebook.
+ * If you're running Instagram ads, you should use your Facebook Pixel ID.
+ * A separate Instagram Pixel ID is only needed for specific Instagram-only campaigns.
+ * 
+ * For most cases, the FacebookPixel component handles both Facebook and Instagram tracking.
  */
 export default function InstagramPixel({ pixelId }: InstagramPixelProps) {
   const igPixelId = pixelId || process.env.NEXT_PUBLIC_INSTAGRAM_PIXEL_ID;
   
-  // Don't render anything if no pixel ID is available
+  // Don't render anything if no pixel ID is available - this is expected behavior
   if (!igPixelId) {
-    console.warn('Instagram Pixel ID not provided. Add NEXT_PUBLIC_INSTAGRAM_PIXEL_ID to your environment variables.');
+    // Silent return - no warning needed as Instagram uses Facebook Pixel by default
     return null;
   }
 

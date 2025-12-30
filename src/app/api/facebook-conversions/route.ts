@@ -104,7 +104,21 @@ async function sendToFacebook(event: ConversionEvent): Promise<any> {
     throw new Error(`Facebook Conversions API error: ${errorText}`);
   }
   
-  return response.json();
+  // Handle empty or invalid JSON responses
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    const text = await response.text();
+    if (text && text.trim().length > 0) {
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error('Failed to parse Facebook API response:', text);
+        return { success: true, rawResponse: text };
+      }
+    }
+  }
+  
+  return { success: true };
 }
 
 /**
@@ -121,6 +135,14 @@ export async function POST(req: NextRequest) {
     // Get the conversion event data from request body
     const body: RequestBody = await req.json();
     const { event } = body;
+    
+    // Validate event data
+    if (!event || !event.event_name) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required event data'
+      }, { status: 400 });
+    }
     
     // Hash any PII data if not already hashed
     // Facebook requires ALL user data to be hashed except for client_user_agent, fbc, and fbp

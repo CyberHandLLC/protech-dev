@@ -16,21 +16,10 @@ import { useTracking } from '@/context/TrackingContext';
  * through both Facebook Pixel and Conversions API simultaneously
  */
 export function useFacebookEvents() {
-  const { trackEvent: trackGlobalEvent, isTrackingEnabled, pageViewTracked, setPageViewTracked } = useTracking();
+  const { trackEvent: trackGlobalEvent, isTrackingEnabled } = useTracking();
 
-  // Initialize Facebook Pixel on mount
-  useEffect(() => {
-    if (!isTrackingEnabled) return;
-    
-    // Initialize the Facebook Pixel
-    initFacebookPixel();
-    
-    // Only track page view if it hasn't been tracked already
-    if (!pageViewTracked) {
-      trackEvent(FacebookEventName.PAGE_VIEW);
-      setPageViewTracked(true);
-    }
-  }, [isTrackingEnabled, pageViewTracked, setPageViewTracked]);
+  // Note: Facebook Pixel initialization and PageView tracking is handled by the FacebookPixel component
+  // This hook only provides methods for tracking conversion events
   
   /**
    * Track a lead submission (form fill, quote request, etc.)

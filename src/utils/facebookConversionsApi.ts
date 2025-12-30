@@ -153,7 +153,10 @@ function trackWithPixel(
   userData: UserData = {}
 ): void {
   // Skip if fbq is not defined or if we're on the server
-  if (typeof window === 'undefined' || !(window as any).fbq) return;
+  if (typeof window === 'undefined' || !(window as any).fbq) {
+    console.warn('[Facebook Pixel] fbq not available, skipping client-side tracking');
+    return;
+  }
   
   try {
     const fbq = (window as any).fbq;
@@ -172,32 +175,13 @@ function trackWithPixel(
     if (customData.searchString) pixelCustomData.search_string = customData.searchString;
     if (customData.status) pixelCustomData.status = customData.status;
     
-    // Set up advanced matching parameters for better user identification (2025 best practice)
-    const advancedMatchingParams: Record<string, string> = {};
-    
-    // Apply advanced matching parameters from userData (must be properly hashed in production)
-    if (userData.email) advancedMatchingParams.em = userData.email.toLowerCase();
-    if (userData.phone) advancedMatchingParams.ph = userData.phone.replace(/[^0-9]/g, '');
-    if (userData.firstName) advancedMatchingParams.fn = userData.firstName.toLowerCase();
-    if (userData.lastName) advancedMatchingParams.ln = userData.lastName.toLowerCase();
-    if (userData.city) advancedMatchingParams.ct = userData.city.toLowerCase();
-    if (userData.state) advancedMatchingParams.st = userData.state.toLowerCase();
-    if (userData.zip) advancedMatchingParams.zp = userData.zip;
-    if (userData.externalId) advancedMatchingParams.external_id = userData.externalId;
-    
-    // If we have user data, set it up for this event (2025 best practice for advanced matching)
-    if (Object.keys(advancedMatchingParams).length > 0) {
-      // Update user properties for better audience targeting
-      fbq('init', PIXEL_ID, advancedMatchingParams);
-    }
-    
     // Track the event with the eventID for deduplication (critical 2025 best practice)
+    // Note: Advanced matching should be set during pixel initialization, not on every event
     fbq('track', eventName, pixelCustomData, { eventID: eventId });
     
     console.log(`[Facebook Pixel] Tracked event: ${eventName}`, {
       eventId,
-      customData: pixelCustomData,
-      hasAdvancedMatching: Object.keys(advancedMatchingParams).length > 0
+      customData: pixelCustomData
     });
   } catch (error) {
     console.error('[Facebook Pixel] Error tracking event:', error);
@@ -215,6 +199,12 @@ async function trackWithConversionsApi(
   eventId: string,
   eventSourceUrl: string
 ): Promise<void> {
+  // Skip server-side tracking on client for PageView events to avoid errors
+  // PageView is already tracked by the pixel itself
+  if (eventName === FacebookEventName.PAGE_VIEW) {
+    return;
+  }
+  
   try {
     // Convert userData to format expected by Conversions API
     const apiUserData: Record<string, any> = {};
@@ -268,10 +258,15 @@ async function trackWithConversionsApi(
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error sending conversion event: ${errorText}`);
+      console.error(`[Conversions API] Error sending ${eventName}:`, errorText);
+      return;
     }
+    
+    const result = await response.json();
+    console.log(`[Conversions API] Successfully tracked ${eventName}`, result);
   } catch (error) {
-    console.error('Error sending conversion event:', error);
+    // Silently fail for conversions API - don't break the user experience
+    console.error('[Conversions API] Error:', error);
   }
 }
 

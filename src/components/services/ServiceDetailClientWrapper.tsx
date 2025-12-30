@@ -61,9 +61,9 @@ export default function ServiceDetailClientWrapper({
         serviceUrl={serviceUrl}
         serviceImageUrl={serviceImageUrl}
         serviceArea={serviceArea}
-        // Never pass FAQs to SEOServicePageWrapper to prevent duplicate FAQPage schema
-        // FAQs are handled by FAQSchemaOnly component above
-        faqs={[]} 
+        // Only include FAQs in the wrapper if they should be visible
+        // This prevents duplicate schema when using FAQSchemaOnly above
+        faqs={showVisibleFAQs ? faqs : []} 
       >
         {/* Render the original service page content */}
         {children}

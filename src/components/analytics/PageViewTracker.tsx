@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useFacebookEvents } from '@/hooks/useFacebookEvents';
-import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
 import { useTracking } from '@/context/TrackingContext';
 
@@ -11,10 +9,11 @@ import { useTracking } from '@/context/TrackingContext';
  * PageViewTracker Component
  * 
  * Automatically tracks page views across the website using:
- * - Facebook Pixel (client-side)
- * - Facebook Conversions API (server-side)
  * - Google Analytics 4
  * - Google Tag Manager
+ * 
+ * Note: Facebook/Meta Pixel PageView tracking is handled automatically by the pixel itself.
+ * This component only tracks Google Analytics to avoid duplicate Facebook events.
  * 
  * This component should be placed in the root layout to track all page navigations.
  */
@@ -23,9 +22,7 @@ export default function PageViewTracker() {
   const searchParams = useSearchParams();
   const previousPathRef = useRef<string | null>(null);
   
-  // Initialize tracking hooks
-  const { trackPageView: trackFacebookPageView } = useFacebookEvents();
-  const { trackPageView: trackServerPageView } = useFacebookServerEvents();
+  // Initialize Google tracking hook only
   const { trackPageView: trackGooglePageView } = useGoogleTracking();
   
   // Get global tracking context
@@ -51,22 +48,9 @@ export default function PageViewTracker() {
       return;
     }
     
-    // Track page view with all tracking systems
+    // Track page view with Google Analytics only
+    // Facebook/Meta Pixel tracks PageView automatically on initialization
     try {
-      // Client-side Facebook tracking
-      trackFacebookPageView({
-        customData: {
-          contentName: getPageTitle(pathname),
-          contentCategory: getPageCategory(pathname)
-        }
-      });
-      
-      // Server-side Facebook tracking
-      trackServerPageView({
-        pageUrl: url,
-        pageTitle: getPageTitle(pathname)
-      });
-      
       // Google Analytics tracking
       trackGooglePageView(
         'webpage',
@@ -82,7 +66,7 @@ export default function PageViewTracker() {
       console.error('Error tracking page view:', error);
     }
     
-  }, [pathname, searchParams, trackFacebookPageView, trackServerPageView, trackGooglePageView]);
+  }, [pathname, searchParams, trackGooglePageView]);
   
   return null; // This component doesn't render anything
 }

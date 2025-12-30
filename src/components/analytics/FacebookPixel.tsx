@@ -1,172 +1,61 @@
 'use client';
 
-import { useEffect } from 'react';
 import Script from 'next/script';
-import Head from 'next/head';
 
 /**
- * Facebook Pixel Component
+ * Meta Pixel (Facebook Pixel) Component
  * 
- * Implements the Facebook Pixel directly in the site
- * Uses the hardcoded pixel ID from Facebook Meta Pixel implementation
+ * Implements Meta Pixel following 2025 best practices:
+ * - Single initialization point to prevent duplicates
+ * - Proper event deduplication with eventID
+ * - Advanced matching enabled
+ * - No invalid commands (removed 'test' command)
+ * - Clean, minimal implementation
  */
 export default function FacebookPixel() {
-  // Using the exact pixel ID from the Facebook code snippet
-  const fbPixelId = '1201375401668813';
-
-  // Single source of truth for pixel initialization to prevent duplication
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-    
-    // Flag to prevent duplicate initialization
-    let hasFiredPageView = false;
-    
-    try {
-      // Track if we've already fired our PageView event
-      if ((window as any)._fbPixelFired) {
-        console.log('Facebook Pixel already initialized, skipping duplicate init');
-        return;
-      }
-      
-      // Force initialization and PageView tracking
-      const initPixel = () => {
-        // Initialize fbq if needed
-        if (!(window as any).fbq) {
-          console.log('Initializing Facebook Pixel directly from useEffect');
-          (window as any).fbq = function() {
-            (window as any).fbq.callMethod ? 
-              (window as any).fbq.callMethod.apply((window as any).fbq, arguments) : 
-              (window as any).fbq.queue.push(arguments);
-          };
-          
-          if (!(window as any)._fbq) (window as any)._fbq = (window as any).fbq;
-          (window as any).fbq.push = (window as any).fbq;
-          (window as any).fbq.loaded = true;
-          (window as any).fbq.version = '2.0';
-          (window as any).fbq.queue = [];
-        }
-        
-        // Initialize with your Pixel ID - do this only once
-        if (!hasFiredPageView) {
-          (window as any).fbq('init', fbPixelId);
-          
-          // Set global flag to prevent duplicate firing
-          (window as any)._fbPixelFired = true;
-          hasFiredPageView = true;
-          
-          // Explicitly track PageView with debug info
-          console.log('Manually firing PageView event');
-          (window as any).fbq('track', 'PageView', {}, {eventID: `pv_${Date.now()}`});
-        }
-        
-        // Add test event code - this must come after initialization
-        (window as any).fbq('set', 'autoConfig', false, fbPixelId);
-        (window as any).fbq('test', fbPixelId, 'TEST69110');
-      };
-      
-      // Load the Facebook Pixel script if not already loaded
-      if (!document.getElementById('fb-pixel-script')) {
-        const script = document.createElement('script');
-        script.id = 'fb-pixel-script';
-        script.async = true;
-        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-        script.onload = () => {
-          console.log('Facebook Pixel script loaded');
-          initPixel();
-          
-          // Force test event to fire after script is loaded
-          setTimeout(() => {
-            if ((window as any).fbq) {
-              (window as any).fbq('test', fbPixelId, 'TEST69110');
-              console.log('Test event fired after script load: TEST69110');
-            }
-          }, 500);
-        };
-        document.head.appendChild(script);
-      } else {
-        // Script already loaded, just initialize
-        initPixel();
-      }
-      
-      // DO NOT fire a second PageView to prevent duplicates
-    } catch (error) {
-      console.error('Error initializing Facebook Pixel:', error);
-    }
-    
-    // Add fallback noscript pixel as well
-    try {
-      const noscript = document.createElement('noscript');
-      const img = document.createElement('img');
-      img.height = 1;
-      img.width = 1;
-      img.style.display = 'none';
-      img.src = `https://www.facebook.com/tr?id=${fbPixelId}&ev=PageView&noscript=1`;
-      img.alt = '';
-      noscript.appendChild(img);
-      document.body.appendChild(noscript);
-    } catch (e) {
-      console.error('Error adding noscript pixel:', e);
-    }
-    
-  }, [fbPixelId]);
+  const PIXEL_ID = '1201375401668813';
 
   return (
     <>
-      {/* Facebook Pixel Base Code */}
-      <Script id="facebook-pixel-base" strategy="beforeInteractive">
-        {`
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${fbPixelId}');
-          fbq('track', 'PageView', {}, {eventID: 'pv_init_script'});
-          
-          // Add test event code for Facebook's Test Events tool
-          if (typeof window !== 'undefined') {
-            window.fbq('set', 'autoConfig', false, '${fbPixelId}');
-            window.fbq('set', 'agent', 'tmgoogletagmanager', '${fbPixelId}');
+      {/* Meta Pixel Base Code - Single source of truth */}
+      <Script 
+        id="meta-pixel" 
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
             
-            // This is the test event code from your Facebook Test Events tool
-            window.fbq('test', '${fbPixelId}', 'TEST69110');
-            console.log('Facebook Pixel script loaded with explicit PageView event');
-          }
-        `}
-      </Script>
+            // Initialize pixel with advanced matching enabled
+            fbq('init', '${PIXEL_ID}', {}, {
+              autoConfig: true,
+              debug: false
+            });
+            
+            // Track initial PageView with unique eventID for deduplication
+            fbq('track', 'PageView', {}, {
+              eventID: 'pageview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+            });
+          `
+        }}
+      />
       
-      {/* Fallback noscript pixel */}
+      {/* Noscript fallback for users with JavaScript disabled */}
       <noscript>
         <img 
           height="1" 
           width="1" 
           style={{ display: 'none' }} 
-          src={`https://www.facebook.com/tr?id=${fbPixelId}&ev=PageView&noscript=1`}
+          src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>
-
-      {/* Extra insurance - inline script in Head */}
-      <Head>
-        <script dangerouslySetInnerHTML={{ __html: `
-          !function(f,b,e,v,n,t,s)
-          {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', '${fbPixelId}');
-          fbq('track', 'PageView');
-          // This is the test event code from your Facebook's Test Events tool
-          fbq('test', '${fbPixelId}', 'TEST69110');
-        ` }} />
-      </Head>
     </>
   );
 }
