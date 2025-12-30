@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.protech-ohio.com"
+        }
+      ],
+      "destination": "https://protech-ohio.com/:path*",
+      "permanent": true
+    }
+  ]
+}
