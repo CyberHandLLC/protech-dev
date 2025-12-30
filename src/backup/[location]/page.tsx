@@ -182,7 +182,7 @@ export default function ServicePage({ params, searchParams }: ServicePageProps) 
       finalServiceInfo.title, 
       locationData.name, 
       locationData.coordinates, 
-      `https://protechhvac.com/services/${category}/${service}/${location}${serviceType ? `?serviceType=${serviceType}` : ''}`
+      `https://protech-ohio.com/services/${category}/${service}/${location}${serviceType ? `?serviceType=${serviceType}` : ''}`
     )
   };
   

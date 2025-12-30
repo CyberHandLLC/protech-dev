@@ -8,6 +8,7 @@ import { serviceCategories } from '@/data/serviceDataNew';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
 import { generateCanonicalUrl } from '@/utils/canonical';
 import ServicesPageClientWrapper from '../../components/services/ServicesPageClientWrapper';
+import ServiceAreaLinks from '@/components/services/ServiceAreaLinks';
 
 export const metadata: Metadata = {
   title: 'ProTech HVAC Services | Residential & Commercial HVAC Solutions',
@@ -38,20 +39,21 @@ export const metadata: Metadata = {
 };
 
 interface ServicesPageProps {
-  searchParams?: {
+  searchParams?: Promise<{
     category?: string;
-  };
+  }>;
 }
 
-export default function ServicesPage({ searchParams }: ServicesPageProps) {
-  // Using URLSearchParams is the recommended Next.js approach for query params
-  const categoryFilter = searchParams?.category || 'residential';
+export default async function ServicesPage({ searchParams }: ServicesPageProps) {
+  // Await searchParams in Next.js 15
+  const resolvedSearchParams = await searchParams;
+  const categoryFilter = resolvedSearchParams?.category || 'residential';
   
   // Filter categories once and reuse the result
   const currentCategory = serviceCategories.find(cat => cat.id === categoryFilter) || serviceCategories[0];
     
   // Get user's location from server headers for location-based service content
-  const userLocation = getUserLocationFromHeaders();
+  const userLocation = await getUserLocationFromHeaders();
   
   // Common FAQs about HVAC services for the FAQ schema
   const serviceFAQs = [
@@ -130,6 +132,9 @@ export default function ServicesPage({ searchParams }: ServicesPageProps) {
               </Suspense>
             </div>
           </div>
+          
+          {/* CRITICAL SEO FIX: Location hub links for discovery */}
+          <ServiceAreaLinks />
         </main>
         
         <CTASection location={userLocation.name} />

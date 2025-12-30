@@ -25,9 +25,12 @@ export async function GET(request: Request) {
       requestHeadersObj[key] = value;
     });
     
-    // Response headers from Next.js
-    const responseHeaders = nextHeaders();
-    const responseHeadersArr = Array.from(responseHeaders.entries());
+    // Get all Next.js headers for debugging
+    const nextHeadersObj = await nextHeaders();
+    const allHeaders: Record<string, string> = {};
+    for (const [key, value] of nextHeadersObj.entries()) {
+      allHeaders[key] = value;
+    }
     
     return NextResponse.json({
       success: true,
@@ -38,8 +41,8 @@ export async function GET(request: Request) {
         url: request.url,
         headers: requestHeadersObj
       },
-      response: {
-        headers: responseHeadersArr
+      nextHeaders: {
+        headers: allHeaders
       },
       environment: {
         nodeEnv: process.env.NODE_ENV,

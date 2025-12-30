@@ -4,6 +4,22 @@ import { geolocation } from '@vercel/functions';
 import { convertToLocationSlug } from './utils/location';
 
 export function middleware(request: NextRequest) {
+  const hostHeader = request.headers.get('host') || '';
+  const hostname = hostHeader.split(':')[0]?.toLowerCase() || '';
+  const forwardedProto = (request.headers.get('x-forwarded-proto') || '').toLowerCase();
+  const url = request.nextUrl.clone();
+
+  if (hostname === 'www.protech-ohio.com') {
+    url.hostname = 'protech-ohio.com';
+    url.protocol = 'https:';
+    return NextResponse.redirect(url, 308);
+  }
+
+  if (hostname === 'protech-ohio.com' && forwardedProto === 'http') {
+    url.protocol = 'https:';
+    return NextResponse.redirect(url, 308);
+  }
+
   // For development environment, simulate location detection
   if (process.env.NODE_ENV === 'development') {
     const requestHeaders = new Headers(request.headers);

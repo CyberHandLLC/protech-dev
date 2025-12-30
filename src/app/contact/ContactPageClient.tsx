@@ -7,7 +7,7 @@ import ContactPageTracker from '@/components/analytics/ContactPageTracker';
 
 // Now it's safe to use dynamic imports with ssr: false in this client component
 const ContactPageWrapper = dynamic(() => import('@/components/contact/ContactPageWrapper'), {
-  ssr: false
+  ssr: true
 });
 
 interface ContactPageClientProps {

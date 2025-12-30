@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 
 // Social Media Tracking
 import FacebookPixel from './FacebookPixel';
@@ -41,17 +41,21 @@ export default function AnalyticsProvider({
 }: AnalyticsProviderProps) {
   return (
     <TrackingProvider>
-      {/* Google Tracking Stack */}
-      <GoogleTagManager containerId={gtmId} />
-      <GoogleAnalytics measurementId={ga4Id} />
-      <GoogleAdsConversion conversionId={googleAdsId} />
+      <Suspense fallback={null}>
+        {/* Google Tracking Stack */}
+        <GoogleTagManager containerId={gtmId} />
+        <GoogleAnalytics measurementId={ga4Id} />
+        <GoogleAdsConversion conversionId={googleAdsId} />
+      </Suspense>
       
       {/* Social Media Tracking */}
       <FacebookPixel />
       <InstagramPixel pixelId={instagramPixelId} />
       
-      {/* Automatic Page View Tracking */}
-      <PageViewTracker />
+      <Suspense fallback={null}>
+        {/* Automatic Page View Tracking */}
+        <PageViewTracker />
+      </Suspense>
       
       {/* Render the application */}
       {children}

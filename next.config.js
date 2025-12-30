@@ -52,6 +52,42 @@ const nextConfig = {
   // Enable compression for better performance
   compress: true,
   
+  // Add caching headers for static pages (Fix #5 from original plan)
+  async headers() {
+    return [
+      {
+        // Cache service pages for 1 hour with stale-while-revalidate
+        source: '/services/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
+        // Cache image files aggressively
+        source: '/:path*.(jpg|jpeg|png|gif|svg|webp|ico)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Cache CSS and JS files aggressively
+        source: '/:path*.(css|js)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
+  
   // Set up redirects from old services2 URLs to new services URLs
   async redirects() {
     return [

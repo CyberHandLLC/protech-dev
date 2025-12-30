@@ -1,55 +1,28 @@
-import { MetadataRoute } from 'next'
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /404
+Disallow: /500
+Disallow: /thank-you
+Disallow: /*?preview=*
+Disallow: /*?draft=*
 
-/**
- * Combined robots.txt for ProTech HVAC
- * - Allows all bots to crawl main site
- * - Blocks sensitive/internal paths
- * - Explicitly allows Facebook, AdSense, Google Images bots
- * - Provides sitemap & host
- */
+User-agent: facebookexternalhit
+Allow: /
 
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: [
-      // Default rule: all bots
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: [
-          '/api/',
-          '/admin/',
-          '/*.json$',
-          '/404',
-          '/500',
-          '/thank-you',
-          '/*?preview=*',
-          '/*?draft=*',
-        ],
-      },
-      // Explicit allow for Facebook bots
-      {
-        userAgent: 'facebookexternalhit',
-        allow: '/',
-      },
-      {
-        userAgent: 'FacebookBot',
-        allow: '/',
-      },
-      {
-        userAgent: 'Facebot',
-        allow: '/',
-      },
-      // Explicit allow for AdSense & image bots
-      {
-        userAgent: 'Mediapartners-Google',
-        allow: '/',
-      },
-      {
-        userAgent: 'Googlebot-Image',
-        allow: '/',
-      },
-    ],
-    sitemap: 'https://protech-ohio.com/sitemap.xml',
-    host: 'https://protech-ohio.com',
-  }
-}
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+Sitemap: https://protech-ohio.com/sitemap.xml
+Host: https://protech-ohio.com

@@ -16,7 +16,7 @@ interface SEOCanonicalProps {
  */
 export default function SEOCanonical({ 
   overridePathname, 
-  baseUrl = 'https://protechhvac.com' 
+  baseUrl = 'https://protech-ohio.com' 
 }: SEOCanonicalProps) {
   const pathname = usePathname();
   const canonicalUrl = `${baseUrl}${overridePathname || pathname}`;

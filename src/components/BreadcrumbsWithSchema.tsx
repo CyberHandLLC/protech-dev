@@ -42,7 +42,7 @@ export default function BreadcrumbsWithSchema({
       "@type": "ListItem",
       "position": index + 1,
       "name": item.label,
-      "item": `https://protechhvac.com${item.href}` // Full URL required for schema
+      "item": `https://protech-ohio.com${item.href}` // Full URL required for schema
     }))
   };
 

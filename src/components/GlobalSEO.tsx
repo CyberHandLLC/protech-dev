@@ -4,9 +4,9 @@ import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 
 // Use dynamic imports to prevent any SSR issues with structured data components
-const LocalBusinessSchema = dynamic(() => import('./schema/LocalBusinessSchema'), { ssr: false });
-const FAQSchemaOnly = dynamic(() => import('./schema/FAQSchemaOnly'), { ssr: false });
-const ReviewSchemaAggregated = dynamic(() => import('./schema/ReviewSchemaAggregated'), { ssr: false });
+const LocalBusinessSchema = dynamic(() => import('./schema/LocalBusinessSchema'));
+const FAQSchemaOnly = dynamic(() => import('./schema/FAQSchemaOnly'));
+const ReviewSchemaAggregated = dynamic(() => import('./schema/ReviewSchemaAggregated'));
 
 // Common FAQ data across the site
 const commonFAQs = [

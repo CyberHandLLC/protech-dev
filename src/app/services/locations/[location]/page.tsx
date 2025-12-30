@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
@@ -20,57 +20,116 @@ import { serviceCategories } from '@/data/serviceDataNew';
 
 // Import the client wrapper component for SEO
 import ServicesPageClientWrapper from '../../../../components/services/ServicesPageClientWrapper';
+import LocationServiceLinks from '../../../../components/services/LocationServiceLinks';
 
 interface LocationPageProps {
-  params: {
+  params: Promise<{
     location: string;
-  };
+  }>;
 }
 
+// Generate static params for ISR - only Ohio locations
+export async function generateStaticParams() {
+  const { serviceLocations } = await import('@/utils/locationUtils');
+  const { expandedServiceLocations } = await import('@/utils/expandedLocationUtils');
+  
+  // Combine all Ohio locations
+  const allLocations = [
+    ...serviceLocations.filter(loc => loc.stateCode === 'OH').map(loc => ({ location: loc.id })),
+    ...expandedServiceLocations.filter(loc => loc.stateCode === 'OH').map(loc => ({ location: loc.id })),
+    { location: 'northeast-ohio' } // Add region
+  ];
+  
+  return allLocations;
+}
+
+// Enable ISR with revalidation
+export const revalidate = 3600; // Revalidate every hour
+export const dynamicParams = true; // Allow dynamic params not in generateStaticParams
+
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
-  const { location } = params;
-  
-  // Check if this is an expanded location
+  const { location } = await params;
+
+  const standardLocation = getLocationById(location);
   const expandedLocation = getExpandedLocationById(location);
+
+  const isRegionLocation = location === 'northeast-ohio';
+  const isValidLocationParam = isRegionLocation || Boolean(standardLocation) || Boolean(expandedLocation);
+  const canonicalLocation = isValidLocationParam ? location : 'northeast-ohio';
+
+  const canonicalStandardLocation = getLocationById(canonicalLocation);
+  const canonicalExpandedLocation = getExpandedLocationById(canonicalLocation);
+
+  const canonicalLocationName = canonicalLocation === 'northeast-ohio'
+    ? 'Northeast Ohio'
+    : canonicalExpandedLocation
+      ? `${canonicalExpandedLocation.name}, ${canonicalExpandedLocation.stateCode}`
+      : formatSlugToName(canonicalLocation);
   
-  // Format location name from slug or use expanded location data
-  const locationName = expandedLocation ? 
-    `${expandedLocation.name}, ${expandedLocation.stateCode}` : 
-    formatSlugToName(location);
-  
-  // Get county information for better SEO
-  const countyName = expandedLocation?.county || getCountyFromSlug(location);
-  
-  // Generate canonical URL for this location
-  const canonicalPath = `/services/locations/${location}`;
+  const countyName = canonicalLocation === 'northeast-ohio'
+    ? 'Northeast Ohio'
+    : canonicalExpandedLocation?.county || canonicalStandardLocation?.county || getCountyFromSlug(canonicalLocation);
+
+  const canonicalPath = `/services/locations/${canonicalLocation}`;
   
   // Generate uniquely tailored metadata for this location
-  const metadata = generateLocationMetadata(location, locationName, {
+  const metadata = generateLocationMetadata(canonicalLocation, canonicalLocationName, {
     canonical: generateCanonicalUrl(canonicalPath),
-    description: `Professional HVAC services in ${locationName} and throughout ${countyName}. ProTech HVAC provides expert heating, cooling, and air quality solutions for homes and businesses.`,
-    keywords: [`HVAC ${locationName}`, `heating repair ${locationName}`, `air conditioning ${locationName}`, `${locationName} HVAC company`, `${countyName} HVAC services`]
+    description: canonicalLocation === 'northeast-ohio'
+      ? 'Professional HVAC services throughout Northeast Ohio. ProTech HVAC provides expert heating, cooling, and air quality solutions for homes and businesses.'
+      : `Professional HVAC services in ${canonicalLocationName} and throughout ${countyName}. ProTech HVAC provides expert heating, cooling, and air quality solutions for homes and businesses.`,
+    keywords: canonicalLocation === 'northeast-ohio'
+      ? ['HVAC Northeast Ohio', 'heating repair Northeast Ohio', 'air conditioning Northeast Ohio', 'Northeast Ohio HVAC company']
+      : [`HVAC ${canonicalLocationName}`, `heating repair ${canonicalLocationName}`, `air conditioning ${canonicalLocationName}`, `${canonicalLocationName} HVAC company`, `${countyName} HVAC services`]
   });
   
   return metadata;
 }
 
 export default async function LocationServicesPage({ params }: LocationPageProps) {
-  const { location } = params;
+  const { location } = await params;
   
   // Try both standard and expanded location data
   const standardLocation = getLocationById(location);
   const expandedLocation = getExpandedLocationById(location);
+
+  const isRegionLocation = location === 'northeast-ohio';
+  const isValidLocationParam = isRegionLocation || Boolean(standardLocation) || Boolean(expandedLocation);
+
+  if (!isValidLocationParam) {
+    permanentRedirect('/services/locations/northeast-ohio');
+  }
   
-  // If neither database has this location, show 404
-  if (!standardLocation && !expandedLocation) return notFound();
+  // If neither database has this location, show 404 (region location is allowed)
+  if (!isRegionLocation && !standardLocation && !expandedLocation) return notFound();
+
+  // CRITICAL SEO FIX: Only allow Ohio locations (Fix #1 from original plan)
+  // Reject out-of-service-area pages with 404
+  if (!isRegionLocation) {
+    const locationData = standardLocation || expandedLocation;
+    
+    // If we have location data and it's NOT Ohio, return 404
+    if (locationData && locationData.stateCode !== 'OH') {
+      return notFound();
+    }
+    
+    // Additional check: if location slug doesn't end with '-oh', it's likely out of state
+    if (!location.endsWith('-oh')) {
+      return notFound();
+    }
+  }
   
   // Use whichever location data we found (preference to standard)
   const locationInfo = standardLocation || expandedLocation;
   
   // Format location name consistently
-  const locationName = locationInfo ? 
-    `${locationInfo.name}` : 
-    formatSlugToName(location).replace(', OH', '');
+  const locationName = isRegionLocation
+    ? 'Northeast Ohio'
+    : locationInfo
+      ? `${locationInfo.name}`
+      : formatSlugToName(location).replace(', OH', '');
+
+  const displayLocation = isRegionLocation ? 'Northeast Ohio' : `${locationName}, OH`;
   
   // Get location coordinates for weather data
   const coordinates = locationInfo?.coordinates || { lat: 41.0814, lng: -81.5190 }; // Default to Akron
@@ -82,6 +141,10 @@ export default async function LocationServicesPage({ params }: LocationPageProps
   
   // Get real-time weather data - makes each page unique
   const weatherData = await getWeatherData(coordinates.lat, coordinates.lng);
+
+  const currentTemp = weatherData?.temp;
+  const isHotNow = typeof currentTemp === 'number' && currentTemp > 75;
+  const isColdNow = typeof currentTemp === 'number' && currentTemp < 50;
   
   // Get location-specific building and regulatory data
   const locationSpecificData = getLocationSpecificData(location);
@@ -103,7 +166,9 @@ export default async function LocationServicesPage({ params }: LocationPageProps
   const weatherTips = weatherData ? generateWeatherSpecificTips(weatherData, locationName) : [];
   
   // Get county info - important for local relevance
-  const countyName = locationInfo?.county || locationSpecificData.county || getCountyFromSlug(location) || 'Northeast Ohio';
+  const countyName = isRegionLocation
+    ? 'Northeast Ohio'
+    : locationInfo?.county || locationSpecificData.county || getCountyFromSlug(location) || 'Northeast Ohio';
   
   // Generate unique, location-specific FAQs incorporating local weather
   const locationFAQs = [
@@ -113,11 +178,11 @@ export default async function LocationServicesPage({ params }: LocationPageProps
     },
     {
       question: `How can ${locationName} residents prepare their HVAC systems for ${isSummer ? 'summer' : 'winter'}?`,
-      answer: `${locationName} residents should prepare for ${isSummer ? 'summer' : 'winter'} by scheduling a professional HVAC tune-up with ProTech. ${isSummer ? 'With local summer temperatures averaging ' + Math.round(weatherData?.temp || 75) + '°F and humidity levels often high, ensuring your air conditioning system is clean and efficient is essential.' : 'With local winter conditions typically bringing temperatures around 20-30°F, having your heating system professionally inspected prevents unexpected breakdowns when you need heat most.'} We recommend changing filters, clearing debris from outdoor units, and addressing any unusual noises or performance issues before the season peaks.`
+      answer: `${locationName} residents should prepare for ${isSummer ? 'summer' : 'winter'} by scheduling a professional HVAC tune-up with ProTech. ${isSummer ? 'With local summer temperatures averaging ' + Math.round(currentTemp ?? 75) + '°F and humidity levels often high, ensuring your air conditioning system is clean and efficient is essential.' : 'With local winter conditions typically bringing temperatures around 20-30°F, having your heating system professionally inspected prevents unexpected breakdowns when you need heat most.'} We recommend changing filters, clearing debris from outdoor units, and addressing any unusual noises or performance issues before the season peaks.`
     },
     {
       question: `What are common HVAC problems in ${locationName}, OH homes?`,
-      answer: `${locationName} homes commonly experience ${weatherData?.temp > 75 ? 'cooling issues due to the current warm temperatures around ' + Math.round(weatherData?.temp) + '°F' : 'heating challenges during colder periods'}. Specific problems include ${isSummer ? 'refrigerant leaks, clogged condensate drains, and compressor issues affecting cooling efficiency' : 'pilot light issues, inadequate heating in older homes, and furnace short cycling'}, particularly in ${locationName}'s ${countyName} climate and housing styles. ProTech technicians are familiar with these local challenges and provide targeted solutions for ${locationName} residents.`
+      answer: `${locationName} homes commonly experience ${isHotNow ? 'cooling issues due to the current warm temperatures around ' + Math.round(currentTemp ?? 75) + '°F' : 'heating challenges during colder periods'}. Specific problems include ${isSummer ? 'refrigerant leaks, clogged condensate drains, and compressor issues affecting cooling efficiency' : 'pilot light issues, inadequate heating in older homes, and furnace short cycling'}, particularly in ${locationName}'s ${countyName} climate and housing styles. ProTech technicians are familiar with these local challenges and provide targeted solutions for ${locationName} residents.`
     },
     {
       question: `Does ProTech provide seasonal maintenance plans for ${locationName} customers?`,
@@ -126,10 +191,10 @@ export default async function LocationServicesPage({ params }: LocationPageProps
   ];
 
   // Helper function to generate weather-specific HVAC tips
-  function generateWeatherSpecificTips(weather: any, locationName: string) {
-    const temp = weather?.temp || 70;
-    const humidity = weather?.humidity || 50;
-    const conditions = weather?.description || 'clear';
+  function generateWeatherSpecificTips(weather: WeatherData, locationName: string) {
+    const temp = weather.temp ?? 70;
+    const humidity = weather.humidity ?? 50;
+    const conditions = weather.description || 'clear';
     
     const tips = [];
     
@@ -163,15 +228,15 @@ export default async function LocationServicesPage({ params }: LocationPageProps
     <PageLayout>
       <ServicesPageClientWrapper
         faqs={locationFAQs}
-        title={`HVAC Services in ${locationName}, OH`}
+        title={`HVAC Services in ${displayLocation}`}
         subtitle={`ProTech HVAC provides professional heating and cooling services throughout ${locationName} and ${countyName}`}
-        mainEntity={`HVAC Services in ${locationName}, OH`}
+        mainEntity={`HVAC Services in ${displayLocation}`}
       >
         <div className="bg-navy">
           <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
             <SectionHeading
               accentText="ProTech HVAC"
-              title={`Professional HVAC Services in ${locationName}, OH`}
+              title={`Professional HVAC Services in ${displayLocation}`}
               subtitle={`Trusted heating and cooling solutions for ${locationName} residents and businesses in ${countyName}`}
               size="lg"
               centered
@@ -339,7 +404,7 @@ export default async function LocationServicesPage({ params }: LocationPageProps
                       .map(system => (
                         <li key={system.id} className="flex items-center">
                           <span className="text-red mr-2">✓</span>
-                          <span>{system.name} {system.id === 'cooling' && weatherData?.temp > 75 ? '(High Priority Now)' : system.id === 'heating' && weatherData?.temp < 50 ? '(High Priority Now)' : ''}</span>
+                          <span>{system.name} {system.id === 'cooling' && isHotNow ? '(High Priority Now)' : system.id === 'heating' && isColdNow ? '(High Priority Now)' : ''}</span>
                         </li>
                       ))}
                     <li className="flex items-center">
@@ -361,7 +426,7 @@ export default async function LocationServicesPage({ params }: LocationPageProps
                       .map(system => (
                         <li key={system.id} className="flex items-center">
                           <span className="text-red mr-2">✓</span>
-                          <span>{system.name} {system.id === 'cooling' && weatherData?.temp > 75 ? '(High Priority Now)' : system.id === 'heating' && weatherData?.temp < 50 ? '(High Priority Now)' : ''}</span>
+                          <span>{system.name} {system.id === 'cooling' && isHotNow ? '(High Priority Now)' : system.id === 'heating' && isColdNow ? '(High Priority Now)' : ''}</span>
                         </li>
                       ))}
                     <li className="flex items-center">
@@ -371,6 +436,9 @@ export default async function LocationServicesPage({ params }: LocationPageProps
                   </ul>
                 </div>
               </div>
+              
+              {/* CRITICAL SEO FIX: Internal links for service discovery */}
+              <LocationServiceLinks locationSlug={location} locationName={locationName} />
               
               <div className="mt-10">
                 <p className="text-ivory">

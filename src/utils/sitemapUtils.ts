@@ -2,8 +2,12 @@ import { serviceCategories } from '@/data/serviceDataNew';
 import { serviceLocations as actualServiceLocations } from '@/utils/locationUtils';
 import { expandedServiceLocations } from '@/utils/expandedLocationUtils';
 
-// Combine standard and expanded locations for comprehensive coverage
-const allServiceLocations = [...actualServiceLocations, ...expandedServiceLocations];
+// CRITICAL SEO FIX: Only include Ohio locations in sitemap (Fix #1 from original plan)
+// Filter out any non-Ohio locations to prevent Google from discovering out-of-service-area pages
+const allServiceLocations = [
+  ...actualServiceLocations.filter(loc => loc.stateCode === 'OH'),
+  ...expandedServiceLocations.filter(loc => loc.stateCode === 'OH')
+];
 
 // Define types for sitemap entries
 export type SitemapEntry = {
@@ -88,9 +92,9 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
   // Generate location pages with extra validation
   const locationPages: SitemapEntry[] = [];
   
-  // Process ALL locations (standard + expanded) that have our validated slugs
+  // Process ONLY Ohio locations (standard + expanded) that have our validated slugs
   serviceLocations.forEach(location => {
-    // Double check the page URL pattern matches what we have implemented
+    // Double check the page URL pattern matches what we have implemented AND is Ohio
     if (location.slug && location.slug.endsWith('-oh')) {
       // Ensure the slug format is consistent (lowercase with hyphens)
       const formattedSlug = location.slug.toLowerCase().trim();

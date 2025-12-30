@@ -210,7 +210,7 @@ export default function TestimonialsSectionServer({ location }: TestimonialsSect
                     <p className="text-ivory/80 mt-1 text-sm">{featuredTestimonial.service} • {formatDate(featuredTestimonial.date)}</p>
                   </div>
                   
-                  <blockquote className="text-ivory font-light text-lg italic relative pl-6 before:content-['"'] before:absolute before:left-0 before:top-0 before:text-3xl before:text-red/70">
+                  <blockquote className={`text-ivory font-light text-lg italic relative pl-6 before:content-['"'] before:absolute before:left-0 before:top-0 before:text-3xl before:text-red/70`}>
                     {featuredTestimonial.text}
                   </blockquote>
                 </div>

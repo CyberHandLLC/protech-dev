@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { serviceCategories } from '@/data/serviceDataNew';
 import ServicePageContentNew from '@/components/services/ServicePageContentNew';
 import { getWeatherData } from '@/utils/weatherApi';
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
     .replace(/Oh$/, 'OH');
     
   // Generate canonical URL for this service
-  const canonicalPath = `/services2/${category}/${system}/${serviceType}/${item}/${location}`;
+  const canonicalPath = `/services/${category}/${system}/${serviceType}/${item}/${location}`;
   
   return generateServiceMetadata({
     title: `${itemData.name} ${serviceTypeData.name} in ${locationName} | ProTech HVAC`,
@@ -67,6 +67,8 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
 
 export default async function ServiceDetailPage({ params }: ServiceDetailPageProps) {
   const { category, system, serviceType, item, location } = params;
+
+  permanentRedirect(`/services/${category}/${system}/${serviceType}/${item}/${location}`);
   
   // Find the service data from our nested structure
   const categoryData = serviceCategories.find(cat => cat.id === category);

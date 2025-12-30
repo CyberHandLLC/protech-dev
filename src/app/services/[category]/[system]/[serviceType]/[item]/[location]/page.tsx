@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { serviceCategories } from '@/data/serviceDataNew';
 import ServicePageContentNew from '@/components/services/ServicePageContentNew';
 import { getWeatherData } from '@/utils/weatherApi';
 import { getLocationById } from '@/utils/locationUtils';
+import { getExpandedLocationById } from '@/utils/expandedLocationUtils';
 import { getServiceRecommendation } from '@/utils/recommendations';
 import { generateServiceMetadata } from '@/utils/metadata';
 import { getUserLocationFromHeaders } from '@/utils/serverLocation';
@@ -14,18 +15,69 @@ import ServiceDetailClientWrapper from '../../../../../../../components/services
 
 // Define the type for the page params
 interface ServiceDetailPageProps {
-  params: {
+  params: Promise<{
     category: string;
     system: string;
     serviceType: string;
     item: string;
     location: string;
-  };
+  }>;
 }
 
 // Generate dynamic metadata based on the service details
+// Generate static params for ISR - only Ohio locations
+export async function generateStaticParams() {
+  const { serviceLocations } = await import('@/utils/locationUtils');
+  const { expandedServiceLocations } = await import('@/utils/expandedLocationUtils');
+  const { serviceCategories } = await import('@/data/serviceDataNew');
+  
+  const params: Array<{
+    category: string;
+    system: string;
+    serviceType: string;
+    item: string;
+    location: string;
+  }> = [];
+  
+  // Combine all Ohio locations
+  const allLocations = [
+    ...serviceLocations.filter(loc => loc.stateCode === 'OH'),
+    ...expandedServiceLocations.filter(loc => loc.stateCode === 'OH'),
+    { id: 'northeast-ohio', stateCode: 'OH' } // Add region
+  ];
+  
+  // Generate params for top priority service combinations only (to keep build time reasonable)
+  // Focus on most common services: heating maintenance, AC repair, installation
+  const priorityServices = [
+    { category: 'residential', system: 'heating', serviceType: 'maintenance', items: ['furnaces'] },
+    { category: 'residential', system: 'cooling', serviceType: 'repair', items: ['air-conditioners'] },
+    { category: 'residential', system: 'heating', serviceType: 'installation', items: ['furnaces'] },
+    { category: 'residential', system: 'cooling', serviceType: 'installation', items: ['air-conditioners'] },
+  ];
+  
+  priorityServices.forEach(service => {
+    service.items.forEach(item => {
+      allLocations.forEach(location => {
+        params.push({
+          category: service.category,
+          system: service.system,
+          serviceType: service.serviceType,
+          item: item,
+          location: location.id
+        });
+      });
+    });
+  });
+  
+  return params;
+}
+
+// Enable ISR with revalidation
+export const revalidate = 3600; // Revalidate every hour
+export const dynamicParams = true; // Allow dynamic params not in generateStaticParams
+
 export async function generateMetadata({ params }: ServiceDetailPageProps): Promise<Metadata> {
-  const { category, system, serviceType, item, location } = params;
+  const { category, system, serviceType, item, location } = await params;
   
   // Find the specific service info from our data
   const categoryData = serviceCategories.find(cat => cat.id === category);
@@ -39,18 +91,25 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
   
   const itemData = serviceTypeData.items.find(i => i.id === item);
   if (!itemData) return { title: 'Service Not Found' };
+
+  const isValidLocationParam =
+    location === 'northeast-ohio' ||
+    Boolean(getLocationById(location)) ||
+    Boolean(getExpandedLocationById(location));
+
+  const canonicalLocation = isValidLocationParam ? location : 'northeast-ohio';
   
   // Format location name from slug
-  const locationName = location
+  const locationName = canonicalLocation
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
     .replace(/Oh$/, 'OH');
     
   // Generate canonical URL for this service
-  const canonicalPath = `/services/${category}/${system}/${serviceType}/${item}/${location}`;
+  const canonicalPath = `/services/${category}/${system}/${serviceType}/${item}/${canonicalLocation}`;
   
-  return generateServiceMetadata({
+  const metadata = generateServiceMetadata({
     title: `${itemData.name} ${serviceTypeData.name} in ${locationName} | ProTech HVAC`,
     description: `Professional ${itemData.name} ${serviceTypeData.name.toLowerCase()} services in ${locationName}. Fast, reliable service from certified HVAC technicians at ProTech HVAC.`,
     keywords: [
@@ -63,10 +122,12 @@ export async function generateMetadata({ params }: ServiceDetailPageProps): Prom
     path: canonicalPath,
     imageUrl: `/images/services/${category}.jpg`
   });
+  
+  return metadata;
 }
 
 export default async function ServiceDetailPage({ params }: ServiceDetailPageProps) {
-  const { category, system, serviceType, item, location } = params;
+  const { category, system, serviceType, item, location } = await params;
   
   // Find the service data from our nested structure
   const categoryData = serviceCategories.find(cat => cat.id === category);
@@ -80,9 +141,38 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   
   const itemData = serviceTypeData.items.find(i => i.id === item);
   if (!itemData) return notFound();
+
+  // CRITICAL SEO FIX: Only allow Ohio locations (Fix #1 from original plan)
+  // Reject out-of-service-area pages with 404 to prevent Google indexing thousands of invalid pages
+  const isValidLocationParam =
+    location === 'northeast-ohio' ||
+    Boolean(getLocationById(location)) ||
+    Boolean(getExpandedLocationById(location));
+
+  if (!isValidLocationParam) {
+    // Invalid location format - redirect to default
+    permanentRedirect(`/services/${category}/${system}/${serviceType}/${item}/northeast-ohio`);
+  }
+
+  // Check if location is in Ohio - reject all out-of-state locations
+  if (location !== 'northeast-ohio') {
+    const standardLocation = getLocationById(location);
+    const expandedLocation = getExpandedLocationById(location);
+    const locationData = standardLocation || expandedLocation;
+    
+    // If we have location data and it's NOT Ohio, return 404
+    if (locationData && locationData.stateCode !== 'OH') {
+      return notFound();
+    }
+    
+    // Additional check: if location slug doesn't end with '-oh', it's likely out of state
+    if (!location.endsWith('-oh') && location !== 'northeast-ohio') {
+      return notFound();
+    }
+  }
   
   // Get the user's location from server headers
-  const serverLocation = getUserLocationFromHeaders();
+  const serverLocation = await getUserLocationFromHeaders();
   
   // Get the location name from the URL parameter
   const locationName = location
@@ -92,7 +182,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
     .replace(/Oh$/, 'OH');
   
   // Get location data for weather and service contextualizing
-  const locationId = serverLocation?.id || 'ohio';
+  const locationId = serverLocation.id || 'ohio';
   
   // Get default coordinates for Akron, OH if location not found
   const defaultCoords = { latitude: 41.0814, longitude: -81.5190 };

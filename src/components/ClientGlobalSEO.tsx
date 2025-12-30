@@ -5,9 +5,7 @@ import GlobalSEO from './GlobalSEO';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the analytics provider to prevent SSR issues
-const AnalyticsProvider = dynamic(() => import('./analytics/AnalyticsProvider'), {
-  ssr: false
-});
+const AnalyticsProvider = dynamic(() => import('./analytics/AnalyticsProvider'));
 
 /**
  * ClientGlobalSEO Component

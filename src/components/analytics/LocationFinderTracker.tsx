@@ -27,7 +27,7 @@ export default function LocationFinderTracker({
   // Initialize tracking hooks
   const { trackCustomEvent: trackFacebookCustomEvent } = useFacebookEvents();
   const { trackFindLocation: trackServerFindLocation } = useFacebookServerEvents();
-  const { trackEvent } = useGoogleTracking();
+  const { trackPageView } = useGoogleTracking();
   
   useEffect(() => {
     // Track the location search with enhanced data
@@ -52,10 +52,10 @@ export default function LocationFinderTracker({
       });
       
       // Google Analytics tracking
-      trackEvent(
+      trackPageView(
         'find_location',
+        locationName,
         {
-          location_name: locationName,
           search_term: searchQuery || city || zipCode,
           city: city,
           postal_code: zipCode
@@ -73,7 +73,7 @@ export default function LocationFinderTracker({
     city,
     trackFacebookCustomEvent,
     trackServerFindLocation,
-    trackEvent
+    trackPageView
   ]);
   
   // This component doesn't render anything

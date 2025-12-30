@@ -1,45 +1,30 @@
 // Server-side utility to detect user location from request headers
 import { headers } from 'next/headers';
+import { defaultLocation, type ServiceLocation } from './locationUtils';
 
-// Get the user's location from request headers (IP-based)
-export function getUserLocationFromHeaders() {
-  const headersList = headers();
+/**
+ * Get user location from request headers set by middleware
+ * This is used in Server Components to access the location without client-side detection
+ */
+export async function getUserLocationFromHeaders(): Promise<ServiceLocation> {
+  const headersList = await headers();
+  const locationHeader = headersList.get('x-user-location');
+  const isDefaultHeader = headersList.get('x-location-is-default');
   
-  // In a production environment, this would use proper geolocation services
-  // For now, we'll just parse a custom header or return a default
-  const geoHeader = headersList.get('x-user-location') || '';
-  
-  // Default location if none is detected - we'll try to get a more precise location
-  // This will only be used as a final fallback
-  const defaultLocation = {
-    id: 'northeast-ohio',
-    name: 'Northeast Ohio',
-    isDefault: true
-  };
-  
-  try {
-    // Check if we have a location header
-    if (geoHeader) {
-      // Parse the location from the header - in production this would be more sophisticated
-      const [city, state] = geoHeader.split(',').map(part => part.trim());
-      
-      if (city && state) {
-        return {
-          id: `${city.toLowerCase()}-${state.toLowerCase()}`,
-          name: `${city} ${state}`,
-          isDefault: false
-        };
-      }
+  if (locationHeader) {
+    // Parse the location header which is in format: "id|name"
+    const parts = locationHeader.split('|');
+    if (parts.length === 2) {
+      const locationId = parts[0];
+      // Return a proper ServiceLocation - use defaultLocation as base and override
+      return {
+        ...defaultLocation,
+        id: locationId,
+        name: parts[1]
+      };
     }
-    
-    // Additionally check for query param location
-    // In a real implementation, this might check cookies as well
-    
-    // Return default if no location is detected
-    return defaultLocation;
-    
-  } catch (error) {
-    console.error('Error parsing location from headers:', error);
-    return defaultLocation;
   }
+  
+  // Fallback to default location if no header is present
+  return defaultLocation;
 }

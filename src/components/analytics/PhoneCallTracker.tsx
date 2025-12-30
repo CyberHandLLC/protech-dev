@@ -54,15 +54,13 @@ export default function PhoneCallTracker({
         customData: {
           contentName: `Phone Click: ${displayNumber || phoneNumber}`,
           contentCategory: 'Contact',
-          contentType: 'phone_call',
-          source: source
+          contentType: 'phone_call'
         }
       });
       
       // Track with server-side Facebook
       trackServerContact({
-        contactMethod: 'phone',
-        contactSource: `Phone Click - ${source}`
+        source: `Phone Click - ${source}`
       });
       
       // Track with Google

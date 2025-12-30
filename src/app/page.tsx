@@ -20,14 +20,12 @@ export const metadata: Metadata = {
 export const runtime = 'edge';
 // Set revalidation interval
 export const revalidate = 60;
-// Prefetch key routes for better navigation performance
-export const prefetch = true;
 
 
 
-export default async function HomePage() {
-  // Get location from server headers (populated by middleware)
-  const userLocation = getUserLocationFromHeaders();
+export default async function Home() {
+  // Get user location from headers (set by middleware)
+  const userLocation = await getUserLocationFromHeaders();
   
   // Ensure we have a valid location
   if (!userLocation || !userLocation.name || !userLocation.id) {

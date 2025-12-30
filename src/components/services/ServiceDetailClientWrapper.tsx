@@ -4,9 +4,9 @@ import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 
 // Now it's safe to use dynamic imports with ssr: false in this client component
-const SEOServicePageWrapper = dynamic(() => import('@/components/SEOServicePageWrapper'), { ssr: false });
-const FAQSchemaOnly = dynamic(() => import('@/components/schema/FAQSchemaOnly'), { ssr: false });
-const FAQSection = dynamic(() => import('@/components/FAQSection'), { ssr: false });
+const SEOServicePageWrapper = dynamic(() => import('@/components/SEOServicePageWrapper'));
+const FAQSchemaOnly = dynamic(() => import('@/components/schema/FAQSchemaOnly'));
+const FAQSection = dynamic(() => import('@/components/FAQSection'));
 
 interface ServiceDetailClientWrapperProps {
   children: ReactNode;

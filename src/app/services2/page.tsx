@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { permanentRedirect } from 'next/navigation';
 import { Suspense } from 'react';
 import PageLayout from '@/components/PageLayout';
 import CTASection from '@/components/CTASection';
@@ -44,6 +45,8 @@ interface ServicesPageProps {
 }
 
 export default function ServicesPage({ searchParams }: ServicesPageProps) {
+  const categoryQuery = searchParams?.category ? `?category=${encodeURIComponent(searchParams.category)}` : '';
+  permanentRedirect(`/services${categoryQuery}`);
   // Using URLSearchParams is the recommended Next.js approach for query params
   const categoryFilter = searchParams?.category || 'residential';
   

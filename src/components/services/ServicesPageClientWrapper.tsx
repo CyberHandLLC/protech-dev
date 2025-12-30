@@ -4,10 +4,10 @@ import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import ServiceViewTracker from './ServiceViewTracker';
 
-// Now it's safe to use dynamic imports with ssr: false in this client component
-const FAQSchemaOnly = dynamic(() => import('@/components/schema/FAQSchemaOnly'), { ssr: false });
+// Now it's safe to use dynamic imports in this client component
+const FAQSchemaOnly = dynamic(() => import('@/components/schema/FAQSchemaOnly'));
 // We'll keep FAQSection available but only use it when specified
-const FAQSection = dynamic(() => import('@/components/FAQSection'), { ssr: false });
+const FAQSection = dynamic(() => import('@/components/FAQSection'));
 
 interface ServicesPageClientWrapperProps {
   children: ReactNode;
