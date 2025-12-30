@@ -25,4 +25,3 @@ User-agent: Googlebot-Image
 Allow: /
 
 Sitemap: https://protech-ohio.com/sitemap.xml
-Host: https://protech-ohio.com
