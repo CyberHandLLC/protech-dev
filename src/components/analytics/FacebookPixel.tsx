@@ -42,6 +42,19 @@ export default function FacebookPixel() {
             fbq('track', 'PageView', {}, {
               eventID: 'pageview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
             });
+            
+            // Debug: Log pixel initialization
+            console.log('[Meta Pixel] Loaded on:', window.location.hostname);
+            
+            // Debug: Check _fbp cookie after short delay
+            setTimeout(function() {
+              var fbpMatch = document.cookie.match(/_fbp=([^;]+)/);
+              if (fbpMatch) {
+                console.log('[Meta Pixel] _fbp cookie:', fbpMatch[1]);
+              } else {
+                console.warn('[Meta Pixel] _fbp cookie not found on', window.location.hostname);
+              }
+            }, 1000);
           `
         }}
       />
