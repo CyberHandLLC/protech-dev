@@ -1,9 +1,1 @@
-{
-  "redirects": [
-    {
-      "source": "https://www.protech-ohio.com/:path*",
-      "destination": "https://protech-ohio.com/:path*",
-      "permanent": true
-    }
-  ]
-}
+{}
