@@ -8,6 +8,8 @@
  * Updated to follow Meta's 2025 best practices for event deduplication and advanced matching.
  */
 
+import { collectBrowserParameters } from './metaPixelHelpers';
+
 // Standard Facebook event names
 export enum FacebookEventName {
   LEAD = 'Lead',
@@ -206,6 +208,9 @@ async function trackWithConversionsApi(
   }
   
   try {
+    // Collect browser parameters for improved Event Match Quality
+    const browserParams = collectBrowserParameters();
+    
     // Convert userData to format expected by Conversions API
     const apiUserData: Record<string, any> = {};
     
@@ -222,6 +227,11 @@ async function trackWithConversionsApi(
     if (userData.gender) apiUserData.ge = userData.gender?.substring(0,1)?.toLowerCase();
     if (userData.dateOfBirth) apiUserData.db = userData.dateOfBirth;
     if (userData.externalId) apiUserData.external_id = userData.externalId;
+    
+    // Add browser parameters for Event Match Quality (2025 best practice)
+    if (browserParams.fbp) apiUserData.fbp = browserParams.fbp;
+    if (browserParams.fbc) apiUserData.fbc = browserParams.fbc;
+    if (browserParams.externalId) apiUserData.external_id = browserParams.externalId;
     
     // Convert customData to format expected by Conversions API
     const apiCustomData: Record<string, any> = {};
