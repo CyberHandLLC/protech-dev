@@ -48,8 +48,13 @@ export function getFacebookClickId(): string | null {
     const timestamp = Date.now();
     const fbc = `fb.1.${timestamp}.${fbclid}`;
     
-    // Store in cookie for future use (90 days)
-    document.cookie = `_fbc=${fbc}; max-age=7776000; path=/; domain=${window.location.hostname}`;
+    // Get root domain (e.g., protech-ohio.com from www.protech-ohio.com)
+    const hostname = window.location.hostname;
+    const rootDomain = hostname.startsWith('www.') ? hostname.substring(4) : hostname;
+    
+    // Store in cookie for future use (90 days) with root domain
+    // This allows cookie to work on both www and non-www
+    document.cookie = `_fbc=${fbc}; max-age=7776000; path=/; domain=.${rootDomain}`;
     
     return fbc;
   }

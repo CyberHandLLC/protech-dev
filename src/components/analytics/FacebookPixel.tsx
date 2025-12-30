@@ -32,11 +32,18 @@ export default function FacebookPixel() {
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             
-            // Initialize pixel with advanced matching enabled
+            // Set cookie domain to root domain for www/non-www compatibility
+            var hostname = window.location.hostname;
+            var rootDomain = hostname.startsWith('www.') ? hostname.substring(4) : hostname;
+            
+            // Initialize pixel with advanced matching and root domain
             fbq('init', '${PIXEL_ID}', {}, {
               autoConfig: true,
               debug: false
             });
+            
+            // Configure cookie domain for cross-subdomain tracking
+            fbq('set', 'cookieDomain', '.' + rootDomain);
             
             // Track initial PageView with unique eventID for deduplication
             fbq('track', 'PageView', {}, {
