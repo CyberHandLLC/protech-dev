@@ -1,7 +1,18 @@
 {
   "redirects": [
     {
-      "source": "/:path((?!_next/static|_next/image|favicon.ico).*)",
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.protech-ohio.com"
+        }
+      ],
+      "destination": "https://protech-ohio.com/",
+      "permanent": true
+    },
+    {
+      "source": "/:path((?!_next|api|images|icons|logos|favicon.ico|robots.txt|sitemap.xml).*)",
       "has": [
         {
           "type": "host",
