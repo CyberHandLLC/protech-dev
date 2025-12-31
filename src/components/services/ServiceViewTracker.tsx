@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
-import ViewTracker from '../analytics/ViewTracker';
 
 interface ServiceViewTrackerProps {
   serviceName?: string;
@@ -15,8 +14,11 @@ interface ServiceViewTrackerProps {
 /**
  * ServiceViewTracker Component
  * 
- * A client component that tracks service page views for Facebook conversion tracking
- * This component combines both general page view tracking and service-specific tracking
+ * Tracks when users view HVAC service pages with detailed context:
+ * - Service name (AC Repair, Furnace Installation, etc.)
+ * - Service category (Residential, Commercial)
+ * - Location (Cleveland, Akron, Wooster, etc.)
+ * - Urgency (Emergency or Scheduled)
  */
 export default function ServiceViewTracker({
   serviceName,
@@ -25,45 +27,56 @@ export default function ServiceViewTracker({
   location
 }: ServiceViewTrackerProps) {
   const pathname = usePathname();
-  const { trackViewContent } = useFacebookEvents();
-  
-  // Extract information from the path if not explicitly provided
-  const pathParts = pathname.split('/').filter(Boolean);
-  const detectedCategory = category || pathParts[1] || 'service';
-  const detectedServiceType = serviceType || pathParts[2] || 'general';
-  const detectedServiceName = serviceName || pathParts[3] || pathname.split('/').pop() || 'service';
-  const detectedLocation = location || (pathParts.length > 4 ? pathParts[4] : undefined);
-  
-  // Enhanced name with location if available
-  const displayName = detectedLocation 
-    ? `${detectedServiceName} in ${detectedLocation}` 
-    : detectedServiceName;
+  const searchParams = useSearchParams();
+  const { trackServiceViewed } = useFacebookEvents();
   
   useEffect(() => {
-    // Track the page view as service content
-    const trackServiceView = async () => {
+    const trackService = async () => {
       try {
-        await trackViewContent({
+        // Extract service details from URL path
+        // Example: /services/commercial/cooling/maintenance/commercial-refrigeration/wooster-oh
+        const pathParts = pathname.split('/').filter(Boolean);
+        
+        // Detect category from URL or query param
+        const urlCategory = searchParams?.get('category') || pathParts[1] || category;
+        
+        // Extract service details from path
+        const system = pathParts[2]; // cooling, heating
+        const serviceType = pathParts[3]; // maintenance, repair, installation
+        const item = pathParts[4]; // commercial-refrigeration, furnaces, etc.
+        const locationSlug = pathParts[5] || location; // wooster-oh, cleveland, etc.
+        
+        // Format service name
+        const formattedServiceName = serviceName || 
+          (item ? item.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Service');
+        
+        // Format location
+        const formattedLocation = locationSlug 
+          ? locationSlug.replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+          : 'Northeast Ohio';
+        
+        // Detect urgency from URL or page context
+        const isEmergency = pathname.includes('emergency') || searchParams?.get('urgency') === 'emergency';
+        
+        // Track with ServiceViewed event
+        await trackServiceViewed({
           customData: {
-            contentName: displayName,
-            contentCategory: detectedCategory,
-            contentType: 'service_page',
-            // Include location data if available
-            ...(detectedLocation && { 
-              location: detectedLocation.replace('-', ' ') 
-            })
+            serviceName: formattedServiceName,
+            serviceCategory: `${urlCategory} - ${system || 'general'}`,
+            location: formattedLocation,
+            urgency: isEmergency ? 'emergency' : 'scheduled',
+            contentType: serviceType || 'service',
           }
         });
         
-        console.log('Service view tracked:', displayName);
+        console.log(`[ServiceViewed] ${formattedServiceName} (${urlCategory}) in ${formattedLocation} - ${isEmergency ? 'Emergency' : 'Scheduled'}`);
       } catch (error) {
         console.error('Error tracking service view:', error);
       }
     };
     
-    trackServiceView();
-  }, [pathname, displayName, detectedCategory, detectedLocation, trackViewContent]);
+    trackService();
+  }, [pathname, searchParams, serviceName, category, location, trackServiceViewed]);
   
-  // Also include the general ViewTracker for standard page view tracking
-  return <ViewTracker contentType="service_page" contentName={displayName} contentCategory={detectedCategory} />;
+  return null; // This component doesn't render anything
 }

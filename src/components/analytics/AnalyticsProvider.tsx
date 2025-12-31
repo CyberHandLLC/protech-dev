@@ -13,6 +13,7 @@ import GoogleAdsConversion from './GoogleAdsConversion';
 
 // Page Tracking
 import PageViewTracker from './PageViewTracker';
+import EmailClickTracker from './EmailClickTracker';
 
 // Global Tracking Context
 import { TrackingProvider } from '@/context/TrackingContext';
@@ -55,6 +56,8 @@ export default function AnalyticsProvider({
       <Suspense fallback={null}>
         {/* Automatic Page View Tracking */}
         <PageViewTracker />
+        {/* Global Email Click Tracking */}
+        <EmailClickTracker />
       </Suspense>
       
       {/* Render the application */}
