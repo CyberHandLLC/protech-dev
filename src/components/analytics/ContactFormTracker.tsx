@@ -92,87 +92,9 @@ export default function ContactFormTracker({
     lastTrackedTimeRef.current = now;
     
     try {
-      // Client-side Facebook tracking with enhanced advanced matching
-      trackFormSubmission({
-        customData: {
-          contentName: formType === 'contact' ? 'Contact Form' : 'Quote Request',
-          contentType: 'form_submission',
-          contentCategory: 'Forms',
-          value: 150.00,  // Estimated value of a form submission for HVAC
-          currency: 'USD'
-        },
-        userData: {
-          // Advanced matching parameters with complete user data
-          phone: formData.phone,
-          email: formData.email,
-          // Extract first and last name if available
-          firstName: formData.name ? formData.name.split(' ')[0] : undefined,
-          lastName: formData.name ? formData.name.split(' ').slice(1).join(' ') : undefined,
-          // Critical - Add zip code for better geographic targeting
-          zip: formData.zipCode || formData.zip || undefined,
-          // Add location data if available
-          city: formData.city,
-          state: formData.state || 'OH', // Default to Ohio for ProTech HVAC
-          externalId: `form_${Date.now()}` // Unique identifier for this lead
-        }
-      });
-      
-      // Server-side tracking
-      trackServerContact({
-        source: `${formType} Form Submission - ${formLocation}`
-      });
-      
-      // Also track as a lead with Facebook client-side - with enhanced data
-      trackLead({
-        customData: {
-          contentType: 'lead',
-          contentName: `${formType} Form Lead - ${formLocation}`,
-          contentCategory: 'Lead Generation',
-          value: 150.00, // Consistent lead value
-          currency: 'USD',
-          // Add service information when available
-          contentIds: formData.service ? [formData.service] : undefined
-        },
-        userData: {
-          // Complete advanced matching data set
-          phone: formData.phone,
-          email: formData.email,
-          firstName: formData.name ? formData.name.split(' ')[0] : undefined,
-          lastName: formData.name ? formData.name.split(' ').slice(1).join(' ') : undefined,
-          zip: formData.zipCode || formData.zip || undefined,
-          city: formData.city,
-          state: formData.state || 'OH',
-          externalId: `lead_${formLocation}_${Date.now()}`
-        }
-      });
-      
-      // Track as contact for more complete tracking with enhanced user data
-      trackContact({
-        customData: {
-          contentType: 'contact_form',
-          contentName: `${formType} Form - ${formLocation}`,
-          contentCategory: 'Lead Generation',
-          value: 150.00, // Standard contact value for HVAC services
-          currency: 'USD',
-          // Add message and service details when available for better attribution
-          status: formData.message ? 'With Message' : 'No Message',
-          searchString: formData.service || serviceName || 'General'
-        },
-        userData: {
-          // Full advanced matching data set
-          email: formData.email,
-          phone: formData.phone,
-          firstName: formData.name ? formData.name.split(' ')[0] : undefined,
-          lastName: formData.name ? formData.name.split(' ').slice(1).join(' ') : undefined,
-          zip: formData.zipCode || formData.zip || undefined,
-          city: formData.city,
-          state: formData.state || 'OH',
-          // Optional - can include external ID for customer data platform integration
-          externalId: `contact_${formLocation}_${Date.now()}`
-        }
-      });
-      
-      // Google Analytics tracking
+      // All conversion events (Lead, Schedule, FormCompleted) are now handled by FormInteractionTracker
+      // This component is deprecated and should be removed in the future
+      // Keeping only Google Analytics tracking here for now
       trackConversion(
         'form_submission', 
         'form_submit', 
