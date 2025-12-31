@@ -21,7 +21,6 @@ export default function SessionTracker() {
   const sessionIdRef = useRef<string | null>(null);
   const sessionStartTimeRef = useRef<number | null>(null);
   const pagesViewedRef = useRef<Set<string>>(new Set());
-  const eventsCountRef = useRef<number>(0);
   const hasTrackedSessionStartRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -107,7 +106,6 @@ export default function SessionTracker() {
             exit_path: pathname,
             session_duration_seconds: sessionDuration,
             pages_viewed: pagesViewedRef.current.size,
-            events_triggered: eventsCountRef.current,
             timestamp: new Date().toISOString()
           });
         }
@@ -140,21 +138,6 @@ export default function SessionTracker() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [pathname]);
-
-  // Increment events count whenever any Facebook event fires
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      const originalFbq = (window as any).fbq;
-      
-      // Wrap fbq to count events
-      (window as any).fbq = function(...args: any[]) {
-        if (args[0] === 'track' || args[0] === 'trackCustom') {
-          eventsCountRef.current++;
-        }
-        return originalFbq.apply(this, args);
-      };
-    }
-  }, []);
 
   return null; // This component doesn't render anything
 }
