@@ -255,8 +255,11 @@ async function trackWithConversionsApi(
     if (browserParams.externalId) apiUserData.external_id = browserParams.externalId;
     
     // Add enhanced location data if not already provided
-    if (!apiUserData.st && browserParams.state) apiUserData.st = browserParams.state.toLowerCase();
-    if (!apiUserData.country && browserParams.country) apiUserData.country = browserParams.country.toLowerCase();
+    // Note: State and country must be hashed for Conversions API
+    // For now, we'll only send these if they come from user data (forms)
+    // The client-side pixel will handle unhashed state/country in init
+    // if (!apiUserData.st && browserParams.state) apiUserData.st = browserParams.state.toLowerCase();
+    // if (!apiUserData.country && browserParams.country) apiUserData.country = browserParams.country.toLowerCase();
     
     // Convert customData to format expected by Conversions API
     const apiCustomData: Record<string, any> = {};
