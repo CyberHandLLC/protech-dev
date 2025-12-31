@@ -4,15 +4,8 @@ import { geolocation } from '@vercel/functions';
 import { convertToLocationSlug } from './utils/location';
 
 export function middleware(request: NextRequest) {
-  const url = request.nextUrl;
-  const hostname = request.headers.get('host') || '';
-
-  // Redirect www to apex domain (permanent redirect)
-  if (hostname.startsWith('www.')) {
-    const newUrl = url.clone();
-    newUrl.host = hostname.replace('www.', '');
-    return NextResponse.redirect(newUrl, { status: 308 }); // 308 = Permanent Redirect
-  }
+  // Note: www to non-www redirects are handled by Vercel's edge network configuration
+  // to avoid redirect loops and ensure proper functionality
 
   // For development environment, simulate location detection
   if (process.env.NODE_ENV === 'development') {
