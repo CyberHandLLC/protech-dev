@@ -166,58 +166,14 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
       
       if (response.ok && result.success) {
         // Track form submission events
+        // Note: Lead and Schedule events are handled by FormInteractionTracker
+        // This ensures consistent tracking across all forms without duplicates
         try {
-          // Client-side tracking
-          // Track as a schedule event
-          await trackSchedule({
-            userData: {
-              firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' '),
-              phone: formData.phone
-            },
-            customData: {
-              contentCategory: 'Service Scheduling',
-              contentName: formData.service || 'General Service',
-              status: 'scheduled'
-            }
-          });
-          
-          // Also track as a lead event for conversion tracking
-          await trackLead({
-            userData: {
-              phone: formData.phone
-            },
-            customData: {
-              contentCategory: 'Hero Form Lead',
-              contentName: formData.service || 'General Service',
-              contentType: 'service_scheduling'
-            }
-          });
-          
-          // Server-side tracking (Conversions API)
-          // This will work even if client-side tracking is blocked
-          await trackServerSchedule({
-            appointmentType: formData.service || 'General HVAC Service',
-            userData: {
-              firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' '),
-              phone: formData.phone,
-              city: formData.location || ''
-            },
-            value: 149 // Estimated value of scheduled service
-          });
-          
-          // Also track as a lead through server-side tracking
-          await trackServerLead({
-            formName: 'Hero Contact Form',
-            userData: {
-              phone: formData.phone,
-              firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' '),
-              city: formData.location || ''
-            },
-            value: 75 // Estimated lead value
-          });
+          // No additional tracking needed here
+          // FormInteractionTracker will fire:
+          // - FormCompleted (custom event with form details)
+          // - Lead (standard conversion event)
+          // - Schedule (standard appointment event)
           
           console.log('Facebook conversion events tracked via client and server successfully');
         } catch (trackingError) {

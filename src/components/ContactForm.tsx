@@ -201,27 +201,18 @@ export default function ContactForm() {
         setFormData(INITIAL_FORM_STATE);
         
         // Facebook conversion tracking
+        // Note: Lead and Contact events are handled by FormInteractionTracker
+        // This ensures consistent tracking across all forms without duplicates
         try {
-          // Client-side tracking
-          // Track as a contact event
-          await trackContact({
-            userData: {
-              email: formData.email,
-              phone: formData.phone,
-              firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' ')
-            },
-            customData: {
-              contentCategory: 'Contact Form',
-              contentName: formData.service || 'General Contact',
-              status: 'submitted'
-            }
-          });
+          // No additional tracking needed here
+          // FormInteractionTracker will fire:
+          // - FormCompleted (custom event with form details)
+          // - Lead (standard conversion event)
+          // - Schedule (standard appointment event)
           
-          // Server-side tracking (Conversions API)
-          // This will work even if client-side tracking is blocked
-          await trackServerContact({
-            source: 'Contact Form',
+          // Server-side Lead tracking for backup (in case client-side fails)
+          await trackServerLead({
+            formName: 'Main Contact Form',
             userData: {
               email: formData.email,
               phone: formData.phone,
@@ -230,18 +221,6 @@ export default function ContactForm() {
               city: formData.location || '',
               state: 'OH', // Default state (Ohio)
               zipCode: '' // We don't collect zip code in this form
-            }
-          });
-          
-          // Also track as a lead via server-side events
-          await trackServerLead({
-            formName: 'Main Contact Form',
-            userData: {
-              email: formData.email,
-              phone: formData.phone,
-              firstName: formData.name.split(' ')[0],
-              lastName: formData.name.split(' ').slice(1).join(' '),
-              city: formData.location || ''
             },
             value: 100 // Estimated lead value
           });
