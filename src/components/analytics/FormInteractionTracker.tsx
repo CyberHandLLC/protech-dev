@@ -64,6 +64,18 @@ export default function FormInteractionTracker() {
         
         // Track successful form completion
         if (typeof window !== 'undefined' && window.fbq) {
+          // Generate unique event IDs for deduplication
+          const leadEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 4);
+          const scheduleEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 4);
+          
+          // Store event IDs for server-side sync
+          try {
+            sessionStorage.setItem('fb_lead_event_id', leadEventId);
+            sessionStorage.setItem('fb_schedule_event_id', scheduleEventId);
+          } catch (e) {
+            console.warn('[FormInteraction] Could not store event IDs:', e);
+          }
+          
           // Track custom FormCompleted event (detailed analytics)
           window.fbq('trackCustom', 'FormCompleted', {
             form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
@@ -72,23 +84,59 @@ export default function FormInteractionTracker() {
             time_spent_seconds: Math.round(timeSpent / 1000)
           });
           
-          // Track standard Lead event (lead generation campaigns)
-          window.fbq('track', 'Lead', {
+          // Track standard Lead event with Event ID (lead generation campaigns)
+          (window.fbq as any)('track', 'Lead', {
             content_name: 'Service Inquiry',
             content_category: 'lead_generation',
             value: 100, // Estimated lead value in dollars
             currency: 'USD'
-          });
+          }, { eventID: leadEventId });
           
-          // Track standard Schedule event (appointment scheduling campaigns)
-          window.fbq('track', 'Schedule', {
+          // Track standard Schedule event with Event ID (appointment scheduling campaigns)
+          (window.fbq as any)('track', 'Schedule', {
             content_name: 'HVAC Service Appointment Request',
             content_category: 'appointment_scheduling',
             value: 150, // Estimated appointment value
             currency: 'USD'
-          });
+          }, { eventID: scheduleEventId });
           
-          console.log('[FormInteraction] Form completed - Lead and Schedule events tracked');
+          // Send to Conversions API for server-side tracking
+          fetch('/api/facebook-conversions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              events: [
+                {
+                  event_name: 'Lead',
+                  event_id: leadEventId,
+                  event_time: Math.floor(Date.now() / 1000),
+                  event_source_url: window.location.href,
+                  action_source: 'website',
+                  custom_data: {
+                    content_name: 'Service Inquiry',
+                    content_category: 'lead_generation',
+                    value: 100,
+                    currency: 'USD'
+                  }
+                },
+                {
+                  event_name: 'Schedule',
+                  event_id: scheduleEventId,
+                  event_time: Math.floor(Date.now() / 1000),
+                  event_source_url: window.location.href,
+                  action_source: 'website',
+                  custom_data: {
+                    content_name: 'HVAC Service Appointment Request',
+                    content_category: 'appointment_scheduling',
+                    value: 150,
+                    currency: 'USD'
+                  }
+                }
+              ]
+            })
+          }).catch(err => console.error('[FormInteraction] Server-side tracking error:', err));
+          
+          console.log('[FormInteraction] Form completed - Lead and Schedule events tracked (client + server)');
         }
         
         // Clean up
