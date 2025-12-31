@@ -96,6 +96,32 @@ export function getUserAgent(): string | null {
 }
 
 /**
+ * Generate or retrieve external ID for user
+ * Creates a persistent unique ID for each user to improve Event Match Quality
+ * 
+ * @returns External ID
+ */
+export function getOrCreateExternalId(): string {
+  if (typeof window === 'undefined') return '';
+  
+  try {
+    // Check if external ID already exists
+    let externalId = localStorage.getItem('fb_external_id');
+    
+    if (!externalId) {
+      // Generate new external ID: timestamp + random string
+      externalId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('fb_external_id', externalId);
+    }
+    
+    return externalId;
+  } catch (error) {
+    // If localStorage fails, generate temporary ID
+    return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+}
+
+/**
  * Extract external ID from user session/storage
  * This could be your internal user ID if user is logged in
  * 
@@ -106,11 +132,24 @@ export function getExternalId(): string | null {
   
   // Check localStorage for user ID
   try {
-    const userId = localStorage.getItem('user_id');
+    const userId = localStorage.getItem('fb_external_id');
     return userId;
   } catch (error) {
     return null;
   }
+}
+
+/**
+ * Get enhanced location data for better Event Match Quality
+ * Adds state and country to improve matching
+ * 
+ * @returns Object with location data
+ */
+export function getEnhancedLocationData() {
+  return {
+    state: 'OH', // Ohio - your primary service area
+    country: 'US', // United States
+  };
 }
 
 /**
@@ -120,11 +159,15 @@ export function getExternalId(): string | null {
  * @returns Object with all available parameters
  */
 export function collectBrowserParameters() {
+  const locationData = getEnhancedLocationData();
+  
   return {
     fbp: getFacebookBrowserId(),
     fbc: getFacebookClickId(),
     userAgent: getUserAgent(),
-    externalId: getExternalId(),
+    externalId: getOrCreateExternalId(), // Generate if doesn't exist
+    state: locationData.state,
+    country: locationData.country,
   };
 }
 

@@ -254,6 +254,10 @@ async function trackWithConversionsApi(
     if (browserParams.fbc) apiUserData.fbc = browserParams.fbc;
     if (browserParams.externalId) apiUserData.external_id = browserParams.externalId;
     
+    // Add enhanced location data if not already provided
+    if (!apiUserData.st && browserParams.state) apiUserData.st = browserParams.state.toLowerCase();
+    if (!apiUserData.country && browserParams.country) apiUserData.country = browserParams.country.toLowerCase();
+    
     // Convert customData to format expected by Conversions API
     const apiCustomData: Record<string, any> = {};
     

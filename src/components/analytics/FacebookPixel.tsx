@@ -32,8 +32,26 @@ export default function FacebookPixel() {
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             
-            // Initialize pixel with advanced matching enabled
-            fbq('init', '${PIXEL_ID}');
+            // Initialize pixel with enhanced advanced matching
+            // Collect external ID for better Event Match Quality
+            var externalId = '';
+            try {
+              externalId = localStorage.getItem('fb_external_id');
+              if (!externalId) {
+                externalId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('fb_external_id', externalId);
+              }
+            } catch (e) {
+              externalId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            // Initialize pixel with advanced matching parameters
+            fbq('init', '${PIXEL_ID}', {
+              external_id: externalId,
+              ct: '', // City (will be populated from forms)
+              st: 'oh', // State - Ohio
+              country: 'us' // Country - United States
+            });
             
             // Generate unique PageView event ID and store for server-side sync
             var pageviewEventId = 'pageview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
