@@ -14,6 +14,7 @@ export default function ContactPageTracker() {
   
   useEffect(() => {
     // Track contact page view as a custom conversion event
+    // Add delay to ensure _fbp cookie is set for better Event Match Quality
     const trackContact = async () => {
       try {
         await trackCustomEvent('ContactPageViewed', {
@@ -31,7 +32,10 @@ export default function ContactPageTracker() {
       }
     };
     
-    trackContact();
+    // Delay to ensure pixel is initialized and _fbp cookie is set
+    const timer = setTimeout(trackContact, 500);
+    
+    return () => clearTimeout(timer);
   }, [trackCustomEvent]);
   
   return null;
