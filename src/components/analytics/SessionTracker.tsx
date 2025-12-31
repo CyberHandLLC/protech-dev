@@ -93,12 +93,33 @@ export default function SessionTracker() {
       setTimeout(trackSessionStart, 500);
     }
 
-    // Track SessionEnd only when user actually leaves the site
-    // Use pagehide event which is more reliable for modern browsers
-    const handlePageHide = (event: PageTransitionEvent) => {
-      // Only track if this is NOT a page navigation (persisted = false means page is being unloaded)
-      // For Next.js client-side navigation, persisted will be true, so we skip it
-      if (!event.persisted) {
+    // Track SessionEnd only when user leaves to external site or closes tab
+    // We'll use a combination of beforeunload and checking if navigation is internal
+    let isInternalNavigation = false;
+
+    // Listen for clicks on internal links to mark as internal navigation
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+      
+      if (link && link.href) {
+        const currentHost = window.location.hostname;
+        const linkHost = new URL(link.href).hostname;
+        
+        // If clicking a link to the same domain, mark as internal
+        if (currentHost === linkHost) {
+          isInternalNavigation = true;
+          // Reset after a short delay (navigation should happen quickly)
+          setTimeout(() => {
+            isInternalNavigation = false;
+          }, 1000);
+        }
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // Only track SessionEnd if this is NOT an internal navigation
+      if (!isInternalNavigation) {
         try {
           const sessionDuration = sessionStartTimeRef.current 
             ? Math.floor((Date.now() - sessionStartTimeRef.current) / 1000)
@@ -130,13 +151,14 @@ export default function SessionTracker() {
       }
     };
 
-    // Use pagehide instead of beforeunload for better reliability
-    // pagehide fires when page is actually being unloaded (tab close, external navigation)
-    // but NOT during Next.js client-side navigation
-    window.addEventListener('pagehide', handlePageHide as EventListener);
+    // Listen for clicks to detect internal navigation
+    document.addEventListener('click', handleClick);
+    // Listen for beforeunload to track session end
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('pagehide', handlePageHide as EventListener);
+      document.removeEventListener('click', handleClick);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [pathname]);
 
