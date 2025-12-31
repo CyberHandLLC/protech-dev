@@ -45,8 +45,12 @@ export default function SessionTracker() {
     pagesViewedRef.current.add(pathname);
 
     // Track SessionStart event (only once per session)
-    if (!hasTrackedSessionStartRef.current) {
+    // Check if we've already tracked this session
+    const hasTrackedSession = sessionStorage.getItem('fb_session_tracked');
+    
+    if (!hasTrackedSessionStartRef.current && !hasTrackedSession) {
       hasTrackedSessionStartRef.current = true;
+      sessionStorage.setItem('fb_session_tracked', 'true');
       
       const trackSessionStart = () => {
         try {
@@ -89,7 +93,7 @@ export default function SessionTracker() {
       setTimeout(trackSessionStart, 500);
     }
 
-    // Track SessionEnd when user leaves
+    // Track SessionEnd when user actually leaves the site
     const handleBeforeUnload = () => {
       try {
         const sessionDuration = sessionStartTimeRef.current 
@@ -121,21 +125,12 @@ export default function SessionTracker() {
       }
     };
 
-    // Listen for page unload
+    // Only listen for beforeunload (actual page close/navigation)
+    // Do NOT track on visibility change to avoid firing when switching tabs
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // Also track on visibility change (when user switches tabs/minimizes)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        handleBeforeUnload();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [pathname]);
 
