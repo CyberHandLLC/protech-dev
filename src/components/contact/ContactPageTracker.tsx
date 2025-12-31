@@ -6,32 +6,33 @@ import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 /**
  * ContactPageTracker Component
  * 
- * A client component that tracks contact page views and initiations for Facebook events
- * This tracks the contact page view as an important conversion step
+ * Tracks when users visit the contact page - a key conversion step
+ * indicating high intent to request HVAC service
  */
 export default function ContactPageTracker() {
-  const { trackInitiateCheckout } = useFacebookEvents();
+  const { trackCustomEvent } = useFacebookEvents();
   
   useEffect(() => {
-    // Track a contact page view as an initiate checkout event
+    // Track contact page view as a custom conversion event
     const trackContact = async () => {
       try {
-        await trackInitiateCheckout({
+        await trackCustomEvent('ContactPageViewed', {
           customData: {
             contentName: 'Contact Page',
             contentCategory: 'contact',
-            contentType: 'contact_initiation'
+            contentType: 'contact_page',
+            source: 'contact_page_visit'
           }
         });
         
-        console.log('Contact page view tracked as initiate checkout');
+        console.log('[ContactPageViewed] User visited contact page');
       } catch (error) {
         console.error('Error tracking contact page view:', error);
       }
     };
     
     trackContact();
-  }, [trackInitiateCheckout]);
+  }, [trackCustomEvent]);
   
   return null;
 }
