@@ -33,10 +33,7 @@ export default function FacebookPixel() {
             'https://connect.facebook.net/en_US/fbevents.js');
             
             // Initialize pixel with advanced matching enabled
-            fbq('init', '${PIXEL_ID}', {}, {
-              autoConfig: true,
-              debug: false
-            });
+            fbq('init', '${PIXEL_ID}');
             
             // Track initial PageView with unique eventID for deduplication
             fbq('track', 'PageView', {}, {
