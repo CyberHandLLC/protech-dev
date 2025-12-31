@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
-import ViewTracker from '../analytics/ViewTracker';
 
 /**
  * ContactPageTracker Component
@@ -34,6 +33,5 @@ export default function ContactPageTracker() {
     trackContact();
   }, [trackInitiateCheckout]);
   
-  // Also include the standard ViewTracker
-  return <ViewTracker contentType="contact_page" contentName="Contact Page" contentCategory="contact" />;
+  return null;
 }
