@@ -93,44 +93,50 @@ export default function SessionTracker() {
       setTimeout(trackSessionStart, 500);
     }
 
-    // Track SessionEnd when user actually leaves the site
-    const handleBeforeUnload = () => {
-      try {
-        const sessionDuration = sessionStartTimeRef.current 
-          ? Math.floor((Date.now() - sessionStartTimeRef.current) / 1000)
-          : 0;
-        
-        const exitUrl = typeof window !== 'undefined' ? window.location.href : '';
-        
-        // Track with Facebook Pixel using trackCustom
-        if (typeof window !== 'undefined' && typeof (window as any).fbq !== 'undefined') {
-          (window as any).fbq('trackCustom', 'SessionEnd', {
+    // Track SessionEnd only when user actually leaves the site
+    // Use pagehide event which is more reliable for modern browsers
+    const handlePageHide = (event: PageTransitionEvent) => {
+      // Only track if this is NOT a page navigation (persisted = false means page is being unloaded)
+      // For Next.js client-side navigation, persisted will be true, so we skip it
+      if (!event.persisted) {
+        try {
+          const sessionDuration = sessionStartTimeRef.current 
+            ? Math.floor((Date.now() - sessionStartTimeRef.current) / 1000)
+            : 0;
+          
+          const exitUrl = typeof window !== 'undefined' ? window.location.href : '';
+          
+          // Track with Facebook Pixel using trackCustom
+          if (typeof window !== 'undefined' && typeof (window as any).fbq !== 'undefined') {
+            (window as any).fbq('trackCustom', 'SessionEnd', {
+              session_id: sessionIdRef.current,
+              exit_url: exitUrl,
+              exit_path: pathname,
+              session_duration_seconds: sessionDuration,
+              pages_viewed: pagesViewedRef.current.size,
+              timestamp: new Date().toISOString()
+            });
+          }
+
+          console.log('[SessionEnd]', {
             session_id: sessionIdRef.current,
             exit_url: exitUrl,
-            exit_path: pathname,
-            session_duration_seconds: sessionDuration,
-            pages_viewed: pagesViewedRef.current.size,
-            timestamp: new Date().toISOString()
+            session_duration: sessionDuration,
+            pages_viewed: pagesViewedRef.current.size
           });
+        } catch (error) {
+          console.error('Error tracking session end:', error);
         }
-
-        console.log('[SessionEnd]', {
-          session_id: sessionIdRef.current,
-          exit_url: exitUrl,
-          session_duration: sessionDuration,
-          pages_viewed: pagesViewedRef.current.size
-        });
-      } catch (error) {
-        console.error('Error tracking session end:', error);
       }
     };
 
-    // Only listen for beforeunload (actual page close/navigation)
-    // Do NOT track on visibility change to avoid firing when switching tabs
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Use pagehide instead of beforeunload for better reliability
+    // pagehide fires when page is actually being unloaded (tab close, external navigation)
+    // but NOT during Next.js client-side navigation
+    window.addEventListener('pagehide', handlePageHide as EventListener);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide as EventListener);
     };
   }, [pathname]);
 
