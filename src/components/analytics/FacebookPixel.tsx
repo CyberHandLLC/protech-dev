@@ -61,10 +61,13 @@ export default function FacebookPixel() {
               console.warn('[Meta Pixel] Could not store event ID:', e);
             }
             
-            // Track initial PageView with unique eventID for deduplication
-            fbq('track', 'PageView', {}, {
-              eventID: pageviewEventId
-            });
+            // Delay PageView event to ensure _fbp cookie is set
+            // This improves Event Match Quality by ensuring fbp is present
+            setTimeout(function() {
+              fbq('track', 'PageView', {}, {
+                eventID: pageviewEventId
+              });
+            }, 300); // 300ms delay to allow cookie to be set
             
             // Debug: Log pixel initialization
             console.log('[Meta Pixel] Loaded on:', window.location.hostname);
