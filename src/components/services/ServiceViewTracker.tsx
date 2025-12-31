@@ -31,7 +31,8 @@ function ServiceViewTrackerInner({
   const { trackServiceViewed } = useFacebookEvents();
   
   useEffect(() => {
-    const trackService = async () => {
+    // Add small delay to ensure Meta Pixel has initialized and set _fbp cookie
+    const timer = setTimeout(async () => {
       try {
         // Extract service details from URL path
         // Example: /services/commercial/cooling/maintenance/commercial-refrigeration/wooster-oh
@@ -73,9 +74,9 @@ function ServiceViewTrackerInner({
       } catch (error) {
         console.error('Error tracking service view:', error);
       }
-    };
+    }, 1000); // 1 second delay to ensure pixel initialized
     
-    trackService();
+    return () => clearTimeout(timer);
   }, [pathname, searchParams, serviceName, category, location, trackServiceViewed]);
   
   return null; // This component doesn't render anything

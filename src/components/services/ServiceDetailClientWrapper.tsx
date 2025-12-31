@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import ServiceViewTracker from './ServiceViewTracker';
 
 // Now it's safe to use dynamic imports with ssr: false in this client component
 const SEOServicePageWrapper = dynamic(() => import('@/components/SEOServicePageWrapper'));
@@ -44,6 +45,9 @@ export default function ServiceDetailClientWrapper({
 }: ServiceDetailClientWrapperProps) {
   return (
     <>
+      {/* Track service page view for analytics */}
+      <ServiceViewTracker />
+      
       {/* For service detail pages, we want the FAQs in the schema but not necessarily visible */}
       
       {/* If FAQs shouldn't be visible but should be in schema, add FAQSchemaOnly first */}
