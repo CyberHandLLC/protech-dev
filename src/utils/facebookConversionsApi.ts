@@ -191,6 +191,13 @@ function trackWithPixel(
     if (customData.searchString) pixelCustomData.search_string = customData.searchString;
     if (customData.status) pixelCustomData.status = customData.status;
     
+    // Custom ProTech HVAC parameters for ServiceViewed events
+    if (customData.serviceName) pixelCustomData.service_name = customData.serviceName;
+    if (customData.serviceCategory) pixelCustomData.service_category = customData.serviceCategory;
+    if (customData.location) pixelCustomData.location = customData.location;
+    if (customData.urgency) pixelCustomData.urgency = customData.urgency;
+    if (customData.source) pixelCustomData.source = customData.source;
+    
     // Track the event with the eventID for deduplication (critical 2025 best practice)
     // Note: Advanced matching should be set during pixel initialization, not on every event
     fbq('track', eventName, pixelCustomData, { eventID: eventId });
@@ -260,6 +267,13 @@ async function trackWithConversionsApi(
     if (customData.numItems) apiCustomData.num_items = customData.numItems;
     if (customData.searchString) apiCustomData.search_string = customData.searchString;
     if (customData.status) apiCustomData.status = customData.status;
+    
+    // Custom ProTech HVAC parameters for ServiceViewed events
+    if (customData.serviceName) apiCustomData.service_name = customData.serviceName;
+    if (customData.serviceCategory) apiCustomData.service_category = customData.serviceCategory;
+    if (customData.location) apiCustomData.location = customData.location;
+    if (customData.urgency) apiCustomData.urgency = customData.urgency;
+    if (customData.source) apiCustomData.source = customData.source;
     
     // Send the event to our Conversions API endpoint
     const response = await fetch('/api/facebook-conversions', {
