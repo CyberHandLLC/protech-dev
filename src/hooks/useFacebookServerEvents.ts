@@ -60,6 +60,7 @@ interface PageViewEventParams extends BaseEventParams {
   pageUrl?: string;
   pageTitle?: string;
   pageCategory?: string;
+  eventId?: string;
 }
 
 /**

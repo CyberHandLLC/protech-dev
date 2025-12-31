@@ -53,11 +53,20 @@ export default function PageViewTracker() {
     
     // Track page view with both Facebook Conversions API and Google Analytics
     try {
+      // Get the same Event ID used by client-side pixel for deduplication
+      let eventId: string | undefined;
+      try {
+        eventId = sessionStorage.getItem('fb_pageview_event_id') || undefined;
+      } catch (e) {
+        console.warn('[PageView] Could not retrieve event ID:', e);
+      }
+      
       // Facebook Conversions API (server-side) - improves Event Match Quality
       trackFacebookServerPageView({
         pageUrl: window.location.href,
         pageTitle: getPageTitle(pathname),
-        pageCategory: getPageCategory(pathname)
+        pageCategory: getPageCategory(pathname),
+        eventId: eventId
       });
       
       // Google Analytics tracking

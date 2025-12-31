@@ -35,9 +35,17 @@ export default function FacebookPixel() {
             // Initialize pixel with advanced matching enabled
             fbq('init', '${PIXEL_ID}');
             
+            // Generate unique PageView event ID and store for server-side sync
+            var pageviewEventId = 'pageview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            try {
+              sessionStorage.setItem('fb_pageview_event_id', pageviewEventId);
+            } catch (e) {
+              console.warn('[Meta Pixel] Could not store event ID:', e);
+            }
+            
             // Track initial PageView with unique eventID for deduplication
             fbq('track', 'PageView', {}, {
-              eventID: 'pageview_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+              eventID: pageviewEventId
             });
             
             // Debug: Log pixel initialization
