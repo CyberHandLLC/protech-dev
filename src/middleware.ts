@@ -6,6 +6,16 @@ import { convertToLocationSlug } from './utils/location';
 export function middleware(request: NextRequest) {
   // Note: www to non-www redirects are handled by Vercel's edge network configuration
   // to avoid redirect loops and ensure proper functionality
+  
+  // Force HTTPS in production
+  if (process.env.NODE_ENV === 'production') {
+    const protocol = request.headers.get('x-forwarded-proto');
+    if (protocol === 'http') {
+      const url = request.nextUrl.clone();
+      url.protocol = 'https:';
+      return NextResponse.redirect(url, { status: 308 });
+    }
+  }
 
   // For development environment, simulate location detection
   if (process.env.NODE_ENV === 'development') {
