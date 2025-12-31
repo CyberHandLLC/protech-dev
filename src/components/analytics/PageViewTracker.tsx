@@ -3,17 +3,19 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import useGoogleTracking from '@/hooks/useGoogleTracking';
+import useFacebookServerEvents from '@/hooks/useFacebookServerEvents';
 import { useTracking } from '@/context/TrackingContext';
 
 /**
  * PageViewTracker Component
  * 
  * Automatically tracks page views across the website using:
+ * - Facebook Conversions API (server-side for Event Match Quality)
  * - Google Analytics 4
  * - Google Tag Manager
  * 
- * Note: Facebook/Meta Pixel PageView tracking is handled automatically by the pixel itself.
- * This component only tracks Google Analytics to avoid duplicate Facebook events.
+ * Note: Facebook/Meta Pixel also tracks PageView automatically (client-side).
+ * Server-side tracking via Conversions API improves Event Match Quality by sending fbp/fbc parameters.
  * 
  * This component should be placed in the root layout to track all page navigations.
  */
@@ -22,8 +24,9 @@ export default function PageViewTracker() {
   const searchParams = useSearchParams();
   const previousPathRef = useRef<string | null>(null);
   
-  // Initialize Google tracking hook only
+  // Initialize tracking hooks
   const { trackPageView: trackGooglePageView } = useGoogleTracking();
+  const { trackPageView: trackFacebookServerPageView } = useFacebookServerEvents();
   
   // Get global tracking context
   const { isTrackingEnabled, pageViewTracked, setPageViewTracked, trackEvent } = useTracking();
@@ -48,9 +51,15 @@ export default function PageViewTracker() {
       return;
     }
     
-    // Track page view with Google Analytics only
-    // Facebook/Meta Pixel tracks PageView automatically on initialization
+    // Track page view with both Facebook Conversions API and Google Analytics
     try {
+      // Facebook Conversions API (server-side) - improves Event Match Quality
+      trackFacebookServerPageView({
+        pageUrl: window.location.href,
+        pageTitle: getPageTitle(pathname),
+        pageCategory: getPageCategory(pathname)
+      });
+      
       // Google Analytics tracking
       trackGooglePageView(
         'webpage',
