@@ -20,15 +20,27 @@ export default function EmergencyClickTracker() {
       const target = event.target as HTMLElement;
       
       // Check if clicked element or parent is an emergency-related element
-      const emergencyElement = target.closest('[data-emergency], [href*="emergency"], button:has-text("Emergency"), a:has-text("Emergency")') as HTMLElement;
+      const emergencyElement = target.closest('[data-emergency], [href*="emergency"], [class*="emergency"]') as HTMLElement;
       
-      // Also check for common emergency button patterns
+      // Comprehensive emergency detection patterns
+      const text = target.textContent?.toLowerCase() || '';
+      const href = target.getAttribute('href')?.toLowerCase() || '';
+      const dataAttr = target.getAttribute('data-emergency');
+      const ariaLabel = target.getAttribute('aria-label')?.toLowerCase() || '';
+      const className = target.className?.toLowerCase() || '';
+      
       const isEmergencyButton = 
-        target.textContent?.toLowerCase().includes('emergency') ||
-        target.getAttribute('href')?.includes('emergency') ||
-        target.getAttribute('data-emergency') === 'true' ||
-        target.classList.contains('emergency-button') ||
-        target.classList.contains('emergency-tab');
+        text.includes('emergency') ||
+        text.includes('urgent') ||
+        text.includes('24/7') ||
+        text.includes('immediate') ||
+        href.includes('emergency') ||
+        dataAttr === 'true' ||
+        className.includes('emergency') ||
+        ariaLabel.includes('emergency') ||
+        // Check parent elements
+        target.closest('.emergency-service') !== null ||
+        target.closest('[role="tab"][aria-label*="emergency"]') !== null;
       
       if (emergencyElement || isEmergencyButton) {
         const source = window.location.pathname;

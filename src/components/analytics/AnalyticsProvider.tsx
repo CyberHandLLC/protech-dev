@@ -17,6 +17,9 @@ import EmailClickTracker from './EmailClickTracker';
 import LocationViewedTracker from './LocationViewedTracker';
 import EmergencyClickTracker from './EmergencyClickTracker';
 import HomepageLandingTracker from './HomepageLandingTracker';
+import TimeOnPageTracker from './TimeOnPageTracker';
+import FormInteractionTracker from './FormInteractionTracker';
+import ScrollDepthTracker from './ScrollDepthTracker';
 
 // Global Tracking Context
 import { TrackingProvider } from '@/context/TrackingContext';
@@ -65,6 +68,10 @@ export default function AnalyticsProvider({
         {/* Location and Homepage Tracking */}
         <LocationViewedTracker />
         <HomepageLandingTracker />
+        {/* Engagement Tracking */}
+        <TimeOnPageTracker />
+        <FormInteractionTracker />
+        <ScrollDepthTracker />
       </Suspense>
       
       {/* Render the application */}
