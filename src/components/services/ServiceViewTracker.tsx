@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 
@@ -20,7 +20,7 @@ interface ServiceViewTrackerProps {
  * - Location (Cleveland, Akron, Wooster, etc.)
  * - Urgency (Emergency or Scheduled)
  */
-export default function ServiceViewTracker({
+function ServiceViewTrackerInner({
   serviceName,
   serviceType = 'general',
   category = 'service',
@@ -79,4 +79,13 @@ export default function ServiceViewTracker({
   }, [pathname, searchParams, serviceName, category, location, trackServiceViewed]);
   
   return null; // This component doesn't render anything
+}
+
+// Wrap in Suspense to handle useSearchParams() requirement
+export default function ServiceViewTracker(props: ServiceViewTrackerProps) {
+  return (
+    <Suspense fallback={null}>
+      <ServiceViewTrackerInner {...props} />
+    </Suspense>
+  );
 }

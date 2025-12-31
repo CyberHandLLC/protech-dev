@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useFacebookEvents } from '@/hooks/useFacebookEvents';
 
@@ -10,7 +10,7 @@ import { useFacebookEvents } from '@/hooks/useFacebookEvents';
  * Tracks when users view service area/location pages
  * Also tracks when location redirects occur (e.g., Las Vegas → Northeast Ohio)
  */
-export default function LocationViewedTracker() {
+function LocationViewedTrackerInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { trackLocationViewed } = useFacebookEvents();
@@ -56,4 +56,13 @@ export default function LocationViewedTracker() {
   }, [pathname, searchParams, trackLocationViewed]);
 
   return null;
+}
+
+// Wrap in Suspense to handle useSearchParams() requirement
+export default function LocationViewedTracker() {
+  return (
+    <Suspense fallback={null}>
+      <LocationViewedTrackerInner />
+    </Suspense>
+  );
 }
