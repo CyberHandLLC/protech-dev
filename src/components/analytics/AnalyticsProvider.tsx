@@ -20,6 +20,7 @@ import HomepageLandingTracker from './HomepageLandingTracker';
 import TimeOnPageTracker from './TimeOnPageTracker';
 import FormInteractionTracker from './FormInteractionTracker';
 import ScrollDepthTracker from './ScrollDepthTracker';
+import SessionTracker from './SessionTracker';
 
 // Global Tracking Context
 import { TrackingProvider } from '@/context/TrackingContext';
@@ -60,6 +61,8 @@ export default function AnalyticsProvider({
       <InstagramPixel pixelId={instagramPixelId} />
       
       <Suspense fallback={null}>
+        {/* Session Tracking */}
+        <SessionTracker />
         {/* Automatic Page View Tracking */}
         <PageViewTracker />
         {/* Global Click Tracking */}
