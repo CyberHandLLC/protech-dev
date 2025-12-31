@@ -26,6 +26,14 @@ export enum FacebookEventName {
   ADD_PAYMENT_INFO = 'AddPaymentInfo',
   PURCHASE = 'Purchase',
   SEARCH = 'Search',
+  // Custom events for ProTech HVAC
+  SERVICE_VIEWED = 'ServiceViewed',
+  LOCATION_VIEWED = 'LocationViewed',
+  EMAIL_CLICKED = 'EmailClicked',
+  EMERGENCY_CLICKED = 'EmergencyClicked',
+  HERO_FORM_OPENED = 'HeroFormOpened',
+  HERO_SERVICES_CLICKED = 'HeroServicesClicked',
+  HERO_CONTACT_CLICKED = 'HeroContactClicked',
 }
 
 interface UserData {
@@ -59,6 +67,12 @@ interface CustomData {
   numItems?: number;
   searchString?: string;
   status?: string;
+  // ProTech HVAC specific fields
+  serviceName?: string;
+  serviceCategory?: string;
+  location?: string;
+  urgency?: 'emergency' | 'scheduled';
+  source?: string;
   // Other fields as needed
 }
 

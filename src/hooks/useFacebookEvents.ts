@@ -171,6 +171,98 @@ export function useFacebookEvents() {
     return trackEvent(FacebookEventName.PAGE_VIEW, options);
   };
 
+  /**
+   * Track when user views a specific HVAC service page
+   */
+  const trackServiceViewed = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    const serviceName = options?.customData?.serviceName || 'Unknown Service';
+    
+    if (!trackGlobalEvent('service_viewed', serviceName)) {
+      console.log(`Service viewed event throttled: ${serviceName}`);
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.SERVICE_VIEWED, options);
+  };
+
+  /**
+   * Track when user views a service area/location page
+   */
+  const trackLocationViewed = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    const location = options?.customData?.location || 'Unknown Location';
+    
+    if (!trackGlobalEvent('location_viewed', location)) {
+      console.log(`Location viewed event throttled: ${location}`);
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.LOCATION_VIEWED, options);
+  };
+
+  /**
+   * Track when user clicks an email link
+   */
+  const trackEmailClicked = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    const source = options?.customData?.source || 'Website';
+    
+    if (!trackGlobalEvent('email_clicked', source)) {
+      console.log(`Email clicked event throttled: ${source}`);
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.EMAIL_CLICKED, options);
+  };
+
+  /**
+   * Track when user clicks emergency service button or visits emergency page
+   */
+  const trackEmergencyClicked = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    const service = options?.customData?.serviceName || 'Emergency Service';
+    
+    if (!trackGlobalEvent('emergency_clicked', service)) {
+      console.log(`Emergency clicked event throttled: ${service}`);
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.EMERGENCY_CLICKED, options);
+  };
+
+  /**
+   * Track when user opens form in hero section
+   */
+  const trackHeroFormOpened = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    if (!trackGlobalEvent('hero_form_opened', 'hero_form')) {
+      console.log('Hero form opened event throttled');
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.HERO_FORM_OPENED, options);
+  };
+
+  /**
+   * Track when user clicks services button in hero section
+   */
+  const trackHeroServicesClicked = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    if (!trackGlobalEvent('hero_services_clicked', 'hero_services')) {
+      console.log('Hero services clicked event throttled');
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.HERO_SERVICES_CLICKED, options);
+  };
+
+  /**
+   * Track when user clicks contact button in hero section
+   */
+  const trackHeroContactClicked = async (options: Omit<TrackEventOptions, 'eventId'> = {}) => {
+    if (!trackGlobalEvent('hero_contact_clicked', 'hero_contact')) {
+      console.log('Hero contact clicked event throttled');
+      return false;
+    }
+    
+    return trackEvent(FacebookEventName.HERO_CONTACT_CLICKED, options);
+  };
+
   return {
     trackLead,
     trackFormSubmission,
@@ -181,6 +273,14 @@ export function useFacebookEvents() {
     trackViewContent,
     trackInitiateCheckout,
     trackPhoneClick,
-    trackPageView
+    trackPageView,
+    // New ProTech-specific events
+    trackServiceViewed,
+    trackLocationViewed,
+    trackEmailClicked,
+    trackEmergencyClicked,
+    trackHeroFormOpened,
+    trackHeroServicesClicked,
+    trackHeroContactClicked,
   };
 }
