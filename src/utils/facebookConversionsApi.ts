@@ -71,7 +71,7 @@ interface CustomData {
   serviceName?: string;
   serviceCategory?: string;
   location?: string;
-  urgency?: 'emergency' | 'scheduled';
+  urgency?: 'emergency' | 'standard';
   source?: string;
   // Other fields as needed
 }

@@ -64,12 +64,12 @@ export default function ServiceViewTracker({
             serviceName: formattedServiceName,
             serviceCategory: `${urlCategory} - ${system || 'general'}`,
             location: formattedLocation,
-            urgency: isEmergency ? 'emergency' : 'scheduled',
+            urgency: isEmergency ? 'emergency' : 'standard',
             contentType: serviceType || 'service',
           }
         });
         
-        console.log(`[ServiceViewed] ${formattedServiceName} (${urlCategory}) in ${formattedLocation} - ${isEmergency ? 'Emergency' : 'Scheduled'}`);
+        console.log(`[ServiceViewed] ${formattedServiceName} (${urlCategory}) in ${formattedLocation} - ${isEmergency ? 'Emergency' : 'Standard'}`);
       } catch (error) {
         console.error('Error tracking service view:', error);
       }
