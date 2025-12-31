@@ -5,7 +5,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import PhoneLink from './PhoneLink';
 import { memo } from 'react';
-import ContentViewTracker from './analytics/ContentViewTracker';
 
 // Dynamically import the contact form
 const HeroContactForm = dynamic(() => import('./HeroContactForm').then(mod => mod), {
@@ -58,16 +57,6 @@ export default function HeroSection({
 
   return (
     <section className="relative py-12 md:py-16 overflow-hidden bg-navy" aria-label="Hero Section">
-      {/* Track hero section engagement */}
-      <ContentViewTracker
-        contentName={`Hero Section - ${displayLocation}`}
-        contentType="homepage_section"
-        contentCategory="Homepage Engagement"
-        additionalData={{
-          location: displayLocation,
-          section: 'hero'
-        }}
-      />
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div 
           className={`w-full h-full bg-[url('/hero-placeholder.jpg')] bg-cover bg-center transition-opacity duration-500 ${isImageVisible ? 'opacity-100' : 'opacity-0'}`}

@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Section from './ui/Section';
 import Container from './ui/Container';
 import Button from './ui/Button';
-import ContentViewTracker from './analytics/ContentViewTracker';
 import PhoneCallTracker from './analytics/PhoneCallTracker';
 
 type CTASectionProps = {
@@ -39,16 +38,6 @@ export default function CTASection({
 
   return (
     <Section className="relative overflow-hidden py-16 md:py-20">
-      {/* Track CTA section engagement */}
-      <ContentViewTracker
-        contentName={`CTA Section - ${displayLocation}`}
-        contentType="conversion_opportunity"
-        contentCategory="Lead Generation"
-        additionalData={{
-          location: displayLocation,
-          section: 'cta'
-        }}
-      />
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0 bg-[url('/cta-bg-placeholder.jpg')] bg-cover bg-center">
         <div className="absolute inset-0 bg-navy opacity-95"></div>
