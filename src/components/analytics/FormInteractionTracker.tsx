@@ -64,7 +64,7 @@ export default function FormInteractionTracker() {
         
         // Track successful form completion
         if (typeof window !== 'undefined' && window.fbq) {
-          // Track custom FormCompleted event
+          // Track custom FormCompleted event (detailed analytics)
           window.fbq('trackCustom', 'FormCompleted', {
             form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
             page_path: window.location.pathname,
@@ -72,15 +72,23 @@ export default function FormInteractionTracker() {
             time_spent_seconds: Math.round(timeSpent / 1000)
           });
           
-          // Track standard Lead event (important for Facebook optimization)
+          // Track standard Lead event (lead generation campaigns)
           window.fbq('track', 'Lead', {
-            content_name: 'Contact Form Submission',
+            content_name: 'Service Inquiry',
             content_category: 'lead_generation',
             value: 100, // Estimated lead value in dollars
             currency: 'USD'
           });
           
-          console.log('[FormInteraction] Form completed and Lead event tracked');
+          // Track standard Schedule event (appointment scheduling campaigns)
+          window.fbq('track', 'Schedule', {
+            content_name: 'HVAC Service Appointment Request',
+            content_category: 'appointment_scheduling',
+            value: 150, // Estimated appointment value
+            currency: 'USD'
+          });
+          
+          console.log('[FormInteraction] Form completed - Lead and Schedule events tracked');
         }
         
         // Clean up
