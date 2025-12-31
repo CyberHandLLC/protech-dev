@@ -64,6 +64,7 @@ export default function FormInteractionTracker() {
         
         // Track successful form completion
         if (typeof window !== 'undefined' && window.fbq) {
+          // Track custom FormCompleted event
           window.fbq('trackCustom', 'FormCompleted', {
             form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
             page_path: window.location.pathname,
@@ -71,7 +72,15 @@ export default function FormInteractionTracker() {
             time_spent_seconds: Math.round(timeSpent / 1000)
           });
           
-          console.log('[FormInteraction] Form completed');
+          // Track standard Lead event (important for Facebook optimization)
+          window.fbq('track', 'Lead', {
+            content_name: 'Contact Form Submission',
+            content_category: 'lead_generation',
+            value: 100, // Estimated lead value in dollars
+            currency: 'USD'
+          });
+          
+          console.log('[FormInteraction] Form completed and Lead event tracked');
         }
         
         // Clean up

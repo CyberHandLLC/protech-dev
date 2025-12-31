@@ -1,18 +1,10 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
 import PhoneLink from './PhoneLink';
 import { quickLinks, legalLinks, socialPlatforms, serviceCategories } from '@/data/footerData';
-import { useEffect, useState } from 'react';
 
 export default function Footer() {
-  const [currentYear, setCurrentYear] = useState(2025);
-  
-  // Update year on client-side to prevent hydration mismatch
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
+  const currentYear = new Date().getFullYear();
   
   // Contact information items
   const contactItems = [
