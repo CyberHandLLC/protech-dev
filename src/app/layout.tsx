@@ -12,7 +12,7 @@ export const metadata = {
   generator: 'Next.js',
   keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Northeast Ohio', 'Akron', 'Cleveland', 'Canton'],
   referrer: 'origin-when-cross-origin',
-  themeColor: '#0B2B4C', // Navy blue color - should match your primary brand color
+  themeColor: '#0B2B4C',
   colorScheme: 'dark',
   viewport: { width: 'device-width', initialScale: 1 },
   robots: {
@@ -22,6 +22,16 @@ export const metadata = {
       index: true,
       follow: true,
     },
+  },
+  metadataBase: new URL('https://protech-ohio.com'),
+  openGraph: {
+    siteName: 'ProTech HVAC',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@ProTechHVAC',
   },
 };
 
