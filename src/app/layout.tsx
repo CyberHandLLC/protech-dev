@@ -5,6 +5,11 @@ import ClientGlobalSEO from '@/components/ClientGlobalSEO';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', preload: true });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export const metadata = {
   title: 'ProTech HVAC - Heating and Cooling Services',
   description: 'Professional HVAC services for residential and commercial needs',
@@ -15,7 +20,6 @@ export const metadata = {
   referrer: 'origin-when-cross-origin',
   themeColor: '#0B2B4C',
   colorScheme: 'dark',
-  viewport: { width: 'device-width', initialScale: 1 },
   robots: {
     index: true,
     follow: true,
