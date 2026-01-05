@@ -1,5 +1,6 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import ClientGlobalSEO from '@/components/ClientGlobalSEO';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', preload: true });
@@ -25,7 +26,7 @@ export const metadata = {
   },
   metadataBase: new URL('https://protech-ohio.com'),
   openGraph: {
-    siteName: 'ProTech HVAC',
+    siteName: 'ProTech Heating & Cooling | HVAC Services',
     type: 'website',
     locale: 'en_US',
   },
@@ -46,6 +47,7 @@ export default function RootLayout({
         <ClientGlobalSEO>
           {children}
         </ClientGlobalSEO>
+        <Analytics />
       </body>
     </html>
   );

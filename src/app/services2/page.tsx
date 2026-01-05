@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     description: 'Explore our comprehensive HVAC services including AC repair, heating services, air quality solutions, and commercial HVAC services throughout Northeast Ohio.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'ProTech HVAC',
+    siteName: 'ProTech Heating & Cooling | HVAC Services',
     images: [{
       url: '/images/services-og-image.jpg',
       width: 1200,
