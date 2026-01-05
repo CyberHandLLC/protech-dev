@@ -4,14 +4,20 @@ import { geolocation } from '@vercel/functions';
 import { convertToLocationSlug } from './utils/location';
 
 export function middleware(request: NextRequest) {
-  // Note: www to non-www redirects are handled by Vercel's edge network configuration
-  // to avoid redirect loops and ensure proper functionality
+  const url = request.nextUrl.clone();
+  const hostname = request.headers.get('host') || '';
+  
+  // Redirect www to non-www (apex domain)
+  if (hostname.startsWith('www.')) {
+    url.host = hostname.replace('www.', '');
+    url.protocol = 'https:';
+    return NextResponse.redirect(url, { status: 301 }); // 301 permanent redirect
+  }
   
   // Force HTTPS in production
   if (process.env.NODE_ENV === 'production') {
     const protocol = request.headers.get('x-forwarded-proto');
     if (protocol === 'http') {
-      const url = request.nextUrl.clone();
       url.protocol = 'https:';
       return NextResponse.redirect(url, { status: 308 });
     }
