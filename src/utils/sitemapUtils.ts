@@ -31,7 +31,7 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     {
       url: `${baseUrl}`,
       lastModified: currentDate,
-      changeFrequency: 'weekly',
+      changeFrequency: 'monthly',
       priority: 1.0,
       isCanonical: true,
     },
@@ -45,7 +45,7 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     {
       url: `${baseUrl}/services`,
       lastModified: currentDate,
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.9,
       isCanonical: true,
     },
@@ -68,7 +68,7 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     .map(category => ({
       url: `${baseUrl}/services/${category.id}`,
       lastModified: currentDate,
-      changeFrequency: 'weekly',
+      changeFrequency: 'daily',
       priority: 0.7,
       isCanonical: true,
     }));
@@ -102,7 +102,7 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
       locationPages.push({
         url: `${baseUrl}/services/locations/${formattedSlug}`,
         lastModified: currentDate,
-        changeFrequency: 'weekly',
+        changeFrequency: 'daily',
         priority: 0.8,
         isCanonical: true,
       });
@@ -179,7 +179,7 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
                 serviceDetailPages.push({
                   url: `${baseUrl}/services/${category.id}/${system.id}/${serviceType.id}/${item.id}/${location.slug}`,
                   lastModified: currentDate,
-                  changeFrequency: 'weekly',
+                  changeFrequency: 'daily',
                   priority: 0.9,
                   isCanonical: true
                 });
