@@ -147,19 +147,26 @@ Sends to all platforms:
 
 ### **Vercel Analytics**
 **Best for:**
-- ✅ Simple page view counting
+- ✅ Simple page view counting (automatic)
 - ✅ Performance monitoring
 - ✅ Quick visitor stats
 - ✅ No configuration needed
 
 **Key Metrics:**
-- Total page views
+- Total page views (automatic)
 - Top pages
 - Visitor counts
 - Performance scores
 
+**Custom Events:**
+- ⚠️ **Not currently tracked** (requires Pro/Enterprise plan)
+- Page views are tracked automatically
+- Custom events (Lead, Schedule, etc.) only tracked in Meta Pixel + GA4
+
 **Where to view:**
 - [Vercel Dashboard](https://vercel.com/dashboard) → Your Project → Analytics
+
+**Note:** Vercel Analytics is currently used for automatic page view tracking only. All conversion events (Lead, Schedule, Form submissions) are tracked via Meta Pixel and Google Analytics.
 
 ---
 
