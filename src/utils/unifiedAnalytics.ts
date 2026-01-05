@@ -4,10 +4,12 @@
  * Centralized tracking for all analytics platforms:
  * - Meta Pixel (Facebook)
  * - Google Analytics 4
- * - Vercel Analytics (automatic)
+ * - Vercel Analytics (with custom events)
  * 
  * This utility provides a single interface to track events across all platforms
  */
+
+import { track } from '@vercel/analytics';
 
 // Event types that can be tracked
 export type AnalyticsEvent = 
@@ -61,8 +63,8 @@ export function trackEvent(eventData: AnalyticsEventData): void {
   // Track to Google Analytics
   trackToGoogleAnalytics(event_name, properties);
   
-  // Vercel Analytics tracks page views automatically
-  // No action needed for Vercel
+  // Track to Vercel Analytics
+  trackToVercelAnalytics(event_name, properties);
   
   // Log for debugging (remove in production if needed)
   if (process.env.NODE_ENV === 'development') {
@@ -162,6 +164,57 @@ function trackToGoogleAnalytics(eventName: AnalyticsEvent, properties: any): voi
 }
 
 /**
+ * Track to Vercel Analytics
+ */
+function trackToVercelAnalytics(eventName: AnalyticsEvent, properties: any): void {
+  // Skip page_view as Vercel tracks it automatically
+  if (eventName === 'page_view') return;
+  
+  try {
+    // Map our event names to Vercel-friendly names
+    const vercelEventMap: Record<AnalyticsEvent, string> = {
+      'page_view': 'pageview', // Won't be used due to skip above
+      'session_start': 'session_start',
+      'session_end': 'session_end',
+      'form_started': 'form_start',
+      'form_completed': 'form_complete',
+      'lead': 'lead',
+      'schedule': 'schedule',
+      'contact_page_viewed': 'contact_view',
+      'phone_click': 'phone_click',
+      'email_click': 'email_click',
+      'service_viewed': 'service_view',
+      'scroll_depth': 'scroll',
+      'time_on_page': 'time_on_page',
+    };
+    
+    const vercelEventName = vercelEventMap[eventName];
+    
+    // Limit to 8 properties max (Pro + Web Analytics Plus limit)
+    // Prioritize the most important properties
+    const limitedProperties: Record<string, string | number | boolean | null> = {};
+    const priorityKeys = ['value', 'currency', 'form_name', 'service_name', 'page_path', 'content_category', 'phone_number', 'email'];
+    
+    let propertyCount = 0;
+    for (const key of priorityKeys) {
+      if (properties[key] !== undefined && propertyCount < 8) {
+        // Ensure values are allowed types (string, number, boolean, null)
+        const value = properties[key];
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+          limitedProperties[key] = value;
+          propertyCount++;
+        }
+      }
+    }
+    
+    // Track the event
+    track(vercelEventName, limitedProperties);
+  } catch (error) {
+    console.error('[Analytics] Vercel Analytics tracking error:', error);
+  }
+}
+
+/**
  * Helper function to track page views
  */
 export function trackPageView(path: string, title?: string): void {
@@ -239,12 +292,12 @@ export function trackServiceView(serviceName: string, category?: string): void {
 export function getAnalyticsStatus(): {
   metaPixel: boolean;
   googleAnalytics: boolean;
-  vercel: boolean;
+  vercelAnalytics: boolean;
 } {
   return {
     metaPixel: typeof window !== 'undefined' && !!window.fbq,
     googleAnalytics: typeof window !== 'undefined' && !!window.gtag,
-    vercel: true, // Vercel Analytics is always active
+    vercelAnalytics: true, // Vercel Analytics is always active (custom events via track function)
   };
 }
 
@@ -256,6 +309,6 @@ export function logAnalyticsStatus(): void {
   console.log('[Analytics] Platform Status:', {
     'Meta Pixel (Facebook)': status.metaPixel ? '✅ Active' : '❌ Not loaded',
     'Google Analytics': status.googleAnalytics ? '✅ Active' : '❌ Not loaded',
-    'Vercel Analytics': status.vercel ? '✅ Active' : '❌ Not loaded',
+    'Vercel Analytics': status.vercelAnalytics ? '✅ Active' : '❌ Not loaded',
   });
 }

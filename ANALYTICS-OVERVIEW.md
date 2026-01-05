@@ -28,19 +28,19 @@
 
 | Event Name | Meta Pixel | Google Analytics | Vercel | Purpose |
 |------------|------------|------------------|--------|---------|
-| **PageView** | ✅ (with event_id) | ✅ | ✅ | Track all page visits |
-| **SessionStart** | ✅ | ✅ | ❌ | User begins browsing |
-| **SessionEnd** | ✅ | ✅ | ❌ | User leaves site |
-| **FormStarted** | ✅ | ✅ | ❌ | User begins filling form |
-| **FormCompleted** | ✅ (custom) | ✅ | ❌ | Form submission success |
-| **Lead** | ✅ (standard + server) | ✅ | ❌ | Lead generation ($100 value) |
-| **Schedule** | ✅ (standard + server) | ✅ | ❌ | Appointment request ($150 value) |
-| **ContactPageViewed** | ✅ (custom) | ✅ | ❌ | User visits contact page |
-| **PhoneClick** | ✅ | ✅ | ❌ | User clicks phone number |
-| **EmailClick** | ✅ | ✅ | ❌ | User clicks email |
-| **ServiceViewed** | ✅ | ✅ | ❌ | User views service page |
-| **ScrollDepth** | ❌ | ✅ | ❌ | User scrolls 25%, 50%, 75%, 100% |
-| **TimeOnPage** | ❌ | ✅ | ❌ | User spends time on page |
+| **PageView** | ✅ (with event_id) | ✅ | ✅ (auto) | Track all page visits |
+| **SessionStart** | ✅ | ✅ | ✅ | User begins browsing |
+| **SessionEnd** | ✅ | ✅ | ✅ | User leaves site |
+| **FormStarted** | ✅ | ✅ | ✅ | User begins filling form |
+| **FormCompleted** | ✅ (custom) | ✅ | ✅ | Form submission success |
+| **Lead** | ✅ (standard + server) | ✅ | ✅ | Lead generation ($100 value) |
+| **Schedule** | ✅ (standard + server) | ✅ | ✅ | Appointment request ($150 value) |
+| **ContactPageViewed** | ✅ (custom) | ✅ | ✅ | User visits contact page |
+| **PhoneClick** | ✅ | ✅ | ✅ | User clicks phone number |
+| **EmailClick** | ✅ | ✅ | ✅ | User clicks email |
+| **ServiceViewed** | ✅ | ✅ | ✅ | User views service page |
+| **ScrollDepth** | ❌ | ✅ | ✅ | User scrolls 25%, 50%, 75%, 100% |
+| **TimeOnPage** | ❌ | ✅ | ✅ | User spends time on page |
 
 ---
 
@@ -147,26 +147,28 @@ Sends to all platforms:
 
 ### **Vercel Analytics**
 **Best for:**
-- ✅ Simple page view counting (automatic)
+- ✅ Page view tracking (automatic)
+- ✅ Custom event tracking (Pro + Web Analytics Plus)
 - ✅ Performance monitoring
 - ✅ Quick visitor stats
-- ✅ No configuration needed
 
 **Key Metrics:**
 - Total page views (automatic)
+- Custom events (Lead, Schedule, Form submissions)
 - Top pages
 - Visitor counts
 - Performance scores
 
 **Custom Events:**
-- ⚠️ **Not currently tracked** (requires Pro/Enterprise plan)
-- Page views are tracked automatically
-- Custom events (Lead, Schedule, etc.) only tracked in Meta Pixel + GA4
+- ✅ **Now tracking all conversion events** (Pro + Web Analytics Plus)
+- Up to 8 custom properties per event
+- Includes: Lead, Schedule, Form submissions, Phone/Email clicks
+- Page views tracked automatically
 
 **Where to view:**
 - [Vercel Dashboard](https://vercel.com/dashboard) → Your Project → Analytics
 
-**Note:** Vercel Analytics is currently used for automatic page view tracking only. All conversion events (Lead, Schedule, Form submissions) are tracked via Meta Pixel and Google Analytics.
+**Note:** With Pro Plan + Web Analytics Plus, Vercel now tracks all custom events alongside Meta Pixel and Google Analytics for complete visibility across all platforms.
 
 ---
 
