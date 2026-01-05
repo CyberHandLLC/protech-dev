@@ -8,6 +8,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', preload: tru
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#0B2B4C',
+  colorScheme: 'dark',
 };
 
 export const metadata = {
@@ -18,8 +20,6 @@ export const metadata = {
   generator: 'Next.js',
   keywords: ['HVAC', 'heating', 'cooling', 'air conditioning', 'Northeast Ohio', 'Akron', 'Cleveland', 'Canton'],
   referrer: 'origin-when-cross-origin',
-  themeColor: '#0B2B4C',
-  colorScheme: 'dark',
   robots: {
     index: true,
     follow: true,
