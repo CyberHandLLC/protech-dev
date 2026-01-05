@@ -31,14 +31,14 @@ export function generateValidatedSitemapUrls(baseUrl: string, currentDate: strin
     {
       url: `${baseUrl}`,
       lastModified: currentDate,
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 1.0,
       isCanonical: true,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,
-      changeFrequency: 'monthly',
+      changeFrequency: 'weekly',
       priority: 0.8,
       isCanonical: true,
     },
