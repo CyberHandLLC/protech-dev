@@ -48,10 +48,8 @@ export default function ServiceDetailClientWrapper({
       {/* Track service page view for analytics */}
       <ServiceViewTracker />
       
-      {/* For service detail pages, we want the FAQs in the schema but not necessarily visible */}
-      
-      {/* If FAQs shouldn't be visible but should be in schema, add FAQSchemaOnly first */}
-      {!showVisibleFAQs && faqs.length > 0 && (
+      {/* Always output FAQ schema here to avoid duplicates */}
+      {faqs.length > 0 && (
         <FAQSchemaOnly 
           faqs={faqs} 
           mainEntity={mainEntity || serviceName}
@@ -65,9 +63,8 @@ export default function ServiceDetailClientWrapper({
         serviceUrl={serviceUrl}
         serviceImageUrl={serviceImageUrl}
         serviceArea={serviceArea}
-        // Only include FAQs in the wrapper if they should be visible
-        // This prevents duplicate schema when using FAQSchemaOnly above
-        faqs={showVisibleFAQs ? faqs : []} 
+        // Never pass FAQs to wrapper - we handle FAQ schema above
+        faqs={[]} 
       >
         {/* Render the original service page content */}
         {children}
