@@ -16,9 +16,10 @@ interface FAQ {
 interface FAQSchemaOnlyProps {
   faqs: FAQ[];
   mainEntity?: string;
+  pageName?: string;
 }
 
-export default function FAQSchemaOnly({ faqs, mainEntity = 'HVAC Services' }: FAQSchemaOnlyProps) {
+export default function FAQSchemaOnly({ faqs, mainEntity = 'HVAC Services', pageName }: FAQSchemaOnlyProps) {
   if (!faqs || faqs.length === 0) {
     return null;
   }
@@ -26,6 +27,7 @@ export default function FAQSchemaOnly({ faqs, mainEntity = 'HVAC Services' }: FA
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "name": pageName || `${mainEntity} - Frequently Asked Questions`,
     "mainEntity": faqs.map(faq => ({
       "@type": "Question",
       "name": faq.question,

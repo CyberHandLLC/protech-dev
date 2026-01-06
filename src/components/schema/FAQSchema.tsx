@@ -8,6 +8,7 @@ interface FAQItem {
 interface FAQSchemaProps {
   faqs: FAQItem[];
   mainEntity?: string;
+  pageName?: string;
 }
 
 /**
@@ -17,7 +18,7 @@ interface FAQSchemaProps {
  * This can enable FAQ rich snippets in Google search results
  * Particularly valuable for HVAC businesses where customers have common questions
  */
-export default function FAQSchema({ faqs, mainEntity = 'HVAC Services' }: FAQSchemaProps) {
+export default function FAQSchema({ faqs, mainEntity = 'HVAC Services', pageName }: FAQSchemaProps) {
   // Skip rendering if no FAQs are provided
   if (!faqs || faqs.length === 0) {
     return null;
@@ -26,6 +27,7 @@ export default function FAQSchema({ faqs, mainEntity = 'HVAC Services' }: FAQSch
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "name": pageName || `${mainEntity} - Frequently Asked Questions`,
     "mainEntity": faqs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
