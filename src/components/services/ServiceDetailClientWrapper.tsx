@@ -48,23 +48,16 @@ export default function ServiceDetailClientWrapper({
       {/* Track service page view for analytics */}
       <ServiceViewTracker />
       
-      {/* Always output FAQ schema here to avoid duplicates */}
-      {faqs.length > 0 && (
-        <FAQSchemaOnly 
-          faqs={faqs} 
-          mainEntity={mainEntity || serviceName}
-        />
-      )}
-      
       {/* Wrap with SEO service wrapper for structured data */}
+      {/* SEOServicePageWrapper handles FAQ schema - no need for separate FAQSchemaOnly */}
       <SEOServicePageWrapper
         serviceName={serviceName}
         serviceDescription={serviceDescription}
         serviceUrl={serviceUrl}
         serviceImageUrl={serviceImageUrl}
         serviceArea={serviceArea}
-        // Never pass FAQs to wrapper - we handle FAQ schema above
-        faqs={[]} 
+        faqs={faqs}
+        pageName={`${mainEntity || serviceName} - Frequently Asked Questions`}
       >
         {/* Render the original service page content */}
         {children}

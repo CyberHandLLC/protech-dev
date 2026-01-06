@@ -30,6 +30,7 @@ interface SEOServicePageWrapperProps {
     question: string;
     answer: string;
   }>;
+  pageName?: string;
 }
 
 /**
@@ -47,7 +48,8 @@ export default function SEOServicePageWrapper({
   serviceArea = 'Northeast Ohio',
   reviews = [],
   aggregateRating,
-  faqs = []
+  faqs = [],
+  pageName
 }: SEOServicePageWrapperProps) {
   return (
     <>
@@ -71,7 +73,7 @@ export default function SEOServicePageWrapper({
       
       {/* FAQ Schema (if FAQs provided) */}
       {faqs.length > 0 && (
-        <FAQSchema faqs={faqs} mainEntity={serviceName} />
+        <FAQSchema faqs={faqs} mainEntity={serviceName} pageName={pageName} />
       )}
       
       {/* Render the children */}
