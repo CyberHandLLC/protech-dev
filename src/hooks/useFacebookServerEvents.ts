@@ -102,9 +102,9 @@ export default function useFacebookServerEvents() {
     setError(null);
 
     try {
-      const { userData, ...customData } = params;
-      // Generate an event ID for deduplication
-      const eventId = uuidv4();
+      const { userData, eventId: providedEventId, ...customData } = params;
+      // Use provided event ID for deduplication, or generate a new one
+      const eventId = providedEventId || uuidv4();
       // Get current timestamp in seconds
       const eventTime = Math.floor(Date.now() / 1000);
       // Get current page URL if not provided
