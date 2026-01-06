@@ -84,9 +84,10 @@ export default function FormInteractionTracker() {
             console.error('[FormInteraction] FormStarted Conversions API error:', error);
           }
           
-          // Track to Google Analytics
-          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
-            (window as any).gtag('event', 'begin_form', {
+          // Track to Google Analytics via dataLayer
+          if (typeof window !== 'undefined' && window.dataLayer) {
+            window.dataLayer.push({
+              event: 'begin_form',
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
               page_path: window.location.pathname,
               field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
@@ -219,10 +220,11 @@ export default function FormInteractionTracker() {
             console.error('[FormInteraction] Vercel Analytics error:', error);
           }
           
-          // Track to Google Analytics
-          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+          // Track to Google Analytics via dataLayer
+          if (typeof window !== 'undefined' && window.dataLayer) {
             // Track form_complete event
-            (window as any).gtag('event', 'form_complete', {
+            window.dataLayer.push({
+              event: 'form_complete',
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
               page_path: window.location.pathname,
               fields_filled: interaction.fields.size,
@@ -230,7 +232,8 @@ export default function FormInteractionTracker() {
             });
             
             // Track generate_lead event
-            (window as any).gtag('event', 'generate_lead', {
+            window.dataLayer.push({
+              event: 'generate_lead',
               value: 100,
               currency: 'USD',
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
@@ -238,7 +241,8 @@ export default function FormInteractionTracker() {
             });
             
             // Track schedule event (custom)
-            (window as any).gtag('event', 'schedule', {
+            window.dataLayer.push({
+              event: 'schedule',
               value: 150,
               currency: 'USD',
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
