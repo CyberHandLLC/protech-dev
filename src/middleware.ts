@@ -7,6 +7,14 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const hostname = request.headers.get('host') || '';
   
+  // Block Vercel preview domains from being indexed
+  // Redirect all Vercel preview traffic to production domain
+  if (hostname.includes('vercel.app')) {
+    url.host = 'protech-ohio.com';
+    url.protocol = 'https:';
+    return NextResponse.redirect(url, { status: 301 }); // 301 permanent redirect
+  }
+  
   // Redirect www to non-www (apex domain)
   if (hostname.startsWith('www.')) {
     url.host = hostname.replace('www.', '');
