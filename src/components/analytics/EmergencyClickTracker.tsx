@@ -19,33 +19,44 @@ export default function EmergencyClickTracker() {
     const handleEmergencyClick = async (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       
-      // Check if clicked element or parent is an emergency-related element
-      const emergencyElement = target.closest('[data-emergency], [href*="emergency"], [class*="emergency"]') as HTMLElement;
+      // Only track actual clickable elements (buttons, links, tabs)
+      const isClickable = 
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
+        target.getAttribute('role') === 'button' ||
+        target.getAttribute('role') === 'tab' ||
+        target.closest('button') !== null ||
+        target.closest('a') !== null;
       
-      // Comprehensive emergency detection patterns
-      const text = target.textContent?.toLowerCase() || '';
-      const href = target.getAttribute('href')?.toLowerCase() || '';
-      const dataAttr = target.getAttribute('data-emergency');
-      const ariaLabel = target.getAttribute('aria-label')?.toLowerCase() || '';
-      const className = target.className?.toLowerCase() || '';
+      if (!isClickable) return;
+      
+      // Get the clickable element (might be parent)
+      const clickableElement = (
+        target.tagName === 'BUTTON' || target.tagName === 'A' ? target : 
+        target.closest('button, a, [role="button"], [role="tab"]')
+      ) as HTMLElement;
+      
+      if (!clickableElement) return;
+      
+      // Check for emergency indicators on the clickable element only
+      const text = clickableElement.textContent?.toLowerCase() || '';
+      const href = clickableElement.getAttribute('href')?.toLowerCase() || '';
+      const dataAttr = clickableElement.getAttribute('data-emergency');
+      const ariaLabel = clickableElement.getAttribute('aria-label')?.toLowerCase() || '';
+      const className = clickableElement.className?.toLowerCase() || '';
       
       const isEmergencyButton = 
-        text.includes('emergency') ||
-        text.includes('urgent') ||
-        text.includes('24/7') ||
-        text.includes('immediate') ||
-        href.includes('emergency') ||
         dataAttr === 'true' ||
+        href.includes('/emergency') ||
         className.includes('emergency') ||
         ariaLabel.includes('emergency') ||
-        // Check parent elements
-        target.closest('.emergency-service') !== null ||
-        target.closest('[role="tab"][aria-label*="emergency"]') !== null;
+        (text.includes('emergency') && text.length < 100) || // Limit text length to avoid schema data
+        (text.includes('24/7') && text.length < 100);
       
-      if (emergencyElement || isEmergencyButton) {
+      if (isEmergencyButton) {
         const source = window.location.pathname;
-        const buttonText = target.textContent?.trim() || 'Emergency Service';
-        const isTab = target.getAttribute('role') === 'tab' || target.classList.contains('tab');
+        const buttonText = clickableElement.textContent?.trim().substring(0, 50) || 'Emergency Service'; // Limit text length
+        const isTab = clickableElement.getAttribute('role') === 'tab';
         
         try {
           await trackEmergencyClicked({
