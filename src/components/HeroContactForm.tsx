@@ -96,20 +96,6 @@ const SERVICES: Option[] = [
   { value: 'Other', label: 'Other' }
 ];
 
-// Location options - expanded to include more cities
-const LOCATIONS: Option[] = [
-  { value: '', label: 'Select your location or enter ZIP code below' },
-  { value: 'Cleveland, OH', label: 'Cleveland, OH' },
-  { value: 'Akron, OH', label: 'Akron, OH' },
-  { value: 'Canton, OH', label: 'Canton, OH' },
-  { value: 'Parma, OH', label: 'Parma, OH' },
-  { value: 'Lakewood, OH', label: 'Lakewood, OH' },
-  { value: 'Strongsville, OH', label: 'Strongsville, OH' },
-  { value: 'Medina, OH', label: 'Medina, OH' },
-  { value: 'Cuyahoga Falls, OH', label: 'Cuyahoga Falls, OH' },
-  { value: 'Enter ZIP Code', label: 'Enter ZIP Code' },
-];
-
 const INITIAL_FORM_STATE: FormData = {
   name: '',
   phone: '',
@@ -128,8 +114,6 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
     error: false,
     message: ''
   });
-  const [showZipInput, setShowZipInput] = useState(false);
-  const [zipCode, setZipCode] = useState('');
   
   // State to track form submission for analytics
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -144,25 +128,12 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-    // Show zip input if "Enter ZIP Code" is selected
-    if (name === 'location' && value === 'Enter ZIP Code') {
-      setShowZipInput(true);
-      setFormData(prev => ({ ...prev, [name]: '' }));
-    } else if (name === 'location') {
-      setShowZipInput(false);
-      setZipCode('');
-      setFormData(prev => ({ ...prev, [name]: value }));
+    // For ZIP code field, only allow digits and limit to 5
+    if (name === 'location') {
+      const zipValue = value.replace(/\D/g, '').slice(0, 5);
+      setFormData(prev => ({ ...prev, [name]: zipValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-  
-  const handleZipChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-    setZipCode(value);
-    // Update location field with zip code
-    if (value.length === 5) {
-      setFormData(prev => ({ ...prev, location: value }));
     }
   };
 
@@ -312,30 +283,17 @@ export default function HeroContactForm({ className = '' }: HeroContactFormProps
             required
           />
           
-          {/* Location Dropdown */}
-          <FormSelect
+          {/* ZIP Code Input */}
+          <FormInput
             id="hero-location"
             name="location"
-            label="Your Location"
-            value={showZipInput ? 'Enter ZIP Code' : formData.location}
+            label="ZIP Code"
+            type="text"
+            value={formData.location}
             onChange={handleChange}
-            options={LOCATIONS}
-            required={!showZipInput}
+            placeholder="Enter 5-digit ZIP code"
+            required
           />
-          
-          {/* ZIP Code Input (conditional) */}
-          {showZipInput && (
-            <FormInput
-              id="hero-zipcode"
-              name="zipcode"
-              label="ZIP Code"
-              type="text"
-              value={zipCode}
-              onChange={handleZipChange}
-              placeholder="Enter 5-digit ZIP code"
-              required
-            />
-          )}
           
           {/* Submit Button */}
           <Button variant="primary" className="w-full mt-4" type="submit">
