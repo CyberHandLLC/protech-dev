@@ -101,11 +101,10 @@ export default function ZipCodeChecker() {
           county: location?.county || 'unknown'
         });
         
-        // Track to Google Analytics via dataLayer
-        if (typeof window !== 'undefined' && window.dataLayer) {
+        // Track to Google Analytics directly
+        if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
           // Track search event (GA4 recommended event)
-          window.dataLayer.push({
-            event: 'search',
+          (window as any).gtag('event', 'search', {
             search_term: zipCode,
             search_result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
             city: location?.city,
@@ -113,8 +112,7 @@ export default function ZipCodeChecker() {
           });
           
           // Track view_search_results event
-          window.dataLayer.push({
-            event: 'view_search_results',
+          (window as any).gtag('event', 'view_search_results', {
             search_term: zipCode,
             content_category: 'location_search',
             content_type: 'service_area'

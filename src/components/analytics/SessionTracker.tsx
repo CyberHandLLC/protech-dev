@@ -110,10 +110,9 @@ export default function SessionTracker() {
             })
           }).catch(err => console.error('[SessionStart] Conversions API error:', err));
 
-          // Track to Google Analytics via dataLayer
-          if (typeof window !== 'undefined' && window.dataLayer) {
-            window.dataLayer.push({
-              event: 'session_start',
+          // Track to Google Analytics directly
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'session_start', {
               session_id: sessionIdRef.current,
               entry_url: entryUrl,
               entry_path: pathname,
@@ -217,10 +216,9 @@ export default function SessionTracker() {
             navigator.sendBeacon('/api/facebook-conversions', payload);
           }
 
-          // Track to Google Analytics via dataLayer
-          if (typeof window !== 'undefined' && window.dataLayer) {
-            window.dataLayer.push({
-              event: 'session_end',
+          // Track to Google Analytics directly
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'session_end', {
               session_id: sessionIdRef.current,
               exit_url: exitUrl,
               exit_path: pathname,
