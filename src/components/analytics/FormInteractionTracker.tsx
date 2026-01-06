@@ -84,7 +84,16 @@ export default function FormInteractionTracker() {
             console.error('[FormInteraction] FormStarted Conversions API error:', error);
           }
           
-          console.log('[FormInteraction] Form started - tracked to Meta Pixel + Conversions API + Vercel');
+          // Track to Google Analytics
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'begin_form', {
+              form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+              page_path: window.location.pathname,
+              field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
+            });
+          }
+          
+          console.log('[FormInteraction] Form started - tracked to Meta Pixel + Conversions API + GA4 + Vercel');
           
           // Initialize tracking data
           formInteractions.set(form, {
@@ -205,16 +214,36 @@ export default function FormInteractionTracker() {
               content_category: 'appointment_scheduling'
             });
             
-            // Track Form Complete event
-            track('form_complete', {
-              form_name: formName,
-              page_path: window.location.pathname,
-              fields_filled: interaction.fields.size
-            });
-            
             console.log('[FormInteraction] Vercel Analytics events tracked');
           } catch (error) {
             console.error('[FormInteraction] Vercel Analytics error:', error);
+          }
+          
+          // Track to Google Analytics
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            // Track form_complete event
+            (window as any).gtag('event', 'form_complete', {
+              form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+              page_path: window.location.pathname,
+              fields_filled: interaction.fields.size,
+              time_spent_seconds: Math.round(timeSpent / 1000)
+            });
+            
+            // Track generate_lead event
+            (window as any).gtag('event', 'generate_lead', {
+              value: 100,
+              currency: 'USD',
+              form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+              content_category: 'lead_generation'
+            });
+            
+            // Track schedule event (custom)
+            (window as any).gtag('event', 'schedule', {
+              value: 150,
+              currency: 'USD',
+              form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+              content_category: 'appointment_scheduling'
+            });
           }
           
           // Get Facebook browser cookies for better matching

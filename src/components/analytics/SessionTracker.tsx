@@ -110,7 +110,19 @@ export default function SessionTracker() {
             })
           }).catch(err => console.error('[SessionStart] Conversions API error:', err));
 
-          console.log('[SessionStart] Tracked to Pixel + Conversions API', {
+          // Track to Google Analytics
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'session_start', {
+              session_id: sessionIdRef.current,
+              entry_url: entryUrl,
+              entry_path: pathname,
+              referrer: referrer || 'direct',
+              source: source,
+              engagement_time_msec: 100
+            });
+          }
+
+          console.log('[SessionStart] Tracked to Pixel + Conversions API + GA4', {
             session_id: sessionIdRef.current,
             entry_url: entryUrl,
             entry_path: pathname,
@@ -204,7 +216,19 @@ export default function SessionTracker() {
             navigator.sendBeacon('/api/facebook-conversions', payload);
           }
 
-          console.log('[SessionEnd] Tracked to Pixel + Conversions API', {
+          // Track to Google Analytics
+          if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+            (window as any).gtag('event', 'session_end', {
+              session_id: sessionIdRef.current,
+              exit_url: exitUrl,
+              exit_path: pathname,
+              session_duration_seconds: sessionDuration,
+              pages_viewed: pagesViewedRef.current.size,
+              engagement_time_msec: sessionDuration * 1000
+            });
+          }
+
+          console.log('[SessionEnd] Tracked to Pixel + Conversions API + GA4', {
             session_id: sessionIdRef.current,
             exit_url: exitUrl,
             session_duration: sessionDuration,

@@ -101,6 +101,24 @@ export default function ZipCodeChecker() {
           county: location?.county || 'unknown'
         });
         
+        // Track to Google Analytics
+        if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+          // Track search event (GA4 recommended event)
+          (window as any).gtag('event', 'search', {
+            search_term: zipCode,
+            search_result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
+            city: location?.city,
+            county: location?.county
+          });
+          
+          // Track view_search_results event
+          (window as any).gtag('event', 'view_search_results', {
+            search_term: zipCode,
+            content_category: 'location_search',
+            content_type: 'service_area'
+          });
+        }
+        
         // Send to Conversions API
         const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
         const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
