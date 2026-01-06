@@ -67,13 +67,19 @@ export default function ZipCodeChecker() {
           country: 'us'
         });
         
+        // Generate unique event IDs
+        const locationSearchEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_location_search';
+        const viewContentEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_view_content';
+        
         // Track to Meta Pixel
         if (typeof window !== 'undefined' && window.fbq) {
-          window.fbq('trackCustom', 'LocationSearch', {
+          (window.fbq as any)('trackCustom', 'LocationSearch', {
             zip_code_searched: zipCode,
             search_result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
             city: location?.city,
             county: location?.county
+          }, {
+            eventID: locationSearchEventId
           });
           
           // Track ViewContent event with hashed data for better EMQ
@@ -81,7 +87,10 @@ export default function ZipCodeChecker() {
             content_name: 'Service Area Check',
             content_category: 'location_search',
             content_type: 'service_area'
-          }, hashedData);
+          }, {
+            eventID: viewContentEventId,
+            ...hashedData
+          });
         }
         
         // Track to Vercel Analytics
@@ -92,7 +101,55 @@ export default function ZipCodeChecker() {
           county: location?.county || 'unknown'
         });
         
-        console.log('[ZipCodeChecker] Location search tracked:', zipCode);
+        // Send to Conversions API
+        const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
+        const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
+        
+        fetch('/api/facebook-conversions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            events: [
+              {
+                event_name: 'LocationSearch',
+                event_id: locationSearchEventId,
+                event_time: Math.floor(Date.now() / 1000),
+                event_source_url: window.location.href,
+                action_source: 'website',
+                user_data: {
+                  ...hashedData,
+                  fbp,
+                  fbc
+                },
+                custom_data: {
+                  zip_code_searched: zipCode,
+                  search_result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
+                  city: location?.city,
+                  county: location?.county
+                }
+              },
+              {
+                event_name: 'ViewContent',
+                event_id: viewContentEventId,
+                event_time: Math.floor(Date.now() / 1000),
+                event_source_url: window.location.href,
+                action_source: 'website',
+                user_data: {
+                  ...hashedData,
+                  fbp,
+                  fbc
+                },
+                custom_data: {
+                  content_name: 'Service Area Check',
+                  content_category: 'location_search',
+                  content_type: 'service_area'
+                }
+              }
+            ]
+          })
+        }).catch(err => console.error('[ZipCodeChecker] Conversions API error:', err));
+        
+        console.log('[ZipCodeChecker] Location search tracked to Pixel + Conversions API:', zipCode);
       } catch (error) {
         console.error('[ZipCodeChecker] Tracking error:', error);
       }

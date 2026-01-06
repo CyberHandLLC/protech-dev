@@ -66,6 +66,9 @@ export default function SessionTracker() {
             else source = 'referral';
           }
 
+          // Generate unique event ID for SessionStart
+          const sessionStartEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_session_start';
+
           // Track with Facebook Pixel
           if (typeof window !== 'undefined' && (window as any).fbq) {
             (window as any).fbq('trackCustom', 'SessionStart', {
@@ -75,10 +78,39 @@ export default function SessionTracker() {
               referrer: referrer || 'direct',
               source: source,
               timestamp: new Date().toISOString()
+            }, {
+              eventID: sessionStartEventId
             });
           }
 
-          console.log('[SessionStart]', {
+          // Send to Conversions API
+          const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
+          const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
+          
+          fetch('/api/facebook-conversions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              events: [{
+                event_name: 'SessionStart',
+                event_id: sessionStartEventId,
+                event_time: Math.floor(Date.now() / 1000),
+                event_source_url: entryUrl,
+                action_source: 'website',
+                user_data: { fbp, fbc },
+                custom_data: {
+                  session_id: sessionIdRef.current,
+                  entry_url: entryUrl,
+                  entry_path: pathname,
+                  referrer: referrer || 'direct',
+                  source: source,
+                  timestamp: new Date().toISOString()
+                }
+              }]
+            })
+          }).catch(err => console.error('[SessionStart] Conversions API error:', err));
+
+          console.log('[SessionStart] Tracked to Pixel + Conversions API', {
             session_id: sessionIdRef.current,
             entry_url: entryUrl,
             entry_path: pathname,
@@ -127,6 +159,9 @@ export default function SessionTracker() {
           
           const exitUrl = typeof window !== 'undefined' ? window.location.href : '';
           
+          // Generate unique event ID for SessionEnd
+          const sessionEndEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_session_end';
+          
           // Track with Facebook Pixel using trackCustom
           if (typeof window !== 'undefined' && typeof (window as any).fbq !== 'undefined') {
             (window as any).fbq('trackCustom', 'SessionEnd', {
@@ -136,10 +171,40 @@ export default function SessionTracker() {
               session_duration_seconds: sessionDuration,
               pages_viewed: pagesViewedRef.current.size,
               timestamp: new Date().toISOString()
+            }, {
+              eventID: sessionEndEventId
             });
           }
 
-          console.log('[SessionEnd]', {
+          // Send to Conversions API using sendBeacon for reliability on page unload
+          const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
+          const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
+          
+          const payload = JSON.stringify({
+            events: [{
+              event_name: 'SessionEnd',
+              event_id: sessionEndEventId,
+              event_time: Math.floor(Date.now() / 1000),
+              event_source_url: exitUrl,
+              action_source: 'website',
+              user_data: { fbp, fbc },
+              custom_data: {
+                session_id: sessionIdRef.current,
+                exit_url: exitUrl,
+                exit_path: pathname,
+                session_duration_seconds: sessionDuration,
+                pages_viewed: pagesViewedRef.current.size,
+                timestamp: new Date().toISOString()
+              }
+            }]
+          });
+          
+          // Use sendBeacon for reliable delivery during page unload
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/facebook-conversions', payload);
+          }
+
+          console.log('[SessionEnd] Tracked to Pixel + Conversions API', {
             session_id: sessionIdRef.current,
             exit_url: exitUrl,
             session_duration: sessionDuration,
