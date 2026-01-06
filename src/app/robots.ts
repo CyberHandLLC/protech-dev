@@ -50,6 +50,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: 'https://protech-ohio.com/sitemap.xml',
-    host: 'protech-ohio.com',
   }
 }
