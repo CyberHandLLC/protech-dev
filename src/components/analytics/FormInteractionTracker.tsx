@@ -30,12 +30,17 @@ export default function FormInteractionTracker() {
         if (form && !trackedForms.has(form)) {
           trackedForms.add(form);
           
+          // Generate unique event ID for FormStarted
+          const formStartedEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 4);
+          
           // Track form interaction start to Meta Pixel
           if (typeof window !== 'undefined' && window.fbq) {
-            window.fbq('trackCustom', 'FormStarted', {
+            (window.fbq as any)('trackCustom', 'FormStarted', {
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
               page_path: window.location.pathname,
               field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
+            }, {
+              eventID: formStartedEventId
             });
           }
           
@@ -51,7 +56,35 @@ export default function FormInteractionTracker() {
             console.error('[FormInteraction] Vercel Analytics error:', error);
           }
           
-          console.log('[FormInteraction] Form started - tracked to Meta + Vercel');
+          // Send FormStarted to Conversions API
+          try {
+            const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
+            const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
+            
+            fetch('/api/facebook-conversions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                events: [{
+                  event_name: 'FormStarted',
+                  event_id: formStartedEventId,
+                  event_time: Math.floor(Date.now() / 1000),
+                  event_source_url: window.location.href,
+                  action_source: 'website',
+                  user_data: { fbp, fbc },
+                  custom_data: {
+                    form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+                    page_path: window.location.pathname,
+                    field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
+                  }
+                }]
+              })
+            }).catch(err => console.error('[FormInteraction] FormStarted server-side tracking error:', err));
+          } catch (error) {
+            console.error('[FormInteraction] FormStarted Conversions API error:', error);
+          }
+          
+          console.log('[FormInteraction] Form started - tracked to Meta Pixel + Conversions API + Vercel');
           
           // Initialize tracking data
           formInteractions.set(form, {
@@ -116,12 +149,18 @@ export default function FormInteractionTracker() {
             console.warn('[FormInteraction] Could not hash customer data:', error);
           }
           
+          // Generate unique event ID for FormCompleted
+          const formCompletedEventId = Date.now() + '_' + Math.random().toString(36).substr(2, 9) + '_' + Math.random().toString(36).substr(2, 4);
+          
           // Track custom FormCompleted event (detailed analytics)
-          window.fbq('trackCustom', 'FormCompleted', {
+          (window.fbq as any)('trackCustom', 'FormCompleted', {
             form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
             page_path: window.location.pathname,
             fields_filled: interaction.fields.size,
             time_spent_seconds: Math.round(timeSpent / 1000)
+          }, {
+            eventID: formCompletedEventId,
+            ...hashedData
           });
           
           // Track standard Lead event with Event ID and hashed customer data
@@ -188,6 +227,24 @@ export default function FormInteractionTracker() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               events: [
+                {
+                  event_name: 'FormCompleted',
+                  event_id: formCompletedEventId,
+                  event_time: Math.floor(Date.now() / 1000),
+                  event_source_url: window.location.href,
+                  action_source: 'website',
+                  user_data: {
+                    ...hashedData,
+                    fbp,
+                    fbc
+                  },
+                  custom_data: {
+                    form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
+                    page_path: window.location.pathname,
+                    fields_filled: interaction.fields.size,
+                    time_spent_seconds: Math.round(timeSpent / 1000)
+                  }
+                },
                 {
                   event_name: 'Lead',
                   event_id: leadEventId,
