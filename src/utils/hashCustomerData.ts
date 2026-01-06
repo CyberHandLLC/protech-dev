@@ -90,9 +90,9 @@ export async function hashCustomerData(data: {
     hashed.zp = await sha256(data.zip);
   }
   
-  // Country code (not hashed, 2-letter ISO code)
+  // Hash country code (2-letter ISO code, must be hashed)
   if (data.country) {
-    hashed.country = data.country.toLowerCase();
+    hashed.country = await sha256(data.country);
   }
   
   return hashed;
