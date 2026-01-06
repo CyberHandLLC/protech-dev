@@ -96,9 +96,9 @@ export default function FormInteractionTracker() {
           const phone = formData.get('phone')?.toString() || '';
           const location = formData.get('location')?.toString() || '';
           
-          // Parse name and location
+          // Parse name and location (location can be city/state or zip code)
           const { firstName, lastName } = parseFullName(name);
-          const { city, state } = parseLocation(location);
+          const { city, state, zip } = parseLocation(location);
           
           // Hash customer data for better Event Match Quality
           let hashedData = {};
@@ -109,6 +109,7 @@ export default function FormInteractionTracker() {
               lastName,
               city,
               state,
+              zip,
               country: 'us'
             });
           } catch (error) {

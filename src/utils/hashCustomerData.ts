@@ -123,18 +123,28 @@ export function parseFullName(fullName: string): { firstName: string; lastName: 
 
 /**
  * Extract location data from location string
- * @param location - Location string (e.g., "Cleveland, OH")
- * @returns Object with city and state
+ * @param location - Location string (e.g., "Cleveland, OH" or "44101")
+ * @returns Object with city, state, and zip
  */
-export function parseLocation(location: string): { city: string; state: string } {
+export function parseLocation(location: string): { city: string; state: string; zip: string } {
+  // Check if it's a zip code (5 digits)
+  if (/^\d{5}$/.test(location.trim())) {
+    return {
+      city: '',
+      state: '',
+      zip: location.trim()
+    };
+  }
+  
   const parts = location.split(',').map(p => p.trim());
   
   if (parts.length >= 2) {
     return {
       city: parts[0],
-      state: parts[1]
+      state: parts[1],
+      zip: ''
     };
   }
   
-  return { city: '', state: '' };
+  return { city: '', state: '', zip: '' };
 }

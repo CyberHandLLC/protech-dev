@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { isValidZipCode, isInServiceArea, isNearServiceArea, getLocationForZipCode } from '@/utils/serviceAreaUtils';
 import Link from 'next/link';
+import { track } from '@vercel/analytics';
+import { hashCustomerData } from '@/utils/hashCustomerData';
 
 type CheckResult = {
   status: 'idle' | 'valid' | 'invalid' | 'nearby';
@@ -36,14 +38,14 @@ export default function ZipCodeChecker() {
     }
   };
 
-  const checkZipCode = (e: React.FormEvent) => {
+  const checkZipCode = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Show loading state
     setIsChecking(true);
     
     // Simulate a brief delay for better UX
-    setTimeout(() => {
+    setTimeout(async () => {
       if (!isValidZipCode(zipCode)) {
         setResult({
           status: 'invalid',
@@ -54,6 +56,46 @@ export default function ZipCodeChecker() {
       }
       
       const location = getLocationForZipCode(zipCode);
+      
+      // Track location search event
+      try {
+        // Hash zip code for better Event Match Quality
+        const hashedData = await hashCustomerData({
+          zip: zipCode,
+          city: location?.city,
+          state: 'OH',
+          country: 'us'
+        });
+        
+        // Track to Meta Pixel
+        if (typeof window !== 'undefined' && window.fbq) {
+          window.fbq('trackCustom', 'LocationSearch', {
+            zip_code_searched: zipCode,
+            search_result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
+            city: location?.city,
+            county: location?.county
+          });
+          
+          // Track ViewContent event with hashed data for better EMQ
+          (window.fbq as any)('track', 'ViewContent', {
+            content_name: 'Service Area Check',
+            content_category: 'location_search',
+            content_type: 'service_area'
+          }, hashedData);
+        }
+        
+        // Track to Vercel Analytics
+        track('location_search', {
+          zip_code: zipCode,
+          result: isInServiceArea(zipCode) ? 'in_service_area' : isNearServiceArea(zipCode) ? 'nearby' : 'out_of_area',
+          city: location?.city || 'unknown',
+          county: location?.county || 'unknown'
+        });
+        
+        console.log('[ZipCodeChecker] Location search tracked:', zipCode);
+      } catch (error) {
+        console.error('[ZipCodeChecker] Tracking error:', error);
+      }
       
       if (isInServiceArea(zipCode)) {
         setResult({
