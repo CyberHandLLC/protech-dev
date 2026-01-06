@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { track } from '@vercel/analytics';
 
 /**
  * FormInteractionTracker Component
@@ -99,6 +100,38 @@ export default function FormInteractionTracker() {
             value: 150, // Estimated appointment value
             currency: 'USD'
           }, { eventID: scheduleEventId });
+          
+          // Track to Vercel Analytics
+          try {
+            const formName = form.getAttribute('name') || form.getAttribute('id') || 'contact_form';
+            
+            // Track Lead event
+            track('lead', {
+              value: 100,
+              currency: 'USD',
+              form_name: formName,
+              content_category: 'lead_generation'
+            });
+            
+            // Track Schedule event
+            track('schedule', {
+              value: 150,
+              currency: 'USD',
+              form_name: formName,
+              content_category: 'appointment_scheduling'
+            });
+            
+            // Track Form Complete event
+            track('form_complete', {
+              form_name: formName,
+              page_path: window.location.pathname,
+              fields_filled: interaction.fields.size
+            });
+            
+            console.log('[FormInteraction] Vercel Analytics events tracked');
+          } catch (error) {
+            console.error('[FormInteraction] Vercel Analytics error:', error);
+          }
           
           // Send to Conversions API for server-side tracking
           fetch('/api/facebook-conversions', {
