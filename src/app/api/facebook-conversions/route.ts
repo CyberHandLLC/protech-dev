@@ -53,7 +53,8 @@ interface CustomData {
 }
 
 interface RequestBody {
-  event: ConversionEvent;
+  event?: ConversionEvent;
+  events?: ConversionEvent[];
   // Can include additional info as needed
 }
 
@@ -134,79 +135,92 @@ export async function POST(req: NextRequest) {
     
     // Get the conversion event data from request body
     const body: RequestBody = await req.json();
-    const { event } = body;
+    const { event, events } = body;
+    
+    // Support both single event and multiple events
+    const eventsToProcess = events || (event ? [event] : []);
     
     // Validate event data
-    if (!event || !event.event_name) {
+    if (eventsToProcess.length === 0) {
       return NextResponse.json({
         success: false,
         error: 'Missing required event data'
       }, { status: 400 });
     }
     
-    // Hash any PII data if not already hashed
-    // Facebook requires ALL user data to be hashed except for client_user_agent, fbc, and fbp
-    if (event.user_data.em && !event.user_data.em.includes('$')) {
-      event.user_data.em = await hashData(event.user_data.em);
+    // Process each event
+    const results = [];
+    for (const evt of eventsToProcess) {
+      if (!evt.event_name) {
+        continue;
+      }
+      
+      // Initialize user_data if not present
+      if (!evt.user_data) {
+        evt.user_data = {};
+      }
+      
+      // Hash any PII data if not already hashed
+      // Note: Data from client is already hashed, but we check to be safe
+      if (evt.user_data.em && !evt.user_data.em.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.em = await hashData(evt.user_data.em);
+      }
+      
+      if (evt.user_data.ph && !evt.user_data.ph.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.ph = await hashData(evt.user_data.ph);
+      }
+      
+      if (evt.user_data.fn && !evt.user_data.fn.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.fn = await hashData(evt.user_data.fn);
+      }
+      
+      if (evt.user_data.ln && !evt.user_data.ln.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.ln = await hashData(evt.user_data.ln);
+      }
+      
+      if (evt.user_data.ct && !evt.user_data.ct.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.ct = await hashData(evt.user_data.ct);
+      }
+      
+      if (evt.user_data.st && !evt.user_data.st.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.st = await hashData(evt.user_data.st);
+      }
+      
+      if (evt.user_data.zp && !evt.user_data.zp.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.zp = await hashData(evt.user_data.zp);
+      }
+      
+      if (evt.user_data.external_id && !evt.user_data.external_id.match(/^[a-f0-9]{64}$/)) {
+        evt.user_data.external_id = await hashData(evt.user_data.external_id);
+      }
+      
+      // Add client info to user_data if not provided
+      if (!evt.user_data.client_ip_address) {
+        evt.user_data.client_ip_address = ipAddress;
+      }
+      
+      if (!evt.user_data.client_user_agent) {
+        evt.user_data.client_user_agent = userAgent;
+      }
+      
+      // Set event_time to now if not provided
+      if (!evt.event_time) {
+        evt.event_time = Math.floor(Date.now() / 1000);
+      }
+      
+      // Set action_source if not provided
+      if (!evt.action_source) {
+        evt.action_source = 'website';
+      }
+      
+      // Send the event to Facebook
+      const result = await sendToFacebook(evt);
+      results.push(result);
     }
-    
-    if (event.user_data.ph && !event.user_data.ph.includes('$')) {
-      event.user_data.ph = await hashData(event.user_data.ph);
-    }
-    
-    if (event.user_data.fn && !event.user_data.fn.includes('$')) {
-      event.user_data.fn = await hashData(event.user_data.fn);
-    }
-    
-    if (event.user_data.ln && !event.user_data.ln.includes('$')) {
-      event.user_data.ln = await hashData(event.user_data.ln);
-    }
-    
-    // Hash city (ct) if present and not already hashed
-    if (event.user_data.ct && !event.user_data.ct.includes('$')) {
-      event.user_data.ct = await hashData(event.user_data.ct);
-    }
-    
-    // Hash state (st) if present and not already hashed
-    if (event.user_data.st && !event.user_data.st.includes('$')) {
-      event.user_data.st = await hashData(event.user_data.st);
-    }
-    
-    // Hash zip code (zp) if present and not already hashed
-    if (event.user_data.zp && !event.user_data.zp.includes('$')) {
-      event.user_data.zp = await hashData(event.user_data.zp);
-    }
-    
-    // Hash external_id if present and not already hashed
-    if (event.user_data.external_id && !event.user_data.external_id.includes('$')) {
-      event.user_data.external_id = await hashData(event.user_data.external_id);
-    }
-    
-    // Add client info to user_data if not provided
-    if (!event.user_data.client_ip_address) {
-      event.user_data.client_ip_address = ipAddress;
-    }
-    
-    if (!event.user_data.client_user_agent) {
-      event.user_data.client_user_agent = userAgent;
-    }
-    
-    // Set event_time to now if not provided
-    if (!event.event_time) {
-      event.event_time = Math.floor(Date.now() / 1000);
-    }
-    
-    // Set action_source if not provided
-    if (!event.action_source) {
-      event.action_source = 'website';
-    }
-    
-    // Send the event to Facebook
-    const result = await sendToFacebook(event);
     
     return NextResponse.json({
       success: true,
-      result,
+      results,
     });
   } catch (error) {
     console.error('Error sending conversion event:', error);

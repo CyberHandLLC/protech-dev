@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { track } from '@vercel/analytics';
+import { hashCustomerData, parseFullName, parseLocation } from '@/utils/hashCustomerData';
 
 /**
  * FormInteractionTracker Component
@@ -68,7 +69,7 @@ export default function FormInteractionTracker() {
       }
     };
 
-    const handleFormSubmit = (event: Event) => {
+    const handleFormSubmit = async (event: Event) => {
       const form = event.target as HTMLFormElement;
       
       if (formInteractions.has(form)) {
@@ -89,6 +90,31 @@ export default function FormInteractionTracker() {
             console.warn('[FormInteraction] Could not store event IDs:', e);
           }
           
+          // Extract and hash customer data from form
+          const formData = new FormData(form);
+          const name = formData.get('name')?.toString() || '';
+          const phone = formData.get('phone')?.toString() || '';
+          const location = formData.get('location')?.toString() || '';
+          
+          // Parse name and location
+          const { firstName, lastName } = parseFullName(name);
+          const { city, state } = parseLocation(location);
+          
+          // Hash customer data for better Event Match Quality
+          let hashedData = {};
+          try {
+            hashedData = await hashCustomerData({
+              phone,
+              firstName,
+              lastName,
+              city,
+              state,
+              country: 'us'
+            });
+          } catch (error) {
+            console.warn('[FormInteraction] Could not hash customer data:', error);
+          }
+          
           // Track custom FormCompleted event (detailed analytics)
           window.fbq('trackCustom', 'FormCompleted', {
             form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
@@ -97,21 +123,27 @@ export default function FormInteractionTracker() {
             time_spent_seconds: Math.round(timeSpent / 1000)
           });
           
-          // Track standard Lead event with Event ID (lead generation campaigns)
+          // Track standard Lead event with Event ID and hashed customer data
           (window.fbq as any)('track', 'Lead', {
             content_name: 'Service Inquiry',
             content_category: 'lead_generation',
-            value: 100, // Estimated lead value in dollars
+            value: 100,
             currency: 'USD'
-          }, { eventID: leadEventId });
+          }, { 
+            eventID: leadEventId,
+            ...hashedData
+          });
           
-          // Track standard Schedule event with Event ID (appointment scheduling campaigns)
+          // Track standard Schedule event with Event ID and hashed customer data
           (window.fbq as any)('track', 'Schedule', {
             content_name: 'HVAC Service Appointment Request',
             content_category: 'appointment_scheduling',
-            value: 150, // Estimated appointment value
+            value: 150,
             currency: 'USD'
-          }, { eventID: scheduleEventId });
+          }, { 
+            eventID: scheduleEventId,
+            ...hashedData
+          });
           
           // Track to Vercel Analytics
           try {
@@ -145,7 +177,11 @@ export default function FormInteractionTracker() {
             console.error('[FormInteraction] Vercel Analytics error:', error);
           }
           
-          // Send to Conversions API for server-side tracking
+          // Get Facebook browser cookies for better matching
+          const fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp='))?.split('=')[1];
+          const fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc='))?.split('=')[1];
+          
+          // Send to Conversions API for server-side tracking with hashed customer data
           fetch('/api/facebook-conversions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -157,6 +193,11 @@ export default function FormInteractionTracker() {
                   event_time: Math.floor(Date.now() / 1000),
                   event_source_url: window.location.href,
                   action_source: 'website',
+                  user_data: {
+                    ...hashedData,
+                    fbp,
+                    fbc
+                  },
                   custom_data: {
                     content_name: 'Service Inquiry',
                     content_category: 'lead_generation',
@@ -170,6 +211,11 @@ export default function FormInteractionTracker() {
                   event_time: Math.floor(Date.now() / 1000),
                   event_source_url: window.location.href,
                   action_source: 'website',
+                  user_data: {
+                    ...hashedData,
+                    fbp,
+                    fbc
+                  },
                   custom_data: {
                     content_name: 'HVAC Service Appointment Request',
                     content_category: 'appointment_scheduling',
