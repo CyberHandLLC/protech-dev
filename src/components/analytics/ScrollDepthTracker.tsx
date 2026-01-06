@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { track } from '@vercel/analytics';
 
 /**
  * ScrollDepthTracker Component
@@ -38,16 +39,27 @@ export default function ScrollDepthTracker() {
         if (scrollPercentage >= threshold && !milestonesTrackedRef.current.has(threshold)) {
           milestonesTrackedRef.current.add(threshold);
           
-          // Track scroll depth milestone
+          // Track scroll depth milestone to Meta Pixel
           if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('trackCustom', 'ScrollDepth', {
               depth_percentage: threshold,
               page_path: pathname,
               engagement_level: threshold >= 75 ? 'high' : threshold >= 50 ? 'medium' : 'low'
             });
-            
-            console.log(`[ScrollDepth] ${label} on ${pathname}`);
           }
+          
+          // Track to Vercel Analytics
+          try {
+            track('scroll', {
+              depth_percentage: threshold,
+              page_path: pathname,
+              engagement_level: threshold >= 75 ? 'high' : threshold >= 50 ? 'medium' : 'low'
+            });
+          } catch (error) {
+            console.error('[ScrollDepth] Vercel Analytics error:', error);
+          }
+          
+          console.log(`[ScrollDepth] ${label} on ${pathname} - tracked to Meta + Vercel`);
         }
       });
     };

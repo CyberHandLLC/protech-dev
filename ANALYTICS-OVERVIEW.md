@@ -29,18 +29,19 @@
 | Event Name | Meta Pixel | Google Analytics | Vercel | Purpose |
 |------------|------------|------------------|--------|---------|
 | **PageView** | ✅ (with event_id) | ✅ | ✅ (auto) | Track all page visits |
-| **SessionStart** | ✅ | ✅ | ✅ | User begins browsing |
-| **SessionEnd** | ✅ | ✅ | ✅ | User leaves site |
-| **FormStarted** | ✅ | ✅ | ✅ | User begins filling form |
-| **FormCompleted** | ✅ (custom) | ✅ | ✅ | Form submission success |
+| **SessionStart** | ✅ | ✅ | ❌ | User begins browsing |
+| **SessionEnd** | ✅ | ✅ | ❌ | User leaves site |
+| **FormStarted** | ✅ | ❌ | ✅ | User begins filling form |
+| **FormCompleted** | ✅ (custom) | ❌ | ✅ | Form submission success |
+| **FormAbandoned** | ✅ (custom) | ❌ | ✅ | User starts but doesn't submit |
 | **Lead** | ✅ (standard + server) | ✅ | ✅ | Lead generation ($100 value) |
 | **Schedule** | ✅ (standard + server) | ✅ | ✅ | Appointment request ($150 value) |
-| **ContactPageViewed** | ✅ (custom) | ✅ | ✅ | User visits contact page |
-| **PhoneClick** | ✅ | ✅ | ✅ | User clicks phone number |
-| **EmailClick** | ✅ | ✅ | ✅ | User clicks email |
-| **ServiceViewed** | ✅ | ✅ | ✅ | User views service page |
-| **ScrollDepth** | ❌ | ✅ | ✅ | User scrolls 25%, 50%, 75%, 100% |
-| **TimeOnPage** | ❌ | ✅ | ✅ | User spends time on page |
+| **ContactPageViewed** | ✅ (custom) | ✅ | ❌ | User visits contact page |
+| **PhoneClick** | ✅ | ✅ | ❌ | User clicks phone number |
+| **EmailClick** | ✅ | ✅ | ❌ | User clicks email |
+| **ServiceViewed** | ✅ | ✅ | ❌ | User views service page |
+| **ScrollDepth** | ✅ | ✅ | ✅ | User scrolls 25%, 50%, 75%, 100% |
+| **TimeOnPage** | ✅ | ✅ | ✅ | User spends time on page |
 
 ---
 

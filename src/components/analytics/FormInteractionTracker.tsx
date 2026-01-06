@@ -29,16 +29,28 @@ export default function FormInteractionTracker() {
         if (form && !trackedForms.has(form)) {
           trackedForms.add(form);
           
-          // Track form interaction start
+          // Track form interaction start to Meta Pixel
           if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('trackCustom', 'FormStarted', {
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
               page_path: window.location.pathname,
               field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
             });
-            
-            console.log('[FormInteraction] User started filling form');
           }
+          
+          // Track to Vercel Analytics
+          try {
+            const formName = form.getAttribute('name') || form.getAttribute('id') || 'contact_form';
+            track('form_start', {
+              form_name: formName,
+              page_path: window.location.pathname,
+              field_name: (target as HTMLInputElement).name || (target as HTMLInputElement).id
+            });
+          } catch (error) {
+            console.error('[FormInteraction] Vercel Analytics error:', error);
+          }
+          
+          console.log('[FormInteraction] Form started - tracked to Meta + Vercel');
           
           // Initialize tracking data
           formInteractions.set(form, {
@@ -184,7 +196,7 @@ export default function FormInteractionTracker() {
         if (interaction.started) {
           const timeSpent = Date.now() - interaction.startTime;
           
-          // Track form abandonment
+          // Track form abandonment to Meta Pixel
           if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('trackCustom', 'FormAbandoned', {
               form_name: form.getAttribute('name') || form.getAttribute('id') || 'contact_form',
@@ -192,9 +204,22 @@ export default function FormInteractionTracker() {
               fields_filled: interaction.fields.size,
               time_spent_seconds: Math.round(timeSpent / 1000)
             });
-            
-            console.log('[FormInteraction] Form abandoned');
           }
+          
+          // Track to Vercel Analytics
+          try {
+            const formName = form.getAttribute('name') || form.getAttribute('id') || 'contact_form';
+            track('form_abandoned', {
+              form_name: formName,
+              page_path: window.location.pathname,
+              fields_filled: interaction.fields.size,
+              time_spent_seconds: Math.round(timeSpent / 1000)
+            });
+          } catch (error) {
+            console.error('[FormInteraction] Vercel Analytics error:', error);
+          }
+          
+          console.log('[FormInteraction] Form abandoned - tracked to Meta + Vercel');
         }
       });
     };

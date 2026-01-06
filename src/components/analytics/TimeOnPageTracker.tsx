@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { track } from '@vercel/analytics';
 
 /**
  * TimeOnPageTracker Component
@@ -28,16 +29,27 @@ export default function TimeOnPageTracker() {
         if (timeOnPage >= milestone && !milestonesTrackedRef.current.has(milestone)) {
           milestonesTrackedRef.current.add(milestone);
           
-          // Track engagement milestone
+          // Track engagement milestone to Meta Pixel
           if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('trackCustom', 'TimeOnPage', {
               duration_seconds: milestone / 1000,
               page_path: pathname,
               engagement_level: milestone >= 60000 ? 'high' : milestone >= 30000 ? 'medium' : 'low'
             });
-            
-            console.log(`[TimeOnPage] ${milestone / 1000}s on ${pathname}`);
           }
+          
+          // Track to Vercel Analytics
+          try {
+            track('time_on_page', {
+              duration_seconds: milestone / 1000,
+              page_path: pathname,
+              engagement_level: milestone >= 60000 ? 'high' : milestone >= 30000 ? 'medium' : 'low'
+            });
+          } catch (error) {
+            console.error('[TimeOnPage] Vercel Analytics error:', error);
+          }
+          
+          console.log(`[TimeOnPage] ${milestone / 1000}s on ${pathname} - tracked to Meta + Vercel`);
         }
       });
     };
